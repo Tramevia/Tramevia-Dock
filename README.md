@@ -50,7 +50,7 @@
 
 - 💬 **One chat for every platform.** Read, write and moderate Twitch, Kick and YouTube from a single panel, with your TikTok LIVE chat alongside.
 - 🏷️ **Title, category and tags everywhere in one click.** Fill the form once, check the preview, apply to all your channels. Save your usual setups as presets.
-- 🏠 **Your data stays home.** It runs on your own PC. There is no account to create with us, no Tramevia server in the middle, and your logins are encrypted on your disk.
+- 🏠 **Your data stays home.** It runs on your own PC. There is no account to create with us, no Tramevia server in the middle, nothing is collected, and your logins are encrypted on your disk.
 - 🎁 **Free and open source.** No subscription, no ads. The interface is in English and French.
 
 ## 🧭 How it works
@@ -330,6 +330,9 @@ Tramevia Dock checks once a day whether a new version is out, and tells you on t
 
 Installed with `git clone`? Run `git pull` and start it again. All the details: [Updating](docs/en/install.md#updating).
 
+> [!NOTE]
+> **Safe by design.** Updates only come from the official releases of this repository. Each download is checked (size and SHA-256 fingerprint) before anything is replaced, and your `data` folder and `.env` file are never touched. Automatic install is **off** until you turn it on. The daily check only tells GitHub your IP address and your version number. Don't want it? Turn it off in **Settings → About**, or set `UPDATE_CHECK=0`. How it works: [SECURITY.md](SECURITY.md#updates--mises-à-jour).
+
 <a id="faq"></a>
 
 ## ❓ FAQ
@@ -419,12 +422,18 @@ More answers and fixes for common errors: [FAQ and troubleshooting](docs/en/faq.
 
 ## 🔒 Security & privacy
 
-- **Self-hosted.** Tramevia Dock runs on your computer or your server. Your access tokens only travel between your install and the platforms themselves. There is no Tramevia server in the middle, and no tracking.
-- **No platform passwords.** You sign in on each platform's own page. Tramevia Dock never sees your password.
-- **Encrypted.** Your access tokens and app secrets are encrypted on your disk.
-- **Only your PC, by default.** Out of the box, Tramevia Dock only answers your own computer. As soon as it can be reached from the network (online, home network, tunnel), a password is required.
+- **Nothing is collected.** No telemetry, no analytics, no ads, no account with us. Your chat, your stats, your tokens and your settings are never sent to us: there is no Tramevia server to send them to. The code is open, so anyone can check.
+- **Self-hosted.** Tramevia Dock runs on your computer or your server. Your access tokens only travel between your install and the platforms themselves.
+- **No platform passwords.** You sign in on each platform's own page. Tramevia Dock never sees your password or your stream key.
+- **Encrypted.** Your access tokens and app secrets are encrypted on your disk (AES-256-GCM). A copy of the database alone is unreadable: it needs the key in `data/secret.key` (or in `TOKEN_KEY`, if you prefer to keep the key in your password manager).
+- **Only your PC, by default.** Out of the box, Tramevia Dock only answers your own computer. As soon as it can be reached from the network (online, home network, tunnel), a password is required, and login attempts are limited.
+- **Protected from other websites.** A web page you visit can't read or control your Tramevia Dock: requests coming from other sites are refused.
 - **Keys you can change.** Dock addresses contain a full-access key, the overlay address a separate read-only key. Treat them like passwords, and get new ones in **Settings → Security** if one leaks.
 - **Disconnect** removes an account and its tokens from the database and asks the platform to revoke them.
+- **Verified updates.** Only official releases from this repository, checked with SHA-256 before they replace anything (see [Updates](#updates)).
+
+> [!TIP]
+> **PC lost or stolen, or `data` folder shared by mistake?** Remove Tramevia Dock's access in each platform's account settings (for example [Twitch → Connections](https://www.twitch.tv/settings/connections) and your [Google account permissions](https://security.google.com/settings/security/permissions)), and create a new Client Secret for your developer apps. The copied tokens then stop working.
 
 <details>
 <summary><b>Technical details: encryption, what is stored, which services are contacted</b></summary>
@@ -437,7 +446,7 @@ More answers and fixes for common errors: [FAQ and troubleshooting](docs/en/faq.
 
 **Stored** in `data/tramevia-dock.db` on your machine: your platform app credentials (encrypted), connected accounts (name, avatar, granted permissions, encrypted tokens), presets and interface settings, the dock and overlay keys, the ids of chatters already seen (for the "first message" highlight), the ids of YouTube bans made from the app (so you can unban), the YouTube quota counter and your Kick chat room id. Chat messages and events are kept in memory only (the last 400) and are not written to disk.
 
-**Other services contacted:** the platforms themselves, Kick's Pusher chat socket (for Kick chat in unofficial mode), the 7TV, BetterTTV and FrankerFaceZ emote APIs (with your channel id), for TikTok the Euler Stream signing server used by tiktok-live-connector, and GitHub once a day to check for a new version (turn it off in **Settings → About**, or with `UPDATE_CHECK=0`).
+**Other services contacted:** the platforms themselves, Kick's Pusher chat socket (for Kick chat in unofficial mode), the 7TV, BetterTTV and FrankerFaceZ emote APIs (with your channel id), for TikTok the Euler Stream signing server used by tiktok-live-connector, and GitHub once a day to check for a new version (turn it off in **Settings → About**, or with `UPDATE_CHECK=0`). Apart from the platforms you connect, none of these services receives your tokens or passwords.
 
 </details>
 

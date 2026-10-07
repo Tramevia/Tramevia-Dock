@@ -48,7 +48,7 @@
 
 - 💬 **Un seul chat pour toutes tes plateformes.** Twitch, Kick, YouTube et TikTok (en lecture seule) dans le même dock. Tu lis, tu réponds et tu modères sans jongler entre les onglets.
 - 🏷️ **Titre, catégorie et tags partout en un clic.** Tu remplis une fois, tu vérifies l’aperçu, tu appliques. Tes réglages préférés deviennent des préréglages.
-- 🏠 **Tes données restent chez toi.** Tramevia Dock tourne sur ton PC : aucun compte Tramevia à créer, pas de serveur Tramevia au milieu, et tes accès sont chiffrés sur ton disque.
+- 🏠 **Tes données restent chez toi.** Tramevia Dock tourne sur ton PC : aucun compte Tramevia à créer, pas de serveur Tramevia au milieu, aucune donnée collectée, et tes accès sont chiffrés sur ton disque.
 - 🎁 **Gratuit et libre.** Open source (AGPL-3.0), sans abonnement, en français et en anglais.
 
 ## 🧭 Comment ça marche
@@ -366,6 +366,9 @@ Tramevia Dock vérifie une fois par jour si une nouvelle version est sortie, et 
 
 Installé avec `git clone` ? Lance `git pull` puis relance-le. Tous les détails : [Mettre à jour](docs/fr/install.md#mettre-à-jour).
 
+> [!NOTE]
+> **Sûr par conception.** Les mises à jour viennent uniquement des versions officielles de ce dépôt. Chaque téléchargement est vérifié (taille et empreinte SHA-256) avant de remplacer quoi que ce soit, et ton dossier `data` et ton fichier `.env` ne sont jamais touchés. L’installation automatique reste **désactivée** tant que tu ne l’actives pas. La vérification quotidienne apprend seulement à GitHub ton adresse IP et ton numéro de version. Tu n’en veux pas ? Désactive-la dans **Paramètres → À propos**, ou mets `UPDATE_CHECK=0`. Le fonctionnement : [SECURITY.md](SECURITY.md#updates--mises-à-jour).
+
 <a id="faq"></a>
 
 ## ❓ FAQ
@@ -445,19 +448,25 @@ D’autres questions ? La [FAQ et dépannage](docs/fr/faq.md) reprend les messa
 
 ## 🔒 Sécurité et confidentialité
 
-- **Hébergé chez toi.** Tes jetons ne quittent ton PC (ou ton serveur) que pour parler aux plateformes elles-mêmes. Pas de serveur Tramevia, pas de télémétrie.
+- **Aucune donnée collectée.** Pas de télémétrie, pas de statistiques d’usage, pas de pub, pas de compte chez nous. Ton chat, tes stats, tes jetons et tes réglages ne nous sont jamais envoyés : il n’existe aucun serveur Tramevia pour les recevoir. Le code est ouvert, tout le monde peut le vérifier.
+- **Hébergé chez toi.** Tes jetons ne quittent ton PC (ou ton serveur) que pour parler aux plateformes elles-mêmes.
 - **Jamais tes mots de passe.** Tu te connectes sur la page officielle de chaque plateforme. Tramevia Dock ne voit ni ton mot de passe ni ta clé de stream.
-- **Chiffré.** Les jetons d’accès et les secrets de tes apps sont chiffrés sur le disque (AES-256-GCM), avec la clé `TOKEN_KEY` ou le fichier `data/secret.key` créé au premier lancement. Garde une copie de ce fichier.
+- **Chiffré.** Les jetons d’accès et les secrets de tes apps sont chiffrés sur le disque (AES-256-GCM), avec la clé `TOKEN_KEY` ou le fichier `data/secret.key` créé au premier lancement. Une copie de la base seule est illisible sans cette clé. Garde une copie de ce fichier (ou mets `TOKEN_KEY` dans ton gestionnaire de mots de passe).
 - **Local par défaut.** Sans `ADMIN_PASSWORD`, le serveur n’écoute que sur `127.0.0.1` et ne répond qu’à ton ordinateur. Dès que Tramevia Dock est joignable depuis le réseau (en ligne, réseau local, tunnel), `ADMIN_PASSWORD` est obligatoire, avec 12 caractères minimum, et les tentatives de connexion sont limitées.
 - **Clés d’accès.** Les adresses des docks contiennent une clé d’accès complet ; celle de l’overlay, une clé séparée en lecture seule. Traite-les comme des mots de passe : tu peux les régénérer dans **Paramètres → Sécurité**.
+- **Protégé des autres sites.** Une page web que tu visites ne peut ni lire ni piloter ton Tramevia Dock : les requêtes venant d’autres sites sont refusées.
 - **Déconnecter** un compte efface ses jetons, et Tramevia Dock essaie aussi de révoquer son accès auprès de la plateforme.
+- **Mises à jour vérifiées.** Uniquement les versions officielles de ce dépôt, contrôlées par SHA-256 avant de remplacer quoi que ce soit (voir [Mises à jour](#mises-a-jour)).
+
+> [!TIP]
+> **PC perdu ou volé, ou dossier `data` partagé par erreur ?** Retire l’accès de Tramevia Dock dans les réglages de compte de chaque plateforme (par exemple [Twitch → Connexions](https://www.twitch.tv/settings/connections) et les [autorisations de ton compte Google](https://security.google.com/settings/security/permissions)), puis crée un nouveau Client Secret pour tes apps développeur. Les jetons copiés ne marchent alors plus.
 
 <details>
 <summary><b>Le détail : ce qui est enregistré, et ce qui sort de ton PC</b></summary>
 
 **Données enregistrées** (dans `data/tramevia-dock.db`) : tes réglages, tes préréglages, les identifiants chiffrés de tes apps, les clés des docks et de l’overlay, et pour chaque compte connecté son pseudo, son avatar, les permissions accordées et ses jetons chiffrés. S’y ajoutent les identifiants des personnes qui ont déjà écrit dans ton chat (pour repérer les premiers messages), ceux des bannissements YouTube faits depuis Tramevia Dock (pour pouvoir les lever), un compteur de quota YouTube et le numéro de ton salon de chat Kick. Les messages du chat et les événements restent en mémoire uniquement (les 400 derniers) et ne sont pas écrits sur le disque.
 
-**Connexions sortantes** : les plateformes elles-mêmes (Twitch, Kick, Google/YouTube, TikTok), le socket Pusher qu’utilise kick.com (chat Kick en mode non officiel), les services d’émotes 7TV, BTTV et FFZ (avec l’identifiant de ta chaîne), le serveur de signature Euler Stream pour TikTok, et GitHub une fois par jour pour vérifier s’il existe une nouvelle version (désactivable dans **Paramètres → À propos**, ou avec `UPDATE_CHECK=0`).
+**Connexions sortantes** : les plateformes elles-mêmes (Twitch, Kick, Google/YouTube, TikTok), le socket Pusher qu’utilise kick.com (chat Kick en mode non officiel), les services d’émotes 7TV, BTTV et FFZ (avec l’identifiant de ta chaîne), le serveur de signature Euler Stream pour TikTok, et GitHub une fois par jour pour vérifier s’il existe une nouvelle version (désactivable dans **Paramètres → À propos**, ou avec `UPDATE_CHECK=0`). À part les plateformes que tu connectes, aucun de ces services ne reçoit tes jetons ni tes mots de passe.
 
 </details>
 
