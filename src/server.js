@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Tramevia Dock — entry point. Wires config, storage, auth, realtime hub, platform adapters and routes.
 import { createServer } from 'node:http';
-import { mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { spawn } from 'node:child_process';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { backup } from 'node:sqlite';
 import { config, checkConfig } from './config.js';
 import { openDb, settings as settingsStore } from './db.js';
 import { initKeys, randomId, seal, unseal, pkcePair } from './crypto.js';
@@ -14,6 +15,7 @@ import { createHub } from './hub.js';
 import { createAccounts } from './accounts.js';
 import { request, ApiError } from './net.js';
 import { adapters, platformMeta, PLATFORMS } from './platforms/index.js';
+import * as upd from './update.js';
 
 /** Feature modules load independently (a broken one is logged, not fatal). */
 async function load(path, fallback) {
@@ -42,9 +44,17 @@ if (problems.length) {
   process.exit(1);
 }
 
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
+if (upd.interrupted(ROOT)) { // an update stopped halfway (window closed, power cut): put the previous version back first
+  upd.restore(ROOT);
+  console.error('\n[FR] Mise à jour interrompue : version précédente restaurée. / [EN] Update interrupted: previous version restored.\n');
+  process.exit(upd.RESTART); // the launcher starts the restored version
+}
+
 mkdirSync(config.dataDir, { recursive: true });
 initKeys(config.tokenKey, config.dataDir);
-const db = openDb(join(config.dataDir, 'tramevia-dock.db'));
+const DB_FILE = resolve(config.dataDir, 'tramevia-dock.db');
+const db = (() => { try { return openDb(DB_FILE); } catch (err) { console.error(`\n${err.message}\n`); process.exit(1); } })();
 const settings = settingsStore(db);
 if (!settings.get('seenSince')) settings.set('seenSince', Date.now());
 const hub = createHub();
@@ -129,11 +139,13 @@ router.put('/api/settings', ({ body }) => {
   if (!body || typeof body !== 'object' || Array.isArray(body)) throw new HttpError(400, 'Invalid settings');
   if ('lang' in body && body.lang !== null && !['fr', 'en'].includes(body.lang)) throw new HttpError(400, 'lang must be fr or en');
   if ('theme' in body && body.theme !== null && !['dark', 'light', 'auto'].includes(body.theme)) throw new HttpError(400, 'theme must be dark, light or auto');
+  for (const k of ['updateCheck', 'updateAuto']) if (k in body && body[k] !== null && typeof body[k] !== 'boolean') throw new HttpError(400, `${k} must be true, false or null`);
   const merged = { ...settings.get('ui', {}), ...body };
   for (const [k, v] of Object.entries(merged)) if (v === null) delete merged[k];
   if (JSON.stringify(merged).length > 32_000) throw new HttpError(413, 'Settings too large');
   settings.set('ui', merged);
   hub.publish('settings', merged);
+  if ('updateCheck' in body || 'updateAuto' in body) publishUpdate();
   return merged;
 });
 
@@ -239,6 +251,98 @@ router.delete('/api/accounts/:id', async ({ params }) => {
   return { ok: true };
 });
 
+// --- Updates (SPEC.md §11) ----------------------------------------------------
+// Every install type checks GitHub once a day and shows a notice; only zip installs (start.bat / start.sh) install.
+const SNAPSHOT = resolve(config.dataDir, 'pre-update.db');
+const justUpdated = existsSync(join(ROOT, '.update', 'unconfirmed')); // first start of a freshly installed version
+const lastFailure = upd.failed(ROOT); // a rolled-back version; stale once this install is already past it (zip extracted over)
+const update = { type: upd.installType(ROOT), latest: null, checkedAt: 0, state: 'idle', error: null,
+  failed: lastFailure && upd.newer(lastFailure.version, config.version) ? lastFailure : null };
+const checksOn = () => process.env.UPDATE_CHECK !== '0' && settings.get('ui', {}).updateCheck !== false; // default ON
+const autoOn = () => update.type === 'zip' && settings.get('ui', {}).updateAuto === true;                   // default OFF
+/** 'live' | 'off' | 'unknown' over enabled accounts ('error' ones may be live while their chat reconnects). */
+function liveState() {
+  const v = ctx.accounts.list().filter(a => a.status !== 'disabled').map(a => ctx.accounts.stats(a.id)?.live);
+  return v.includes(true) ? 'live' : v.every(x => x === false) ? 'off' : 'unknown';
+}
+const updateStatus = () => ({
+  type: update.type, current: config.version,
+  latest: update.latest && { version: update.latest.version, notesUrl: update.latest.notesUrl },
+  checkedAt: update.checkedAt, state: update.state, error: update.error, failed: update.failed,
+  live: liveState(), checks: checksOn(), auto: autoOn(), image: 'ghcr.io/tramevia/tramevia-dock',
+});
+const publishUpdate = () => hub.publish('update', updateStatus());
+let lastLive = null;
+hub.on(t => { if ((t === 'stats' || t === 'accounts') && liveState() !== lastLive) { lastLive = liveState(); publishUpdate(); } });
+
+let checking = null, lastCheck = 0, checkFailed = false;
+/** GitHub releases/latest (UPDATE_CHECK=0 = no network call at all). One request at a time. */
+function checkUpdate() {
+  if (process.env.UPDATE_CHECK === '0') return Promise.resolve();
+  lastCheck = Date.now();
+  return checking ??= upd.checkLatest(config.version).then(latest => {
+    checkFailed = false;
+    Object.assign(update, { latest, checkedAt: Date.now() });
+    if (update.state === 'error') Object.assign(update, { state: 'idle', error: null }); // auto install retries once per check
+  }, err => { checkFailed = true; log.warn(`[update] check failed: ${err.message}`); }) // keeps the last known result
+    .finally(() => { checking = null; publishUpdate(); autoInstall(); });
+}
+
+function autoInstall() {
+  if (!autoOn() || config.demo || update.state !== 'idle' || !update.latest || update.latest.version === update.failed?.version || liveState() !== 'off') return;
+  log.info(`[update] automatic install of ${update.latest.version}`);
+  install();
+}
+
+const updateError = err => (err.update === 'download' ? ctx.t(`téléchargement impossible (HTTP ${err.status})`, `download failed (HTTP ${err.status})`)
+  : err.update === 'corrupt' ? ctx.t('téléchargement corrompu (taille ou SHA-256 différents)', 'download corrupted (size or SHA-256 mismatch)')
+  : err.update === 'bundle' ? ctx.t('contenu de la mise à jour inattendu', 'unexpected update content')
+  : err.update === 'node' ? ctx.t(`installe d’abord Node.js ${err.need}`, `install Node.js ${err.need} first`)
+  : err.name === 'TimeoutError' || err.message === 'fetch failed' ? ctx.t('GitHub injoignable', 'GitHub unreachable')
+  : err.message);
+
+/** Stage + verify while running, snapshot the DB, then stop, swap the files and exit 75 (the launcher restarts us). */
+async function install() {
+  const target = update.latest;
+  Object.assign(update, { state: 'installing', error: null });
+  publishUpdate();
+  try {
+    await upd.stage(ROOT, target);
+    await backup(db, SNAPSHOT);
+  } catch (err) {
+    log.warn(`[update] ${target.version} not installed: ${err.message}`);
+    Object.assign(update, { state: 'error', error: updateError(err) });
+    return publishUpdate();
+  }
+  log.info(`[update] installing ${target.version}, restarting…`);
+  shutdown(() => {
+    try { upd.swap(ROOT, { from: config.version, to: target.version, db: DB_FILE, snapshot: SNAPSHOT }); } catch (err) {
+      log.error(`[update] swap failed, previous version restored: ${err.message}`); // restore() already ran: exit 75 restarts the old version
+    }
+    process.exit(upd.RESTART);
+  });
+}
+
+router.get('/api/update', () => updateStatus());
+router.post('/api/update/check', async () => { // manual "Check now": at most one GitHub request per minute
+  await (Date.now() - lastCheck >= 60_000 ? checkUpdate() : checking);
+  if (checkFailed) throw new HttpError(502, ctx.t('GitHub ne répond pas pour le moment : réessaie plus tard.', 'GitHub is not answering right now: try again later.'), 'check_failed');
+  return updateStatus();
+});
+router.post('/api/update/install', ({ body }) => {
+  const no = (code, fr, en) => { throw new HttpError(409, ctx.t(fr, en), code); };
+  if (config.demo) no('demo', 'Les mises à jour sont désactivées en mode démo.', 'Updates are disabled in demo mode.');
+  if (update.type !== 'zip') no('not_zip', 'Cette installation ne peut pas se mettre à jour toute seule : suis les instructions affichées.', 'This install can’t update itself: follow the instructions shown.');
+  if (update.state === 'installing') no('busy', 'Une mise à jour est déjà en cours.', 'An update is already running.');
+  if (!update.latest) no('no_update', 'Aucune mise à jour disponible.', 'No update available.');
+  if (body.version !== update.latest.version) no('version_mismatch', `La version disponible est ${update.latest.version}.`, `The available version is ${update.latest.version}.`);
+  const live = liveState();
+  if (live === 'live') no('live', 'Un compte est en live : installe la mise à jour après ton live.', 'An account is live: install the update after your live.');
+  if (live === 'unknown' && body.force !== true) no('live_unknown', 'Statut du live inconnu : confirme pour installer quand même.', 'Live status unknown: confirm to install anyway.');
+  install();
+  return { ok: true };
+});
+
 // --- Security ---------------------------------------------------------------
 router.get('/api/keys', () => auth.keys());
 router.post('/api/security/rotate', ({ body }) => { auth.rotate(body.what); hub.revalidate(); return auth.keys(); });
@@ -311,7 +415,7 @@ server.on('upgrade', (req, socket, head) => {
       return socket.destroy();
     }
     hub.upgrade(req, socket, head, access, level => ({
-      access: level,
+      access: level, version: config.version, // pages reload when it changes (update installed)
       accounts: level === 'admin' ? ctx.accounts.list().map(ctx.accounts.describe)
         : ctx.accounts.list().map(a => ({ id: a.id, platform: a.platform, login: a.login, displayName: a.displayName, avatar: a.avatar, stats: ctx.accounts.stats(a.id) })),
       ui: settings.get('ui', {}),
@@ -325,7 +429,7 @@ server.on('error', err => {
   console.error(err.code === 'EADDRINUSE'
     ? `\nLe port ${config.port} est déjà utilisé : Tramevia Dock tourne probablement déjà (${config.publicUrl}).\nPort ${config.port} is already in use: Tramevia Dock is probably already running (${config.publicUrl}).\n`
     : err.message);
-  process.exit(1);
+  process.exit(err.code === 'EADDRINUSE' ? 98 : 1); // 98: another instance runs, the launchers must not roll back
 });
 // Last-resort guard: a stray promise rejection in a platform adapter must not kill the dock (Node exits by default).
 process.on('unhandledRejection', err => log.error('Unhandled rejection (kept running):', err?.stack || err));
@@ -336,15 +440,38 @@ server.listen(config.port, config.host, () => {
   if (!config.adminPassword) log.info('No ADMIN_PASSWORD: dashboard open to this computer only (loopback).');
   if (config.demo) adapters.get('demo').start(ctx);
   ctx.accounts.startAll();
-  if (config.openBrowser && process.stdout.isTTY && !process.env.NO_OPEN) openSystemBrowser(dashboard);
+  if (config.openBrowser && process.stdout.isTTY && !process.env.NO_OPEN && !justUpdated) openSystemBrowser(dashboard); // no new tab per update
+  if (justUpdated) { // survived 30 s: keep this version (a crash before that makes the launcher roll back)
+    log.info(`[update] now running ${config.version}`);
+    setTimeout(() => { upd.confirm(ROOT); update.failed = null; publishUpdate(); log.info(`[update] ${config.version} confirmed`); },
+      Number(process.env.UPDATE_CONFIRM_MS) || 30_000).unref(); // UPDATE_CONFIRM_MS: tests only
+  }
+  setTimeout(() => {
+    const tick = () => { if (checksOn()) checkUpdate(); };
+    tick();
+    setInterval(tick, 86_400_000).unref();
+  }, 60_000).unref();
+  setInterval(autoInstall, 600_000).unref(); // local only: installs a pending update once every account is off-live
 });
 
-function shutdown() {
+let stopping = false;
+/** Stop accounts, sockets and the server; `then` runs once, after db.close(), when the server has closed or after 3 s. */
+function shutdown(then = () => process.exit(0)) {
+  if (stopping) return;
+  stopping = true;
   log.info('Shutting down…');
   for (const a of ctx.accounts.list()) ctx.accounts.stop(a.id);
   hub.close();
-  server.close(() => { db.close(); process.exit(0); });
-  setTimeout(() => process.exit(0), 3000).unref();
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    try { db.close(); } catch { /* already closed */ }
+    then();
+  };
+  server.close(finish);
+  server.closeAllConnections(); // browsers keep pre-opened sockets that would hold close() until the timeout
+  setTimeout(finish, 3000); // NOT unref'd: an update swaps files in `then`; the process must not exit 0 before that
 }
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+process.on('SIGTERM', () => shutdown());
+process.on('SIGINT', () => shutdown());

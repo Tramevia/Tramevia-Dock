@@ -75,9 +75,9 @@ No coding needed. Follow the pictures, one step at a time. ☕
 ### 1️⃣ Install Tramevia Dock
 
 1. **Install Node.js.** It is the free engine that runs Tramevia Dock. Go to [nodejs.org](https://nodejs.org), download the **LTS** version (24.15 or newer) and install it. Keep the default options.
-2. **Download Tramevia Dock.** On [its GitHub page](https://github.com/Tramevia/Tramevia-Dock), click the green **Code** button → **Download ZIP** (or take the ZIP from the Releases page, when there is one).
+2. **Download Tramevia Dock.** On the [Releases page](https://github.com/Tramevia/Tramevia-Dock/releases/latest), download the ZIP of the latest version (`tramevia-dock-X.Y.Z.zip`, under **Assets**).
 3. **Extract the ZIP.** Right-click it → *Extract All*, and pick a folder you will keep, for example `Documents\TrameviaDock`.
-4. **Double-click `start.bat`.** If Windows shows a security warning (the file came from the internet), choose to run it. A black window opens. The first time, it installs what it needs (about a minute).
+4. **Double-click `start.bat`.** If Windows shows a security warning (the file came from the internet), choose to run it. A black window opens: that's Tramevia Dock running.
 5. **Your browser opens at http://localhost:8787.** That's your dashboard. 🎉
 
 On macOS, double-click `start.command`. On Linux, run `./start.sh`. Details in [Other ways to install](#other-ways-to-install).
@@ -244,14 +244,14 @@ All the details, platform by platform: [Connect your platforms](docs/en/platform
 <br>
 
 1. **Install Node.js.** Go to [nodejs.org](https://nodejs.org), download the **LTS** installer (24.15 or newer) and run it. Click *Next* through the screens and keep the default options.
-2. **Download Tramevia Dock** as a ZIP from [its GitHub page](https://github.com/Tramevia/Tramevia-Dock) (green **Code** button → **Download ZIP**).
+2. **Download Tramevia Dock:** the ZIP of the latest version on the [Releases page](https://github.com/Tramevia/Tramevia-Dock/releases/latest) (`tramevia-dock-X.Y.Z.zip`, under **Assets**).
 3. **Extract the ZIP** (right-click → *Extract All*) into a folder you will keep, for example `Documents\TrameviaDock`. Don't run it from inside the ZIP.
 4. **Double-click `start.bat`.** If Windows shows a security warning because the file came from the internet, choose to run it.
-5. A black window opens. The first time, it installs the dependencies (about a minute). Then your browser opens at **http://localhost:8787**.
+5. A black window opens, then your browser opens at **http://localhost:8787**.
 
 If Node.js is missing, `start.bat` tells you and opens nodejs.org. If it's too old, `start.bat` asks you to update it. Then double-click `start.bat` again.
 
-**Updating:** download the new ZIP, extract it to a new folder, and copy your old `data` folder (and your `.env` file, if you have one) into it. Full guide: [Installation](docs/en/install.md).
+**Updating:** Tramevia Dock tells you when a new version is out and installs it in one click: see [Updates](#updates). Full guide: [Installation](docs/en/install.md).
 
 </details>
 
@@ -270,7 +270,7 @@ cd Tramevia-Dock
 ./start.sh
 ```
 
-You can also download the ZIP, extract it and run `./start.sh` in that folder. Keep the terminal window open while you stream. Full guide: [Installation](docs/en/install.md).
+You can also download the ZIP from the [Releases page](https://github.com/Tramevia/Tramevia-Dock/releases/latest), extract it and run `./start.sh` in that folder: that way, Tramevia Dock can update itself in one click. Keep the terminal window open while you stream. Full guide: [Installation](docs/en/install.md).
 
 </details>
 
@@ -279,7 +279,9 @@ You can also download the ZIP, extract it and run `./start.sh` in that folder. K
 
 <br>
 
-1. In the Tramevia Dock folder, create a file named `.env` with at least a password (12 characters or more):
+No need for the code: the ready-made image `ghcr.io/tramevia/tramevia-dock` is published with every version.
+
+1. In a new folder, put [`compose.yaml`](compose.yaml) and a file named `.env` with at least a password (12 characters or more):
 
    ```env
    ADMIN_PASSWORD=choose-a-long-password
@@ -293,7 +295,7 @@ You can also download the ZIP, extract it and run `./start.sh` in that folder. K
 
 3. Open http://localhost:8787 and sign in with your password.
 
-Your data is kept in a Docker volume named `tramevia-data`. Full guide: [Cloud and Docker](docs/en/cloud.md).
+Your data is kept in a Docker volume named `tramevia-data`. To update: `docker compose pull && docker compose up -d` (or turn on the optional nightly auto-update). Full guide: [Cloud and Docker](docs/en/cloud.md).
 
 </details>
 
@@ -304,12 +306,29 @@ Your data is kept in a Docker volume named `tramevia-data`. Full guide: [Cloud a
 
 Running Tramevia Dock online lets you open it from anywhere, keeps it running when your PC is off, and unlocks Kick's official webhooks.
 
-- On [Railway](https://railway.com) (a paid service): deploy from your own copy of the repository, attach a volume at **`/data`**, set **`ADMIN_PASSWORD`**, and generate a public domain.
+- On [Railway](https://railway.com) (Hobby plan, paid): deploy the Docker image `ghcr.io/tramevia/tramevia-dock`, attach a volume at **`/data`**, set **`ADMIN_PASSWORD`** and **`RAILWAY_RUN_UID=0`**, generate a public domain, and turn on Railway's **Auto Updates**: new versions then install by themselves at night. A one-click **Deploy on Railway** button arrives with the first public release.
 - Any host that runs a Docker image with a persistent volume at `/data` and HTTPS in front works too.
 
 Online, `ADMIN_PASSWORD` (12 characters or more) is mandatory, and the redirect addresses you register on each platform change. Full guide: [Cloud and Docker](docs/en/cloud.md).
 
+<!-- RAILWAY_BUTTON: replace this comment with the lines below once the Railway template exists (RELEASING.md, one-time setup step 7), and remove the "button arrives" sentence above.
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/<CODE>?utm_medium=integration&utm_source=button&utm_campaign=tramevia-dock)
+Needs a Railway Hobby plan. You only fill in a password; updates install automatically at night (UTC). Change the window in Settings → Source → Auto Updates.
+-->
+
 </details>
+
+<a id="updates"></a>
+
+## 🔄 Updates
+
+Tramevia Dock checks once a day whether a new version is out, and tells you on the dashboard. Your accounts, settings and OBS docks stay exactly as they are.
+
+- 💻 **ZIP install:** click **Install now** in the notice. Tramevia Dock restarts by itself in a few seconds, never while you're live, and goes back to the previous version if the new one doesn't start. Prefer hands-free? Turn on automatic install in **Settings → About**.
+- 🐳 **Docker:** run `docker compose pull && docker compose up -d`, or switch on the optional nightly auto-update.
+- ☁️ **Railway:** turn on Railway's **Auto Updates** once, and new versions install by themselves at night.
+
+Installed with `git clone`? Run `git pull` and start it again. All the details: [Updating](docs/en/install.md#updating).
 
 <a id="faq"></a>
 
@@ -418,7 +437,7 @@ More answers and fixes for common errors: [FAQ and troubleshooting](docs/en/faq.
 
 **Stored** in `data/tramevia-dock.db` on your machine: your platform app credentials (encrypted), connected accounts (name, avatar, granted permissions, encrypted tokens), presets and interface settings, the dock and overlay keys, the ids of chatters already seen (for the "first message" highlight), the ids of YouTube bans made from the app (so you can unban), the YouTube quota counter and your Kick chat room id. Chat messages and events are kept in memory only (the last 400) and are not written to disk.
 
-**Other services contacted:** the platforms themselves, Kick's Pusher chat socket (for Kick chat in unofficial mode), the 7TV, BetterTTV and FrankerFaceZ emote APIs (with your channel id), and for TikTok the Euler Stream signing server used by tiktok-live-connector.
+**Other services contacted:** the platforms themselves, Kick's Pusher chat socket (for Kick chat in unofficial mode), the 7TV, BetterTTV and FrankerFaceZ emote APIs (with your channel id), for TikTok the Euler Stream signing server used by tiktok-live-connector, and GitHub once a day to check for a new version (turn it off in **Settings → About**, or with `UPDATE_CHECK=0`).
 
 </details>
 

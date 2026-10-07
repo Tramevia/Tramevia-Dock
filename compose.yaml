@@ -1,8 +1,11 @@
-# docker compose up -d   →  http://localhost:8787
+# Tramevia Dock with Docker. You only need this file and a .env file next to it containing ADMIN_PASSWORD=...
+# Start:   docker compose up -d                          -> http://localhost:8787
+# Update:  docker compose pull && docker compose up -d   (your data stays in the tramevia-data volume)
+# Automatic updates (optional, nightly 04:00 UTC): add  COMPOSE_PROFILES=autoupdate  to .env, then docker compose up -d
+# Build it yourself instead: docker build -t tramevia-dock .  then use  image: tramevia-dock
 services:
   tramevia-dock:
-    build: .
-    image: tramevia-dock
+    image: ghcr.io/tramevia/tramevia-dock:1   # every 1.x release, never a breaking 2.0. Pin :1.2.3 to freeze.
     restart: unless-stopped
     ports:
       - "127.0.0.1:8787:8787"   # remove "127.0.0.1:" to expose it on your network
@@ -13,7 +16,21 @@ services:
       PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8787}
       # Always required in Docker (the container cannot know the port is only published on loopback).
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD (12+ characters) in .env}
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
     volumes:
       - tramevia-data:/data
+
+  watchtower:            # opt-in only. It gets the Docker socket, which means root on this machine.
+    image: nickfedor/watchtower     # maintained fork; containrrr/watchtower is archived (2025-12)
+    profiles: [autoupdate]
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_LABEL_ENABLE: "true"      # only touches containers carrying the label above
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_SCHEDULE: "0 0 4 * * *"   # 6-field cron, container time = UTC
+
 volumes:
   tramevia-data:

@@ -220,3 +220,11 @@
 .set-row .segmented { flex-wrap: wrap; }
 .about-links { display: flex; flex-direction: column; gap: 6px; }
 .about-links a { display: inline-flex; align-items: center; gap: 6px; width: fit-content; }
+
+/* ---------- 6. Updates (About card + home banner) ---------- */
+.about-head { flex: 1 1 180px; min-width: 0; }
+.upd-toggle { cursor: pointer; }
+.upd-toggle .set-row-text { display: flex; flex-direction: column; gap: 2px; }
+.upd-toggle:has(input:disabled) { opacity: 0.55; cursor: not-allowed; }
+.upd-installing .spinner { color: var(--accent); margin-top: 2px; }
+.banner .copy-field { background: var(--surface); }

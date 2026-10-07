@@ -123,6 +123,7 @@ addI18n({
     'common.demo': 'Mode démo : données fictives', 'common.unofficial': 'Non officiel',
     'common.openDashboard': 'Ouvrir le tableau de bord', 'common.noAccounts': 'Aucun compte connecté pour l’instant.',
     'common.connectAccounts': 'Connecter mes comptes', 'common.lang': 'Langue', 'common.theme': 'Thème',
+    'common.updated': 'Mis à jour vers {v}',
     'err.network': 'Serveur injoignable. Vérifie que Tramevia Dock est lancé.', 'err.unauthorized': 'Session expirée : reconnecte-toi.',
     'err.forbidden': 'Action non autorisée avec cette clé (lecture seule).',
   },
@@ -138,6 +139,7 @@ addI18n({
     'common.demo': 'Demo mode: fake data', 'common.unofficial': 'Unofficial',
     'common.openDashboard': 'Open dashboard', 'common.noAccounts': 'No account connected yet.',
     'common.connectAccounts': 'Connect my accounts', 'common.lang': 'Language', 'common.theme': 'Theme',
+    'common.updated': 'Updated to {v}',
     'err.network': 'Server unreachable. Make sure Tramevia Dock is running.', 'err.unauthorized': 'Session expired: sign in again.',
     'err.forbidden': 'Not allowed with this key (read-only).',
   },
@@ -176,13 +178,29 @@ export function connectHub(onFrame, onRevoked) {
   let ws = null;
   let attempt = 0;
   let closed = false;
+  let version = null; // server version of the first hello: another one later means an update was installed
   const open = () => {
     const url = new URL('/ws', location.href);
     url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     if (accessKey) url.searchParams.set('key', accessKey);
     ws = new WebSocket(url);
     ws.onopen = () => { attempt = 0; setConnected(true); };
-    ws.onmessage = e => { try { onFrame(JSON.parse(e.data)); } catch (err) { console.error(err); } };
+    ws.onmessage = e => {
+      try {
+        const frame = JSON.parse(e.data);
+        if (frame.t === 'hello' && frame.d?.version) {
+          // New server version (update installed): reload so every page, OBS docks and overlays included, runs the new JS.
+          if (version && frame.d.version !== version) {
+            try { sessionStorage.setItem('od:updated', frame.d.version); } catch { /* storage blocked: no toast */ }
+            closed = true;
+            location.reload();
+            return;
+          }
+          version = frame.d.version;
+        }
+        onFrame(frame);
+      } catch (err) { console.error(err); }
+    };
     ws.onclose = e => {
       setConnected(false);
       if (closed) return;
@@ -439,6 +457,9 @@ export async function boot({ page, title, header: withHeader = true, admin = tru
   if (state.demo && withHeader) document.body.insertBefore(h('div.banner.info.small', { style: { 'border-radius': '0', 'justify-content': 'center' }, dataset: { i18n: 'common.demo' } }, t('common.demo')), root);
   await onReady?.(state, root);
   applyI18n();
+  let updated = null; // set by connectHub just before the reload that follows an update
+  try { updated = sessionStorage.getItem('od:updated'); sessionStorage.removeItem('od:updated'); } catch { /* storage blocked */ }
+  if (updated && withHeader) toast(t('common.updated', { v: updated }), 'ok', 6000); // never on an overlay (it is on stream)
   connectHub(frame => {
     if (frame.t === 'settings' || frame.t === 'hello') {
       const ui = frame.t === 'settings' ? frame.d : frame.d.ui;

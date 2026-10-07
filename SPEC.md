@@ -40,6 +40,7 @@ src/chat/emotes.js         tokenizer + 7TV/BTTV/FFZ       + test/emotes.test.js
 src/chat/routes.js         chat HTTP API                  + test/chat-routes.test.js
 src/community.js           community HTTP API             + test/community.test.js
 src/stream-info.js         stream info + presets          + test/stream-info.test.js
+src/update.js              update check + self-update (node: built-ins only) + test/update.test.js
 public/index.html + assets/index.{js,css}                 dashboard
 public/chat.html + assets/chat.{js,css}, assets/chat-render.js, overlay.html + assets/overlay.{js,css}   chat dock + overlay
 public/community.html + assets/community.{js,css}         community dock
@@ -184,12 +185,16 @@ A limit applies only when the adapter declares it in `infoFields`; an undeclared
 
 Core (implemented in `src/server.js`): `GET /healthz`, `GET /api/session`, `POST /api/login|logout`, `GET /api/state`
 (`{access, version, demo, publicUrl, platforms: meta[], accounts: describe[] (admin) | {id, platform, login, displayName, avatar, stats}[] (read), ui}`), `GET|PUT /api/settings` (UI
-settings object, ≤32 KB, broadcast as topic `settings`), `GET /api/apps`, `PUT|DELETE /api/apps/:platform`,
+settings object, ≤32 KB, broadcast as topic `settings`; `updateCheck` / `updateAuto` must be booleans or `null`), `GET /api/apps`, `PUT|DELETE /api/apps/:platform`,
 `POST /api/apps/:platform/test`, `POST /api/accounts/:platform/connect {reconnect?, openOnServer?} → {url, opened}`,
 `GET /auth/:platform/callback`, `POST /api/accounts/username/:platform {username}`,
 `PATCH /api/accounts/:id {options}`, `POST /api/accounts/:id/restart`, `DELETE /api/accounts/:id`,
 `GET /api/keys → {dock, overlay}`, `POST /api/security/rotate {what: dock|overlay|sessions}` (open WebSockets whose
 credential lost access are closed with code 4001). Changing `ADMIN_PASSWORD` signs out every session and regenerates the dock key at the next start.
+Updates (admin, §11): `GET /api/update` → `UpdateStatus`, `POST /api/update/check` → `UpdateStatus` (GitHub asked at most once
+per 60 s, otherwise the cached status), `POST /api/update/install {version, force?}` → `{ok: true}` (the install continues in the
+background) or `409 {code}`: `demo`, `not_zip`, `busy`, `no_update`, `version_mismatch` (body version ≠ `latest.version`),
+`live` (an account is live), `live_unknown` (live state unknown and `force !== true`).
 
 Handlers: `router.get(path, async ({req, res, url, params, query, body, access}) => result, {access: 'admin'|'read'|'public', raw, csrf})`.
 Return a JSON-serialisable value; throw `HttpError(status, message, code)` (from `src/http.js`) for client errors.
@@ -227,11 +232,12 @@ Errors: `{error, code}`; an `ApiError` thrown by a handler becomes `502 {error, 
 
 ## 8. Realtime (`/ws`)
 
-Frames `{t, d}`. First frame `hello {access, accounts, ui, backlog: [{t, d}]}` (backlog = last 400 chat/event).
+Frames `{t, d}`. First frame `hello {access, version, accounts, ui, backlog: [{t, d}]}` (backlog = last 400 chat/event). `version` is sent
+to every access level: `connectHub` reloads the page when it differs from the first one seen (an update was installed).
 Close code `4001` = credentials rotated/revoked: pages with a header reload (login screen), overlays stop.
 Topics: `chat`, `chat:delete`, `event`, `stats`, `feature` (read-only clients get only these; the last featured
 message is replayed after `hello`) and admin-only `accounts` (full list), `settings` (merged UI settings object;
-`PUT /api/settings` is a shallow merge, `null` deletes a key), `presets` (`{presets}` after any preset change). Pages act through HTTP, never by sending WS frames.
+`PUT /api/settings` is a shallow merge, `null` deletes a key), `presets` (`{presets}` after any preset change), `update` (`UpdateStatus`, §11, on every change). Pages act through HTTP, never by sending WS frames.
 
 ## 9. Front-end conventions
 
@@ -251,3 +257,33 @@ message is replayed after `hello`) and admin-only `accounts` (full list), `setti
 `npm test` (= `node --test "test/*.test.js"`) — `node:test` + `node:assert/strict`, no framework. Mock network with
 `globalThis.fetch = async (url, init) => new Response(JSON.stringify(body), {status, headers: {'content-type': 'application/json'}})`
 and restore it afterwards. Build a minimal fake `ctx` per test (see `test/helpers.js`). Never hit real platforms in tests.
+
+## 11. Updates (`src/update.js`)
+
+`UpdateStatus` = `{type: 'zip'|'git'|'docker'|'railway'|'manual', current, latest: {version, notesUrl}|null, checkedAt /* ms, 0 = never */,
+state: 'idle'|'installing'|'error', error: string|null, failed: {version, reason}|null, live: 'live'|'off'|'unknown', checks: bool,
+auto: bool, image: 'ghcr.io/tramevia/tramevia-dock'}`.
+
+- **Install type** (first match): `railway` (`RAILWAY_ENVIRONMENT`/`RAILWAY_PUBLIC_DOMAIN`), `docker` (`CONTAINER`), `git` (`.git` in the
+  app folder), `manual` (not started by start.bat/start.sh, i.e. `TRAMEVIA_LAUNCHER !== '1'`, or folder not writable), else `zip`.
+  Only `zip` installs itself; the others only show what to run.
+- **Check:** `GET https://api.github.com/repos/Tramevia/Tramevia-Dock/releases/latest`, 60 s after start then every 24 h while
+  `checks` (`UPDATE_CHECK !== '0'` and `ui.updateCheck !== false`). `UPDATE_CHECK=0` = no update network call at all (manual check
+  included). 404 = no update; other non-2xx (rate limit, outage) = check failed, last result kept, manual check answers
+  502 `check_failed`. Ignored: drafts, pre-releases, tags other than `vX.Y.Z`, versions not newer, no asset named exactly
+  `tramevia-dock-X.Y.Z.tar.gz` with a `sha256:` digest and a `https://github.com/Tramevia/Tramevia-Dock/releases/download/vX.Y.Z/` URL.
+- **Live state:** over accounts not `disabled`: any `stats.live === true` → `live`; all `false` (or none) → `off`; else `unknown`.
+- **Install (zip):** download (size + SHA-256 = GitHub `digest`), extract with the system tar into `.update/staging`, check
+  version / `src/server.js` / `node_modules` / `engines.node`, copy the DB to `<DATA_DIR>/pre-update.db` (node:sqlite `backup`), stop the
+  server, copy `src/update.js` to `.update/rollback.mjs`, rename each top-level entry (old one → `.update/rollback/`; `data`, `.env`,
+  `.git`, `.update` never touched), mark `.update/unconfirmed` `done` (only then does it carry the DB snapshot), exit **75**.
+  Errors before the swap → `state: 'error'`, nothing changed. A swap error → restore (or at least `failed.json`), exit 75.
+  Marker present but not `done` at startup (swap cut halfway) → restore before opening the DB, exit 75.
+- **Automatic install** (`auto` = zip and `ui.updateAuto === true`, default off): after each check and every 10 min, only when
+  `live === 'off'`, not in demo mode, and `latest.version !== failed.version`.
+- **Launchers** (frozen contract, see the comments in start.bat / start.sh): exit 75 → start again; another non-zero exit except **98**
+  (port in use: another instance runs) while `.update/unconfirmed` exists → `node .update/rollback.mjs rollback` (restores the files and the DB snapshot, writes
+  `.update/failed.json`) → start again. The new version deletes `.update/unconfirmed` 30 s after listening and does not open a
+  browser tab on that first start. `src/update.js` must import only `node:` built-ins (its copy `.update/rollback.mjs` runs alone).
+- **Schema guard:** `openDb` refuses to open data whose `user_version` is higher than `MIGRATIONS.length` (newer version's data).
+- **After an update** every page reloads by itself (`hello.version` changed) and pages with a header show "Updated to X".

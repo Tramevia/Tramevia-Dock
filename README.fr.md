@@ -72,9 +72,9 @@ Cinq étapes, dans l’ordre. Pas besoin de savoir coder : tu cliques, tu copie
 ### 1️⃣ Installe Tramevia Dock
 
 1. **Installe Node.js.** C’est le moteur qui fait tourner Tramevia Dock. Sur [nodejs.org](https://nodejs.org), télécharge la version **LTS** (24.15 ou plus récente), lance l’installateur et garde les options par défaut.
-2. **Télécharge Tramevia Dock.** Sur la [page GitHub du projet](https://github.com/Tramevia/Tramevia-Dock), clique sur le bouton vert **Code**, puis sur **Download ZIP**. Quand une version est publiée sur la page [Releases](https://github.com/Tramevia/Tramevia-Dock/releases), tu peux aussi prendre son ZIP.
+2. **Télécharge Tramevia Dock.** Sur la [page des versions](https://github.com/Tramevia/Tramevia-Dock/releases/latest), télécharge le ZIP de la dernière version (`tramevia-dock-X.Y.Z.zip`, dans **Assets**).
 3. **Extrais le ZIP** : clic droit sur le fichier → « Extraire tout… ». Choisis un dossier qui ne bougera pas, par exemple `Documents\Tramevia Dock`.
-4. **Double-clique sur `start.bat`.** Si Windows te demande une confirmation, accepte. Une fenêtre noire s’ouvre et, la première fois, installe ce dont Tramevia Dock a besoin : compte une minute environ, avec internet. Sur macOS, c’est `start.command` ; sur Linux, `./start.sh` dans un terminal (voir [Autres façons d’installer](#autres-installations)).
+4. **Double-clique sur `start.bat`.** Si Windows te demande une confirmation, accepte. Une fenêtre noire s’ouvre : c’est Tramevia Dock qui tourne. Sur macOS, c’est `start.command` ; sur Linux, `./start.sh` dans un terminal (voir [Autres façons d’installer](#autres-installations)).
 5. **Ton navigateur s’ouvre** sur <http://localhost:8787>. C’est ton tableau de bord !
 
 **Laisse la fenêtre noire (le Terminal sur macOS) ouverte pendant que tu streames :** c’est elle qui fait tourner Tramevia Dock. Si tu la fermes, tes docks se vident.
@@ -279,14 +279,14 @@ Le détail plateforme par plateforme est dans le [guide des plateformes](docs/fr
 <summary><b>Windows, pas à pas</b></summary>
 
 1. **Installe Node.js.** Sur [nodejs.org](https://nodejs.org), télécharge l’installateur Windows de la version **LTS** (fichier `.msi`). Lance-le et clique sur « Next » jusqu’au bout.
-2. **Télécharge Tramevia Dock** : bouton vert **Code → Download ZIP** sur la page du dépôt (ou le ZIP de la dernière version sur la page [Releases](https://github.com/Tramevia/Tramevia-Dock/releases), quand il y en a une).
+2. **Télécharge Tramevia Dock** : le ZIP de la dernière version sur la [page des versions](https://github.com/Tramevia/Tramevia-Dock/releases/latest) (`tramevia-dock-X.Y.Z.zip`, dans **Assets**).
 3. **Extrais le ZIP** : clic droit → « Extraire tout… », dans un dossier qui ne bougera pas, par exemple `Documents\Tramevia Dock`. Ne lance rien directement depuis l’intérieur du ZIP.
-4. **Double-clique sur `start.bat`.** Une fenêtre noire intitulée « Tramevia Dock » s’ouvre. La première fois, elle installe les dépendances (une minute environ). Si Node.js manque, elle te le dit et ouvre nodejs.org ; s’il est plus ancien que la version 24.15, elle te demande de le mettre à jour.
+4. **Double-clique sur `start.bat`.** Une fenêtre noire intitulée « Tramevia Dock » s’ouvre. Si Node.js manque, elle te le dit et ouvre nodejs.org ; s’il est plus ancien que la version 24.15, elle te demande de le mettre à jour.
 5. **Ton navigateur s’ouvre** sur <http://localhost:8787>.
 
 Pour arrêter Tramevia Dock, ferme la fenêtre noire (ou appuie sur Ctrl+C dedans). Il n’y a pas de `.exe` : `start.bat` est un simple fichier texte, que tu peux ouvrir dans le Bloc-notes. Si Windows te demande une confirmation avant de l’exécuter, accepte.
 
-Tes comptes, tes réglages et tes clés vivent dans le dossier `data` : **sauvegarde-le, et surtout `secret.key`**. Mise à jour, désinstallation et réglages avancés : [guide d’installation](docs/fr/install.md).
+Tes comptes, tes réglages et tes clés vivent dans le dossier `data` : **sauvegarde-le, et surtout `secret.key`**. Les mises à jour s’installent en un clic : voir [Mises à jour](#mises-a-jour). Désinstallation et réglages avancés : [guide d’installation](docs/fr/install.md).
 
 </details>
 
@@ -314,7 +314,7 @@ Tous les détails : [guide d’installation](docs/fr/install.md#macos).
 <details>
 <summary><b>Docker</b></summary>
 
-Il te faut Docker avec Compose. Dans le dossier de Tramevia Dock, crée un fichier `.env` avec au minimum :
+Il te faut Docker avec Compose. Pas besoin du code : l’image prête à l’emploi `ghcr.io/tramevia/tramevia-dock` est publiée à chaque version. Dans un nouveau dossier, mets [`compose.yaml`](compose.yaml) et un fichier `.env` avec au minimum :
 
 ```env
 ADMIN_PASSWORD=choisis-un-mot-de-passe-long
@@ -328,7 +328,7 @@ docker compose up -d
 
 Ouvre <http://localhost:8787> et connecte-toi avec ton mot de passe. Dans Docker, le mot de passe est **obligatoire, même en local** (12 caractères minimum). Tes données vivent dans un volume monté sur `/data`.
 
-Journaux, mises à jour et `docker run` : [guide de l’hébergement en ligne](docs/fr/cloud.md#docker-compose).
+Pour mettre à jour : `docker compose pull && docker compose up -d` (ou active la mise à jour automatique de nuit, facultative). Journaux, mises à jour automatiques et `docker run` : [guide de l’hébergement en ligne](docs/fr/cloud.md#docker-compose).
 
 </details>
 
@@ -341,12 +341,30 @@ Tu peux faire tourner Tramevia Dock sur un serveur, sur [Railway](https://railwa
 
 - `ADMIN_PASSWORD` est obligatoire (12 caractères minimum).
 - Sur un serveur ou sur Railway, il faut un volume persistant sur `/data` et du HTTPS devant.
+- Sur Railway (offre Hobby, payante) : déploie l’image Docker `ghcr.io/tramevia/tramevia-dock`, ajoute **`RAILWAY_RUN_UID=0`** et active ses **Auto Updates** : les nouvelles versions s’installent alors toutes seules la nuit. Un bouton **Deploy on Railway** (déploiement en un clic) arrive avec la première version publique.
 - Les adresses de redirection commencent par ton adresse publique : ajoute-les à tes apps.
 - Une installation en ligne est indépendante de ton installation locale : elle a ses propres comptes et réglages.
 
 Le pas-à-pas (Railway, reverse proxy, tunnel, sauvegardes) : [guide de l’hébergement en ligne](docs/fr/cloud.md).
 
+<!-- RAILWAY_BUTTON : remplacer ce commentaire par les lignes ci-dessous quand le modèle Railway existe (RELEASING.md, mise en place unique, étape 7), et retirer la phrase « arrive avec la première version publique » plus haut.
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/<CODE>?utm_medium=integration&utm_source=button&utm_campaign=tramevia-dock)
+Il faut l’offre Hobby de Railway. Tu ne remplis qu’un mot de passe ; les mises à jour s’installent toutes seules la nuit (heure UTC). Tu peux changer le créneau dans Settings → Source → Auto Updates.
+-->
+
 </details>
+
+<a id="mises-a-jour"></a>
+
+## 🔄 Mises à jour
+
+Tramevia Dock vérifie une fois par jour si une nouvelle version est sortie, et te prévient sur le tableau de bord. Tes comptes, tes réglages et tes docks OBS restent exactement comme avant.
+
+- 💻 **Installation ZIP** : clique sur « Installer maintenant » dans le message. Tramevia Dock redémarre tout seul en quelques secondes, jamais pendant un live, et revient à la version précédente si la nouvelle ne démarre pas. Tu préfères ne rien faire ? Active l’installation automatique dans **Paramètres → À propos**.
+- 🐳 **Docker** : `docker compose pull && docker compose up -d`, ou active la mise à jour automatique de nuit (facultative).
+- ☁️ **Railway** : active une fois les **Auto Updates** de Railway, et les nouvelles versions s’installent toutes seules la nuit.
+
+Installé avec `git clone` ? Lance `git pull` puis relance-le. Tous les détails : [Mettre à jour](docs/fr/install.md#mettre-à-jour).
 
 <a id="faq"></a>
 
@@ -439,7 +457,7 @@ D’autres questions ? La [FAQ et dépannage](docs/fr/faq.md) reprend les messa
 
 **Données enregistrées** (dans `data/tramevia-dock.db`) : tes réglages, tes préréglages, les identifiants chiffrés de tes apps, les clés des docks et de l’overlay, et pour chaque compte connecté son pseudo, son avatar, les permissions accordées et ses jetons chiffrés. S’y ajoutent les identifiants des personnes qui ont déjà écrit dans ton chat (pour repérer les premiers messages), ceux des bannissements YouTube faits depuis Tramevia Dock (pour pouvoir les lever), un compteur de quota YouTube et le numéro de ton salon de chat Kick. Les messages du chat et les événements restent en mémoire uniquement (les 400 derniers) et ne sont pas écrits sur le disque.
 
-**Connexions sortantes** : les plateformes elles-mêmes (Twitch, Kick, Google/YouTube, TikTok), le socket Pusher qu’utilise kick.com (chat Kick en mode non officiel), les services d’émotes 7TV, BTTV et FFZ (avec l’identifiant de ta chaîne), et le serveur de signature Euler Stream pour TikTok.
+**Connexions sortantes** : les plateformes elles-mêmes (Twitch, Kick, Google/YouTube, TikTok), le socket Pusher qu’utilise kick.com (chat Kick en mode non officiel), les services d’émotes 7TV, BTTV et FFZ (avec l’identifiant de ta chaîne), le serveur de signature Euler Stream pour TikTok, et GitHub une fois par jour pour vérifier s’il existe une nouvelle version (désactivable dans **Paramètres → À propos**, ou avec `UPDATE_CHECK=0`).
 
 </details>
 

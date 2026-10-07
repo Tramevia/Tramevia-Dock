@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { connect } from 'node:net';
@@ -101,4 +101,57 @@ test('login rate limit is per client and password changes revoke sessions', () =
   assert.equal(settings.get('sessionEpoch', 0), epochBefore + 1);
   const same = createAuth({ config: { ...config, adminPassword: 'a-new-long-password' }, settings, log });
   assert.equal(same.keys().dock, again.keys().dock);
+});
+
+test('update API: status object, demo refusal, validated settings, hub topic, version in every hello', async () => {
+  const srv = await startServer({ ADMIN_PASSWORD: 'correct-horse-battery', UPDATE_CHECK: '0' }); // UPDATE_CHECK=0: never asks GitHub
+  try {
+    const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
+    const login = await fetch(srv.base + '/api/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Origin: srv.base }, body: JSON.stringify({ password: 'correct-horse-battery' }),
+    });
+    const cookie = login.headers.get('set-cookie').split(';')[0];
+    const send = (method, path, body) => fetch(srv.base + path, { method, headers: { 'Content-Type': 'application/json', Origin: srv.base, Cookie: cookie }, body: JSON.stringify(body) });
+    const { dock, overlay } = await (await fetch(srv.base + '/api/keys', { headers: { Cookie: cookie } })).json();
+    const socket = key => {
+      const ws = new WebSocket(`ws://localhost:${srv.port}/ws?key=${key}`);
+      const frames = [];
+      ws.onmessage = e => frames.push(JSON.parse(e.data));
+      return { ws, frames, next: t => new Promise((resolve, reject) => {
+        const timer = setInterval(() => { const f = frames.find(x => x.t === t); if (f) { clearInterval(timer); resolve(f); } }, 20);
+        setTimeout(() => { clearInterval(timer); reject(new Error(`no ${t} frame`)); }, 5000);
+      }) };
+    };
+    const admin = socket(dock), reader = socket(overlay);
+    assert.equal((await admin.next('hello')).d.version, version);
+    const hello = (await reader.next('hello')).d;
+    assert.equal(hello.access, 'read');
+    assert.equal(hello.version, version);
+
+    const status = await (await fetch(srv.base + '/api/update', { headers: { Cookie: cookie } })).json();
+    assert.deepEqual(Object.keys(status).sort(), ['auto', 'checkedAt', 'checks', 'current', 'error', 'failed', 'image', 'latest', 'live', 'state', 'type']);
+    assert.equal(status.current, version);
+    assert.equal(status.image, 'ghcr.io/tramevia/tramevia-dock');
+    assert.equal(status.checks, false);
+    assert.equal(status.state, 'idle');
+    assert.equal((await fetch(srv.base + '/api/update', { headers: { Authorization: `Bearer ${overlay}` } })).status, 403);
+    const checked = await (await send('POST', '/api/update/check', {})).json();
+    assert.equal(checked.latest, null);
+    assert.equal(checked.checkedAt, 0);
+    const refused = await send('POST', '/api/update/install', { version: '9.9.9' });
+    assert.equal(refused.status, 409);
+    assert.equal((await refused.json()).code, 'demo');
+
+    assert.equal((await send('PUT', '/api/settings', { updateAuto: 'yes' })).status, 400);
+    assert.equal((await send('PUT', '/api/settings', { updateCheck: 1 })).status, 400);
+    assert.equal((await send('PUT', '/api/settings', { updateAuto: true, updateCheck: null })).status, 200);
+    const frame = await admin.next('update');
+    assert.equal(frame.d.current, version);
+    assert.equal(frame.d.auto, status.type === 'zip');
+    assert.ok(!reader.frames.some(f => f.t === 'update'), 'update topic is admin-only');
+    admin.ws.close();
+    reader.ws.close();
+  } finally {
+    await srv.stop();
+  }
 });

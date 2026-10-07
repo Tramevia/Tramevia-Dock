@@ -1,5 +1,8 @@
 # Tramevia Dock — production image (Docker, Railway, Render…)
 FROM node:24-alpine
+LABEL org.opencontainers.image.source="https://github.com/Tramevia/Tramevia-Dock" \
+      org.opencontainers.image.description="Self-hosted multistream control room for OBS: unified chat, community lists and stream info for Twitch, Kick, YouTube and TikTok."
+# CONTAINER=1 tells the in-app updater this is a Docker install (notice only, it never changes its own files).
 ENV NODE_ENV=production CONTAINER=1 HOST=0.0.0.0 PORT=8787 DATA_DIR=/data
 WORKDIR /app
 COPY package.json package-lock.json ./

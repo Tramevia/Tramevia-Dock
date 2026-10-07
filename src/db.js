@@ -29,6 +29,11 @@ export function openDb(file) {
   // WAL + synchronous=normal: no corruption risk, no fsync per write on the event loop.
   db.exec('pragma journal_mode = wal; pragma synchronous = normal; pragma busy_timeout = 5000; pragma foreign_keys = on;');
   const { user_version: current } = db.prepare('pragma user_version').get();
+  if (current > MIGRATIONS.length) { // rolled-back update, or an older Docker tag on newer data: never run on a schema we don't know
+    db.close();
+    throw new Error(`Data was created by a newer Tramevia Dock (schema ${current}, this version knows ${MIGRATIONS.length}): install that version again, or put back a backup of ${file} (for example pre-update.db next to it).\n` +
+      `Les données ont été créées par une version plus récente de Tramevia Dock (schéma ${current}, cette version connaît ${MIGRATIONS.length}) : réinstalle cette version, ou remets une sauvegarde de ${file} (par exemple pre-update.db à côté).`);
+  }
   for (let i = current; i < MIGRATIONS.length; i++) {
     db.exec('begin');
     try {

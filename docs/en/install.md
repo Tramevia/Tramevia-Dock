@@ -20,10 +20,10 @@ You do not need to know how to code. Each platform you want to use also needs a 
 ## Windows
 
 1. **Install Node.js.** Go to [nodejs.org](https://nodejs.org), download the **LTS** installer and run it. Click *Next* through the screens and keep the default options.
-2. **Download Tramevia Dock** as a ZIP file from [its GitHub page](https://github.com/Tramevia/Tramevia-Dock) (green **Code** button → **Download ZIP**, or the latest release).
+2. **Download Tramevia Dock.** On the [Releases page](https://github.com/Tramevia/Tramevia-Dock/releases/latest), download the ZIP of the latest version (`tramevia-dock-X.Y.Z.zip`, under **Assets**).
 3. **Extract the ZIP.** Right-click the file → *Extract All*. Pick a folder you will keep, for example `Documents\TrameviaDock`. Do not run Tramevia Dock from inside the ZIP: extract it first.
 4. **Double-click `start.bat`** in that folder. Windows may show a security warning because the file came from the internet: choose to run it.
-5. A black window opens. The first time, it installs the dependencies (about a minute). Then your browser opens at **http://localhost:8787**.
+5. A black window opens, then your browser opens at **http://localhost:8787**. (With a ZIP from the green **Code → Download ZIP** button instead, the first start also installs the dependencies: about a minute.)
 6. Follow the setup wizard on the dashboard.
 
 > [!IMPORTANT]
@@ -37,8 +37,8 @@ If Node.js is missing, `start.bat` says so and opens nodejs.org for you. If it i
 ## macOS
 
 1. Install Node.js 24.15 or newer from [nodejs.org](https://nodejs.org) (LTS installer).
-2. Download and unzip Tramevia Dock into a folder you will keep, for example in *Documents*.
-3. Double-click **`start.command`**. A Terminal window opens, installs the dependencies the first time, then opens your browser at http://localhost:8787.
+2. Download the ZIP of the latest version from the [Releases page](https://github.com/Tramevia/Tramevia-Dock/releases/latest) and unzip it into a folder you will keep, for example in *Documents*.
+3. Double-click **`start.command`**. A Terminal window opens and starts Tramevia Dock (installing the dependencies first if they are missing), then your browser opens at http://localhost:8787.
 
 If macOS refuses to open `start.command` because it comes from an unidentified developer:
 
@@ -61,7 +61,7 @@ cd Tramevia-Dock
 ./start.sh
 ```
 
-You can also download and extract the ZIP and run `./start.sh` in that folder. The script checks your Node.js version, installs the dependencies the first time and starts the server. It tries to open http://localhost:8787 in your browser.
+You can also download the ZIP of the latest version from the [Releases page](https://github.com/Tramevia/Tramevia-Dock/releases/latest), extract it and run `./start.sh` in that folder: a ZIP install updates itself in one click, a git folder with `git pull` (see [Updating](#updating)). The script checks your Node.js version, installs the dependencies if they are missing and starts the server. It tries to open http://localhost:8787 in your browser.
 
 ## First launch
 
@@ -80,25 +80,45 @@ Next step: [connect your platforms](platforms.md).
 
 ## Updating
 
-Your settings are all in the `data` folder (and in `.env` if you created one). Keep them and replace the rest.
+Tramevia Dock checks once a day whether a new version is out, and tells you on the dashboard. **Settings → About** shows your version and has a **Check now** button. An update never touches your `data` folder or your `.env` file: your accounts, settings and keys stay as they are, and so do your OBS dock addresses.
 
-**With the ZIP:**
+### With the ZIP (start.bat, start.command, start.sh)
+
+Tramevia Dock updates itself:
+
+1. When a new version is out, the dashboard shows a notice. Click **What's new** to read the changes, then **Install now**.
+2. Tramevia Dock downloads the new version, checks it, and restarts by itself in about 10 seconds. Keep its window open. Your OBS docks and overlay reconnect on their own, and the dashboard shows "Updated to X.Y.Z".
+
+Good to know:
+
+- **Never during a live.** While one of your accounts is live, the button shows **Available after your live**. If Tramevia Dock can't tell whether you are live on a platform, it asks you before installing.
+- **Automatic install (optional).** In **Settings → About**, turn on **Install updates automatically when no account is live**: new versions are then installed as soon as none of your accounts is live. It is off by default.
+- **Automatic rollback.** If the new version doesn't start, Tramevia Dock puts the previous one back by itself and tells you on the dashboard. Your data is as it was before the update, and automatic install skips that version.
+- **What it doesn't update:** Node.js. If a new version needs a newer Node.js, the dashboard says so: install it from [nodejs.org](https://nodejs.org), then try again.
+- **No checks at all?** Untick **Check for updates automatically** in **Settings → About**, or set `UPDATE_CHECK=0` in `.env`. Tramevia Dock then never contacts GitHub (the check reveals your IP address to GitHub, like any website visit).
+- The one-click update only works when you start Tramevia Dock with `start.bat`, `start.command` or `start.sh` (they restart it after the update). Started with `npm start`, pm2 or a service, it only shows the notice: update by hand as below.
+
+> [!NOTE]
+> The updater arrived with the first public release. If you downloaded Tramevia Dock before that, update by hand once (below). From then on, it updates itself.
+
+**By hand:**
 
 1. Stop Tramevia Dock (close its window).
-2. Download the new ZIP and extract it to a **new** folder.
+2. Download the ZIP of the latest version from the [Releases page](https://github.com/Tramevia/Tramevia-Dock/releases/latest) (`tramevia-dock-X.Y.Z.zip` under **Assets**) and extract it to a **new** folder.
 3. Copy your old `data` folder (and your `.env` file, if you have one) into the new folder.
-4. Start the new version with `start.bat`, `start.command` or `start.sh`. It installs its dependencies on the first start.
+4. Start the new version with `start.bat`, `start.command` or `start.sh`. When everything works, you can delete the old folder.
 
-You can also extract the new files over the old ones: at every start, the scripts check the installed dependencies and reinstall them when they are missing or out of date.
-
-**With git:**
+### With git
 
 ```bash
 git pull
-npm ci --omit=dev
 ```
 
-Then start it as usual. Your OBS dock addresses keep working after an update.
+Then start it again with `start.bat` or `./start.sh`: they reinstall the dependencies when they are missing or out of date. If you start it with `npm start` instead, run `npm ci --omit=dev` after `git pull`. The dashboard only shows the notice here: it never changes files in a git folder.
+
+### Docker and Railway
+
+See [Updating with Docker](cloud.md#updating-with-docker) and [Updates on Railway](cloud.md#updates-on-railway). What changed in each version is in the [changelog](../../CHANGELOG.md).
 
 ## Uninstall
 
@@ -128,6 +148,7 @@ You do not need any configuration for a local install. To change a setting, copy
 | `HOST` | `127.0.0.1` (`0.0.0.0` in Docker and on Railway) | Network interface to listen on. `0.0.0.0` makes it reachable from your network and requires `ADMIN_PASSWORD`. |
 | `ALLOWED_HOSTS` | empty | Extra host names Tramevia Dock accepts, comma-separated, for example `mypc.local:8787`. Requests for any other host get a "Host not allowed" error. |
 | `OPEN_BROWSER` | opens the browser | Set to `0` so the browser does not open at startup. |
+| `UPDATE_CHECK` | on | Set to `0` to turn off the daily update check: Tramevia Dock then never contacts GitHub (see [Updating](#updating)). |
 
 App credentials set as environment variables (both the ID and the secret) take priority over the wizard. The platform's card in **Accounts** then shows **App (env variables)**, and the wizard does not let you edit them.
 

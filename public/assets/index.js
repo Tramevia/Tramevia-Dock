@@ -186,6 +186,31 @@ addI18n({
     'home.about.title': 'À propos', 'home.about.version': 'Version {v}',
     'home.about.desc': 'Logiciel libre et auto-hébergé : tes identifiants restent sur ton serveur.',
     'home.about.repo': 'Code source sur GitHub', 'home.about.docs': 'Documentation', 'home.about.issues': 'Signaler un problème',
+    'home.upd.upToDate': 'à jour', 'home.upd.availableShort': 'mise à jour {v} disponible',
+    'home.upd.checked': 'dernière vérification {ago}', 'home.upd.never': 'pas encore vérifiée',
+    'home.upd.check': 'Vérifier maintenant', 'home.upd.upToDateToast': 'Tramevia Dock est à jour.',
+    'home.upd.disabledEnv': 'Les vérifications de mises à jour sont désactivées (UPDATE_CHECK=0).',
+    'home.upd.autoCheck': 'Vérifier les mises à jour automatiquement', 'home.upd.autoCheckDesc': 'Une fois par jour, auprès de GitHub.',
+    'home.upd.autoInstall': 'Installer les mises à jour automatiquement quand aucun compte n’est en live',
+    'home.upd.autoInstallDesc': 'Jamais pendant un live, ni pour une version qui a déjà échoué. Tramevia Dock redémarre alors une dizaine de secondes.',
+    'home.upd.title': 'Tramevia Dock {v} est disponible.',
+    'home.upd.notes': 'Nouveautés', 'home.upd.download': 'Page de la version',
+    'home.upd.install': 'Installer maintenant', 'home.upd.afterLive': 'Disponible après ton live',
+    'home.upd.confirmTitle': 'Installer Tramevia Dock {v} ?',
+    'home.upd.confirmBody': 'Tramevia Dock redémarre pendant une dizaine de secondes, puis tes docks OBS se reconnectent tout seuls. Tes données et tes réglages sont conservés.',
+    'home.upd.unknownTitle': 'Statut du live inconnu',
+    'home.upd.unknownBody': 'Impossible de savoir si tu es en live sur {names}. Installer quand même ? (redémarrage d’environ 10 s)',
+    'home.upd.someAccount': 'un de tes comptes', 'home.upd.installAnyway': 'Installer quand même',
+    'home.upd.installing': 'Installation de {v}… Tramevia Dock redémarre dans quelques secondes. Tes docks OBS se reconnectent tout seuls.',
+    'home.upd.error': 'La mise à jour a échoué : {reason}. Rien n’a été modifié.',
+    'home.upd.failed': 'La version {v} n’a pas démarré et a été annulée. Tes données sont comme avant la mise à jour.',
+    'home.upd.report': 'Signaler le problème',
+    'home.upd.docker': 'Lance cette commande dans le dossier de ton compose.yaml :',
+    'home.upd.dockerMajor': 'Nouvelle version majeure : dans compose.yaml, remplace la ligne image par celle-ci, puis lance la commande.',
+    'home.upd.railway': 'Railway l’installe tout seul si les mises à jour automatiques sont activées : Service → Settings → Source → Configure Auto Updates (« Minor updates and patches »). Sinon, remplace l’image au même endroit par :',
+    'home.upd.railwayMajor': 'Nouvelle version majeure : Railway ne l’installe jamais tout seul. Dans Service → Settings → Source, remplace l’image par :',
+    'home.upd.git': 'Dans le dossier de Tramevia Dock, lance cette commande, puis redémarre Tramevia Dock (start.bat ou start.sh) :',
+    'home.upd.manual': 'Télécharge le nouveau zip sur la page de la version et remplace tes fichiers. Garde ton dossier data et ton fichier .env.',
   },
   en: {
     'home.nav.label': 'Dashboard sections',
@@ -368,6 +393,31 @@ addI18n({
     'home.about.title': 'About', 'home.about.version': 'Version {v}',
     'home.about.desc': 'Free and self-hosted software: your credentials stay on your server.',
     'home.about.repo': 'Source code on GitHub', 'home.about.docs': 'Documentation', 'home.about.issues': 'Report a problem',
+    'home.upd.upToDate': 'up to date', 'home.upd.availableShort': 'update {v} available',
+    'home.upd.checked': 'last checked {ago}', 'home.upd.never': 'not checked yet',
+    'home.upd.check': 'Check now', 'home.upd.upToDateToast': 'Tramevia Dock is up to date.',
+    'home.upd.disabledEnv': 'Update checks are disabled (UPDATE_CHECK=0).',
+    'home.upd.autoCheck': 'Check for updates automatically', 'home.upd.autoCheckDesc': 'Once a day, from GitHub.',
+    'home.upd.autoInstall': 'Install updates automatically when no account is live',
+    'home.upd.autoInstallDesc': 'Never during a live, never a version that already failed. Tramevia Dock then restarts for about 10 seconds.',
+    'home.upd.title': 'Tramevia Dock {v} is available.',
+    'home.upd.notes': 'What’s new', 'home.upd.download': 'Release page',
+    'home.upd.install': 'Install now', 'home.upd.afterLive': 'Available after your live',
+    'home.upd.confirmTitle': 'Install Tramevia Dock {v}?',
+    'home.upd.confirmBody': 'Tramevia Dock restarts for about 10 seconds, then your OBS docks reconnect by themselves. Your data and settings are kept.',
+    'home.upd.unknownTitle': 'Live status unknown',
+    'home.upd.unknownBody': 'We can’t tell whether you’re live on {names}. Install anyway? (about 10 s restart)',
+    'home.upd.someAccount': 'one of your accounts', 'home.upd.installAnyway': 'Install anyway',
+    'home.upd.installing': 'Installing {v}… Tramevia Dock restarts in a few seconds. Your OBS docks reconnect by themselves.',
+    'home.upd.error': 'Update failed: {reason}. Nothing was changed.',
+    'home.upd.failed': '{v} didn’t start and was rolled back. Your data is as it was before the update.',
+    'home.upd.report': 'Report the problem',
+    'home.upd.docker': 'Run this command in the folder of your compose.yaml:',
+    'home.upd.dockerMajor': 'New major version: in compose.yaml, replace the image line with this one, then run the command.',
+    'home.upd.railway': 'Railway installs it by itself if Auto Updates are on: Service → Settings → Source → Configure Auto Updates ("Minor updates and patches"). Otherwise, change the image in the same place to:',
+    'home.upd.railwayMajor': 'New major version: Railway never installs it by itself. In Service → Settings → Source, change the image to:',
+    'home.upd.git': 'In the Tramevia Dock folder, run this command, then restart Tramevia Dock (start.bat or start.sh):',
+    'home.upd.manual': 'Download the new zip from the release page and replace your files. Keep your data folder and your .env file.',
   },
 });
 
@@ -383,7 +433,7 @@ const OV_DEFAULTS = {
 };
 const AUTH_TIMEOUT = 600_000; // server forgets the OAuth state after 10 min
 
-const S = { state: null, accounts: [], apps: null, keys: null, session: null, ui: {}, pending: {} };
+const S = { state: null, accounts: [], apps: null, keys: null, session: null, ui: {}, pending: {}, update: null };
 const el = {};
 const forms = {}; // username forms survive re-renders (keeps typed text)
 let ov = { ...OV_DEFAULTS, ...store.get('home.overlay', {}) };
@@ -624,10 +674,11 @@ function renderOverview() {
   if (!box) return;
   const allDone = onboardingSteps().every(Boolean);
   if (!S.accounts.length) {
-    keepFocus(() => box.replaceChildren(onboarding(true), quickLinks()));
+    keepFocus(() => box.replaceChildren(updateNotice('home') || '', onboarding(true), quickLinks()));
     return;
   }
   keepFocus(() => box.replaceChildren(
+    updateNotice('home') || '',
     greeting(),
     allDone ? '' : onboarding(false), // replaceChildren() would print a `false`
     h('div.ov-grid',
@@ -1158,8 +1209,10 @@ function renderSettings() {
         row(t('home.sec.sessions'), t(pw ? 'home.sec.sessionsDesc' : 'home.sec.sessionsLocal'), sessionsBtn)),
       h('div.card.about',
         h('div.row', h('img', { src: '/assets/logo.svg', alt: '', width: 36, height: 36 }),
-          h('div', h('strong', 'Tramevia Dock'), h('p.small.muted', t('home.about.version', { v: S.state.version })))),
+          h('div.about-head', h('strong', 'Tramevia Dock'), h('p.small.muted', versionLine())),
+          S.update && checkButton()),
         h('p.small.muted', t('home.about.desc')),
+        S.update && updateSettings(),
         h('div.about-links',
           extLink(REPO, icon('external', 14), ' ', t('home.about.repo')),
           extLink(`${REPO}#readme`, icon('external', 14), ' ', t('home.about.docs')),
@@ -1183,6 +1236,114 @@ async function rotateKey(what, button) {
   });
 }
 
+// ---------------------------------------------------------------- 6. updates (About card + home banner)
+const major = v => Number(String(v).split('.')[0]);
+/** UPDATE_CHECK=0 on the server: checks are off although the dashboard setting is not. */
+const checksEnvOff = () => !S.update.checks && S.ui.updateCheck !== false;
+
+function setUpdate(u) {
+  if (!u || typeof u !== 'object') return;
+  S.update = u;
+  renderOverview();
+  renderSettings();
+}
+const refreshUpdate = () => api('/api/update').then(setUpdate, () => {});
+
+function versionLine() {
+  const u = S.update;
+  const parts = [t('home.about.version', { v: S.state.version })];
+  if (u && !checksEnvOff()) {
+    parts.push(u.latest ? t('home.upd.availableShort', { v: u.latest.version }) : u.checkedAt ? t('home.upd.upToDate') : null);
+    parts.push(u.checkedAt ? t('home.upd.checked', { ago: fmt.ago(u.checkedAt) }) : t('home.upd.never'));
+  }
+  return parts.filter(Boolean).join(' · ');
+}
+
+function checkButton() {
+  return h('button.btn.sm', {
+    type: 'button', dataset: { focus: 'upd:check' }, disabled: checksEnvOff() || S.update.state === 'installing',
+    onclick: e => busy(e.currentTarget, async () => {
+      setUpdate(await api('/api/update/check', { body: {} }));
+      if (!S.update.latest) toast(t('home.upd.upToDateToast'), 'ok');
+    }),
+  }, icon('refresh'), t('home.upd.check'));
+}
+
+function updateSettings() {
+  const u = S.update;
+  const envOff = checksEnvOff();
+  const toggle = (key, on, disabled, label) => h('label.set-row.upd-toggle',
+    h('span.set-row-text', h('strong', t(`home.upd.${label}`)), h('span.small.muted', t(`home.upd.${label}Desc`))),
+    h('span.switch', h('input', {
+      type: 'checkbox', checked: on, disabled, dataset: { focus: `upd:${key}` },
+      onchange: e => saveUi({ [key]: e.target.checked }).then(refreshUpdate),
+    }), h('span')));
+  return [
+    envOff && banner('info', t('home.upd.disabledEnv')),
+    updateNotice('set'),
+    toggle('updateCheck', !envOff && S.ui.updateCheck !== false, envOff, 'autoCheck'),
+    u.type === 'zip' && toggle('updateAuto', S.ui.updateAuto === true, !u.checks, 'autoInstall'),
+  ];
+}
+
+/** Banner for the current update state, or null. `where` keeps focus keys unique (home banner + About card). */
+function updateNotice(where) {
+  const u = S.update;
+  if (!u) return null;
+  const v = u.latest?.version;
+  const zip = u.type === 'zip';
+  const btn = (key, cls, ic, label, onclick, disabled = false) =>
+    h(`button.btn.sm${cls}`, { type: 'button', disabled, dataset: { focus: `upd-${where}:${key}` }, onclick }, icon(ic), label);
+  const retry = v && zip && btn('retry', '', 'refresh', t('common.retry'), e => installUpdate(e.currentTarget));
+  if (u.state === 'installing') {
+    return h('div.banner.info.small.upd-installing', { attrs: { role: 'status' } },
+      h('span.spinner', { attrs: { 'aria-hidden': 'true' } }), h('div.banner-text', t('home.upd.installing', { v: v || '' })));
+  }
+  if (u.state === 'error') return banner('danger', t('home.upd.error', { reason: u.error || '?' }), retry && h('div.row', retry));
+  if (u.failed && (!v || v === u.failed.version)) {
+    return banner('warn', h('strong', t('home.upd.failed', { v: u.failed.version })),
+      u.failed.reason && h('span.tiny.muted', u.failed.reason),
+      h('div.row', linkBtn(`${REPO}/issues/new`, t('home.upd.report')), retry));
+  }
+  if (!v) return null;
+  const notes = /^https:\/\//.test(u.latest.notesUrl || '') ? u.latest.notesUrl : `${REPO}/releases`;
+  const image = u.image || 'ghcr.io/tramevia/tramevia-dock';
+  const big = major(v) > major(u.current);
+  const steps = {
+    docker: () => [t(big ? 'home.upd.dockerMajor' : 'home.upd.docker'), big && copyField(`image: ${image}:${major(v)}`), copyField('docker compose pull && docker compose up -d')],
+    railway: () => [t(big ? 'home.upd.railwayMajor' : 'home.upd.railway'), copyField(`${image}:${v}`)],
+    git: () => [t('home.upd.git'), copyField('git pull')],
+    manual: () => [t('home.upd.manual')],
+  }[u.type]?.() || [];
+  const live = u.live === 'live'; // the server republishes 'update' whenever this changes
+  return banner('info', h('strong', t('home.upd.title', { v })),
+    steps.map(s => (typeof s === 'string' ? h('span', s) : s)),
+    h('div.row',
+      linkBtn(notes, t(u.type === 'manual' ? 'home.upd.download' : 'home.upd.notes')),
+      zip && btn('install', '.primary', 'zap', t('home.upd.install'), e => installUpdate(e.currentTarget), live),
+      zip && live && h('span.small.muted', t('home.upd.afterLive'))));
+}
+
+/** Confirm, then ask the server to install. Live status unknown → explicit "install anyway" (force). */
+async function installUpdate(button, force = S.update?.live === 'unknown') {
+  const v = S.update?.latest?.version;
+  if (!v) return;
+  const names = S.accounts.filter(a => a.status === 'ok' && typeof a.stats?.live !== 'boolean')
+    .map(a => `${a.displayName} (${platform(a.platform)?.name || a.platform})`).join(', ');
+  const ok = await confirmDialog(force
+    ? { title: t('home.upd.unknownTitle'), body: t('home.upd.unknownBody', { names: names || t('home.upd.someAccount') }), confirm: t('home.upd.installAnyway') }
+    : { title: t('home.upd.confirmTitle', { v }), body: t('home.upd.confirmBody'), confirm: t('home.upd.install') });
+  if (!ok) return;
+  let unknown = false;
+  await busy(button, async () => {
+    try { await api('/api/update/install', { body: { version: v, force } }); } catch (err) {
+      if (err.code !== 'live_unknown' || force) throw err;
+      unknown = true; // the server saw an unknown live status we did not: ask again, with force
+    }
+  });
+  if (unknown) installUpdate(button, true);
+}
+
 // ---------------------------------------------------------------- realtime + boot
 function setAccounts(list) {
   if (!Array.isArray(list)) return;
@@ -1196,14 +1357,16 @@ function setAccounts(list) {
 
 function onFrame({ t: topic, d }) {
   if (!S.apps || !el.overview) return;
-  if (topic === 'hello') setAccounts(d.accounts);
+  if (topic === 'hello') { setAccounts(d.accounts); refreshUpdate(); } // reconnect after a restart (e.g. rolled-back update)
   else if (topic === 'accounts') setAccounts(d);
+  else if (topic === 'update') setUpdate(d);
   else if (topic === 'stats') {
     const a = S.accounts.find(x => x.id === d.accountId);
     if (a) { a.stats = d; paintStats(); }
   } else if (topic === 'settings' && d && !uiWrites && Date.now() - uiLastWrite > 1500) {
     const before = S.ui;
     S.ui = d;
+    if (d.updateCheck !== before.updateCheck || d.updateAuto !== before.updateAuto) refreshUpdate(); // changed in another tab
     if (d.lang && d.lang !== lang() && !query.get('lang')) return setLang(d.lang); // re-renders via od:lang
     if (d.theme && d.theme !== document.documentElement.dataset.theme && !query.get('theme')) { applyTheme(d.theme); renderSettings(); }
     if (Boolean(d.obsDocks) !== Boolean(before.obsDocks)) { renderOverview(); renderObs(); }
@@ -1213,7 +1376,7 @@ function onFrame({ t: topic, d }) {
 async function load() {
   el.root.replaceChildren(skeleton());
   try {
-    [S.apps, S.keys, S.session] = await Promise.all([api('/api/apps'), api('/api/keys'), api('/api/session')]);
+    [S.apps, S.keys, S.session, S.update] = await Promise.all([api('/api/apps'), api('/api/keys'), api('/api/session'), api('/api/update').catch(() => null)]);
     render();
   } catch (err) {
     el.root.replaceChildren(h('div.page.narrow', h('div.card.empty',

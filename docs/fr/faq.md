@@ -26,6 +26,7 @@ Cherche ton symptôme ci-dessous. Les messages entre guillemets sont ceux qu’a
 
 **Questions**
 
+- [Comment mettre à jour ?](#comment-mettre-à-jour-)
 - [Est-ce que c’est sûr ?](#est-ce-que-cest-sûr-)
 - [Est-ce que c’est payant ?](#est-ce-que-cest-payant-)
 - [Pourquoi la licence AGPL ?](#pourquoi-la-licence-agpl-)
@@ -175,6 +176,17 @@ En local sans `ADMIN_PASSWORD`, il n’y a pas de mot de passe : le tableau de 
 Sans `secret.key`, tes comptes passent en « À reconnecter » et tu dois ressaisir les identifiants de tes apps. Si tu as un `ADMIN_PASSWORD`, la clé des docks est aussi régénérée : recopie leurs adresses dans OBS.
 
 ## Questions
+
+### Comment mettre à jour ?
+
+Tramevia Dock vérifie une fois par jour si une nouvelle version est sortie et affiche un message sur le tableau de bord (**Paramètres → À propos** affiche ta version et propose un bouton « Vérifier maintenant »). La façon de l’installer dépend de ton installation :
+
+- **ZIP** (`start.bat`, `start.command`, `start.sh`) : clique sur « Installer maintenant » dans le message. Tramevia Dock redémarre tout seul en une dizaine de secondes, jamais pendant un live, et remet la version précédente si la nouvelle ne démarre pas. Tu peux aussi le laisser installer les mises à jour tout seul quand aucun de tes comptes n’est en direct (**Paramètres → À propos**). Le détail : [Mettre à jour](install.md#mettre-à-jour).
+- **git clone** : lance `git pull`, puis relance-le avec `start.bat` ou `./start.sh`.
+- **Docker** : `docker compose pull && docker compose up -d`, ou active la mise à jour automatique de nuit (facultative). Voir [Mettre à jour avec Docker](cloud.md#mettre-à-jour-avec-docker).
+- **Railway** : avec les mises à jour automatiques (Auto Updates) activées, Railway installe tout seul les nouvelles versions pendant la nuit. Voir [Mises à jour sur Railway](cloud.md#mises-à-jour-sur-railway).
+
+Une mise à jour ne touche jamais à tes données (le dossier `data`, le volume Docker ou le volume Railway) ni aux adresses de tes docks OBS. Si tu as téléchargé Tramevia Dock avant sa première version publique, il n’a pas encore la mise à jour intégrée : [mets-le à jour une fois à la main](install.md#mettre-à-jour).
 
 ### Est-ce que c’est sûr ?
 

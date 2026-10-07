@@ -22,17 +22,19 @@ What changes compared to a local install:
 
 ## Docker (compose)
 
-You need [Docker](https://docs.docker.com/get-started/get-docker/) with Docker Compose, and the Tramevia Dock files (ZIP or `git clone`).
+You need [Docker](https://docs.docker.com/get-started/get-docker/) with Docker Compose. You don't need the Tramevia Dock code: every release publishes a ready-made image, `ghcr.io/tramevia/tramevia-dock` (for regular 64-bit PCs and servers, and 64-bit ARM boards such as a Raspberry Pi).
 
-1. In the Tramevia Dock folder, create a file named `.env` containing at least:
+1. Create a folder, for example `tramevia-dock`, and put two files in it:
+   - [`compose.yaml`](../../compose.yaml), downloaded from this repository;
+   - a file named `.env` containing at least:
 
-   ```env
-   ADMIN_PASSWORD=choose-a-long-password
-   ```
+     ```env
+     ADMIN_PASSWORD=choose-a-long-password
+     ```
 
-   You can add any other variable from the [configuration reference](install.md#configuration-reference) (for example `TOKEN_KEY` or your app credentials).
+   You can add any other variable from the [configuration reference](install.md#configuration-reference) to `.env` (for example `TOKEN_KEY` or your app credentials).
 
-2. Start it:
+2. In that folder, start it:
 
    ```bash
    docker compose up -d
@@ -42,51 +44,96 @@ You need [Docker](https://docs.docker.com/get-started/get-docker/) with Docker C
 
 What the provided `compose.yaml` does:
 
-- builds the image from the `Dockerfile` (Node.js 24, runs as a non-root user, built-in healthcheck on `/healthz`);
+- runs the image `ghcr.io/tramevia/tramevia-dock:1`: the latest 1.x version, never a 2.0 that could break your setup (Node.js 24, runs as a non-root user, built-in healthcheck on `/healthz`);
 - publishes the port on **`127.0.0.1:8787`** only, so it is reachable from this machine only;
 - keeps your data in a Docker volume named `tramevia-data`, mounted at `/data` (database and `secret.key`);
 - restarts the container automatically unless you stop it.
 
-Useful commands:
+Useful commands (run them in the folder that holds `compose.yaml`):
 
 | Command | What it does |
 |---|---|
 | `docker compose logs -f` | Shows the logs |
+| `docker compose pull && docker compose up -d` | Updates to the latest version (see below) |
 | `docker compose down` | Stops and removes the container (your data stays in the volume) |
-| `git pull && docker compose up -d --build` | Updates to the latest version |
 
 Without compose:
 
 ```bash
-docker build -t tramevia-dock .
 docker run -d --name tramevia-dock --restart unless-stopped \
   -p 127.0.0.1:8787:8787 -e ADMIN_PASSWORD='choose-a-long-password' \
-  -v tramevia-data:/data tramevia-dock
+  -v tramevia-data:/data ghcr.io/tramevia/tramevia-dock:1
 ```
+
+To update it, run `docker pull ghcr.io/tramevia/tramevia-dock:1`, then `docker rm -f tramevia-dock`, then the same `docker run` command again. Your data stays in the volume.
+
+> [!TIP]
+> Changing the code yourself? Build your own image with `docker build -t tramevia-dock .` in the source folder, and use `tramevia-dock` as the image name.
+
+### Updating with Docker
+
+The dashboard tells you when a new version is out (**Settings → About** shows your version). To install it:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Docker downloads the new image and restarts Tramevia Dock with it in a few seconds. Your data stays in the `tramevia-data` volume, and your OBS docks reconnect by themselves.
+
+- The `:1` tag follows every 1.x version. A 2.0 may contain breaking changes, so you only get it by changing the tag in `compose.yaml` yourself (the release notes tell you what to check first).
+- To stay on one exact version, replace `:1` with that version, for example `ghcr.io/tramevia/tramevia-dock:1.0.0`.
+- If a version misbehaves, go back to the previous one the same way (its number is on the [Releases page](https://github.com/Tramevia/Tramevia-Dock/releases)).
+
+**Automatic updates (optional).** `compose.yaml` includes an optional [Watchtower](https://github.com/nicholas-fedor/watchtower) service (a maintained fork) that checks every night at 04:00 UTC and installs the new 1.x image if there is one. To turn it on, add this line to `.env`, then run `docker compose up -d` again:
+
+```env
+COMPOSE_PROFILES=autoupdate
+```
+
+To turn it off, remove the line and run `docker compose --profile autoupdate rm -sf watchtower`.
+
+> [!WARNING]
+> Watchtower gets access to the Docker socket, which is the same as full control of this machine. The provided setup only lets it update the containers that carry the `com.centurylinklabs.watchtower.enable=true` label (here, Tramevia Dock only). An update restarts Tramevia Dock for a few seconds: if you stream at 04:00 UTC, change `WATCHTOWER_SCHEDULE` in `compose.yaml` (6-field cron, seconds first, UTC).
 
 ## Railway
 
-[Railway](https://railway.com) runs the Docker image for you, with HTTPS and a public address. It is a paid service (with a trial); check its current pricing. We recommend the Hobby plan.
+[Railway](https://railway.com) runs the Tramevia Dock image for you, with HTTPS, a public address and automatic updates. It is a paid service: you need the **Hobby** plan (check its current pricing). The free trial restricts outgoing connections, which can break Twitch and Kick.
 
-You need the Tramevia Dock code in a GitHub repository you control (for example your fork of `Tramevia/Tramevia-Dock`).
+<!-- RAILWAY_BUTTON: replace this comment with the lines below once the Railway template exists (RELEASING.md, one-time setup step 7), and remove the note under it.
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/<CODE>?utm_medium=integration&utm_source=button&utm_campaign=tramevia-dock)
+Needs a Railway Hobby plan. You only fill in a password; updates install automatically at night (UTC). Change the window in Settings → Source → Auto Updates.
+-->
 
-1. **Create the service.** In Railway: **New Project → Deploy from GitHub repo** → pick your repository. Railway detects the `Dockerfile` and builds it.
-2. **Add a volume.** Attach a volume to the service with the mount path **`/data`**. Without it, your accounts and settings are lost at every redeploy.
-3. **Set the variables** (service → *Variables*):
+> [!NOTE]
+> A one-click **Deploy on Railway** button arrives with the first public release. Until then, set it up by hand with the steps below (about 10 minutes).
+
+1. **Create the service.** In Railway: **New Project → Deploy a Docker Image**, and enter `ghcr.io/tramevia/tramevia-dock:` followed by the latest version number from the [Releases page](https://github.com/Tramevia/Tramevia-Dock/releases), for example `ghcr.io/tramevia/tramevia-dock:1.0.0`. Use a full version number (not `:1` or `:latest`): Railway's automatic updates need it.
+2. **Set the variables** (service → *Variables*):
 
    | Variable | Value | Required? |
    |---|---|---|
    | `ADMIN_PASSWORD` | your dashboard password, 12 characters or more | Yes |
+   | `RAILWAY_RUN_UID` | `0` | Yes. Railway mounts volumes as the root user and the image runs as a regular user: without it, Tramevia Dock can't write to `/data` (`EACCES` in the logs). |
+   | `PORT` | `8787` | Yes |
    | `TOKEN_KEY` | a long random string, 32 characters or more. Keep a copy in your password manager. | Recommended (otherwise a key is generated in `/data/secret.key`) |
-   | `PUBLIC_URL` | `https://` + your custom domain (or `https://${{RAILWAY_PUBLIC_DOMAIN}}`) | Optional: Tramevia Dock detects the Railway domain by itself. Set it if you use a custom domain, and only once that domain exists (step 4): an empty domain makes Tramevia Dock fail to start. |
-   | `RAILWAY_RUN_UID` | `0` | Only if the logs show a permission error on `/data` (Railway mounts volumes as root, the image runs as a regular user) |
+   | `PUBLIC_URL` | `https://` + your custom domain | Only for a custom domain, and only once that domain exists. Without it, Tramevia Dock uses its Railway domain by itself. |
 
-4. **Get a public address.** In the service's networking settings, generate a domain. You get something like `https://your-app.up.railway.app`. If Railway asks which port to route to, add a variable `PORT` = `8787` and enter `8787`. Then **redeploy** the service: Tramevia Dock reads its Railway address at startup, and until then it answers "Host not allowed" on that address.
-5. **Healthcheck and scaling.** In the service settings, set the healthcheck path to **`/healthz`**. Keep **one replica** (Tramevia Dock keeps its data in a single SQLite file and its live connections in memory). Leave **Serverless** (app sleeping) **off**: it would cut your chat connections.
-6. **Set up.** Open your Railway address, sign in with `ADMIN_PASSWORD` and follow the wizard. The redirect addresses it shows must start with your Railway domain (if they still show `localhost`, redeploy the service or set `PUBLIC_URL`): add them to your Twitch app and your Google client (they accept several), and set up Kick as described in [Platforms → Kick](platforms.md#kick), including **Enable Webhooks** with `https://your-app.up.railway.app/webhooks/kick`.
-7. **Add to OBS.** Copy the dock and overlay addresses from the **OBS** section: they now point to your Railway address.
+3. **Add a volume.** Right-click the service → **Attach Volume**, with the mount path **`/data`**. Without it, your accounts and settings are lost at every redeploy.
+4. **Get a public address.** Service **Settings → Networking → Generate Domain**, with the target port **8787**. You get something like `https://your-app.up.railway.app`. Then apply your changes with **Deploy** (or redeploy the service): Tramevia Dock reads its Railway address at startup, and until then it answers "Host not allowed" on that address.
+5. **Healthcheck and scaling.** Service **Settings → Deploy**: set the healthcheck path to **`/healthz`**. Keep **one replica** (Tramevia Dock keeps its data in a single SQLite file and its live connections in memory). Leave **Serverless** (app sleeping) **off**: it would cut your chat connections.
+6. **Turn on automatic updates.** Service **Settings → Source → Configure Auto Updates**: choose **Minor updates and patches**, and a window when you don't stream (**Night** is 02:00–06:00 UTC, or pick a custom window).
+7. **Set up.** Open your Railway address, sign in with `ADMIN_PASSWORD` and follow the wizard. The redirect addresses it shows must start with your Railway domain (if they still show `localhost`, redeploy the service or set `PUBLIC_URL`): add them to your Twitch app and your Google client (they accept several), and set up Kick as described in [Platforms → Kick](platforms.md#kick), including **Enable Webhooks** with `https://your-app.up.railway.app/webhooks/kick`.
+8. **Add to OBS.** Copy the dock and overlay addresses from the **OBS** section: they now point to your Railway address.
 
 On a public HTTPS install, Kick accounts in **Automatic** mode read chat through the official webhooks.
+
+### Updates on Railway
+
+- **With Auto Updates on** (step 6), Railway installs every new 1.x version by itself during your window. Your `/data` volume is kept. Each update restarts Tramevia Dock for a few seconds; your OBS docks and overlay reconnect by themselves.
+- **A bad version?** Railway's update notice has **Skip this version**, and a fixed version usually follows quickly.
+- **Major versions (2.0)** are never installed automatically, because they may need you to check something first. The dashboard tells you; then change the image in **Settings → Source** to the new version, for example `ghcr.io/tramevia/tramevia-dock:2.0.0`.
+- **Auto Updates off?** Do the same by hand: in **Settings → Source**, change the image to the version shown in the dashboard.
 
 ## Other hosts and reverse proxies
 

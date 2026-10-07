@@ -23,6 +23,7 @@ Find your symptom below. Error messages are quoted as Tramevia Dock shows them i
 
 **Questions**
 
+- [How do I update?](#how-do-i-update)
 - [Is it safe?](#is-it-safe)
 - [Does it cost money?](#does-it-cost-money)
 - [Why the AGPL license?](#why-the-agpl-license)
@@ -147,6 +148,17 @@ For your safety, changing the password signs out every browser and regenerates t
 With the same port, your redirect addresses and OBS dock addresses stay the same. If you lose `secret.key` (or change `TOKEN_KEY`), the saved credentials cannot be read: accounts show "Stored credentials cannot be decrypted (TOKEN_KEY changed?). Reconnect this account." Enter your app credentials again in the wizard and reconnect each account. If you use `ADMIN_PASSWORD`, the dock key is also regenerated: copy the dock addresses into OBS again.
 
 ## Questions
+
+### How do I update?
+
+Tramevia Dock checks once a day whether a new version is out and shows a notice on the dashboard (**Settings → About** shows your version and has a **Check now** button). How you install it depends on how you run Tramevia Dock:
+
+- **ZIP** (`start.bat`, `start.command`, `start.sh`): click **Install now** in the notice. Tramevia Dock restarts by itself in about 10 seconds, never while you are live, and puts the previous version back if the new one doesn't start. You can also let it install updates by itself when none of your accounts is live (**Settings → About**). Details: [Updating](install.md#updating).
+- **git clone**: run `git pull`, then start it again with `start.bat` or `./start.sh`.
+- **Docker**: `docker compose pull && docker compose up -d`, or turn on the optional nightly automatic update. See [Updating with Docker](cloud.md#updating-with-docker).
+- **Railway**: with Auto Updates turned on, Railway installs new versions by itself during the night. See [Updates on Railway](cloud.md#updates-on-railway).
+
+An update never touches your data (the `data` folder, the Docker volume or the Railway volume) or your OBS dock addresses. If you downloaded Tramevia Dock before its first public release, it has no updater yet: [update it by hand once](install.md#updating).
 
 ### Is it safe?
 
