@@ -17,14 +17,19 @@
   <img src="https://img.shields.io/badge/version-1.0.0-8b5cf6" alt="Version 1.0.0">
   <img src="https://img.shields.io/badge/platforms-Twitch%20%C2%B7%20Kick%20%C2%B7%20YouTube%20%C2%B7%20TikTok-6441a5" alt="Platforms: Twitch, Kick, YouTube, TikTok">
   <img src="https://img.shields.io/badge/made%20for-OBS%20Studio-302e31?logo=obsstudio&logoColor=white" alt="Made for OBS Studio">
-  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/tip-Streamlabs-80f5d2?logo=streamlabs&logoColor=black" alt="Leave a tip on Streamlabs"></a>
 </p>
 
 <p align="center">
   <a href="#install"><b>Install</b></a> ·
   <a href="#tutorial"><b>Tutorial</b></a> ·
   <a href="#features"><b>Features</b></a> ·
-  <a href="#faq"><b>FAQ</b></a>
+  <a href="#faq"><b>FAQ</b></a> ·
+  <a href="#support"><b>💜 Tip</b></a>
+</p>
+
+<p align="center">
+  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/Leave%20a%20tip-Streamlabs-80f5d2?style=for-the-badge&logo=streamlabs&logoColor=black" height="36" alt="Leave a tip on Streamlabs"></a><br>
+  <sub><b>Free, no ads, no subscription.</b> If Tramevia Dock helps your streams, a tip keeps it going 💜</sub>
 </p>
 
 ![The four Tramevia Dock panels side by side, as they look inside OBS: the unified chat, the event feed, the community list and the stream info editor](docs/assets/screenshots/en/docks.png)
@@ -455,9 +460,21 @@ Tramevia Dock uses YouTube API Services. By connecting a YouTube account you agr
 
 Found a vulnerability? Please read [SECURITY.md](SECURITY.md) instead of opening a public issue.
 
-## 🤝 Contributing, license and credits
+<a id="support"></a>
 
-**Support.** Tramevia Dock is free and always will be. If it makes your streams easier, you can [leave a tip on Streamlabs](https://streamlabs.com/otelooow/tip) 💜. It helps keep the project going.
+## 💜 Support Tramevia Dock
+
+> [!TIP]
+> **Tramevia Dock is free and will stay free: no ads, no subscription.**
+> It's made by a streamer, for streamers. If it saves you time before each live, a tip helps keep the project going and growing.
+
+<p align="center">
+  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/Leave%20a%20tip-Streamlabs-80f5d2?style=for-the-badge&logo=streamlabs&logoColor=black" height="48" alt="Leave a tip on Streamlabs"></a>
+</p>
+
+<p align="center"><sub>No budget? Starring ⭐ this repository, telling another streamer about it or reporting a bug helps a lot too.</sub></p>
+
+## 🤝 Contributing, license and credits
 
 **Contributing.** Ideas, bug reports and pull requests are welcome! Start with [CONTRIBUTING.md](CONTRIBUTING.md). Report a problem in the [issues](https://github.com/Tramevia/Tramevia-Dock/issues). What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 

@@ -16,11 +16,15 @@
   <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-1.0.0-8b5cf6" alt="Version 1.0.0"></a>
   <img src="https://img.shields.io/badge/plateformes-Twitch%20%C2%B7%20Kick%20%C2%B7%20YouTube%20%C2%B7%20TikTok-6441a5" alt="Plateformes : Twitch, Kick, YouTube, TikTok">
   <img src="https://img.shields.io/badge/pens%C3%A9%20pour-OBS%20Studio-302e31?logo=obsstudio&logoColor=white" alt="Pensé pour OBS Studio">
-  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/tip-Streamlabs-80f5d2?logo=streamlabs&logoColor=black" alt="Laisser un tip sur Streamlabs"></a>
 </p>
 
 <p align="center">
-  <a href="#etape-1"><b>Installer</b></a> · <a href="#tuto"><b>Tuto</b></a> · <a href="#fonctionnalites"><b>Fonctionnalités</b></a> · <a href="#faq"><b>FAQ</b></a>
+  <a href="#etape-1"><b>Installer</b></a> · <a href="#tuto"><b>Tuto</b></a> · <a href="#fonctionnalites"><b>Fonctionnalités</b></a> · <a href="#faq"><b>FAQ</b></a> · <a href="#soutenir"><b>💜 Tip</b></a>
+</p>
+
+<p align="center">
+  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/Laisser%20un%20tip-Streamlabs-80f5d2?style=for-the-badge&logo=streamlabs&logoColor=black" height="36" alt="Laisser un tip sur Streamlabs"></a><br>
+  <sub><b>Gratuit, sans pub, sans abonnement.</b> Si Tramevia Dock t’aide pour tes lives, un tip le fait vivre 💜</sub>
 </p>
 
 <p align="center">
@@ -475,9 +479,21 @@ D’autres questions ? La [FAQ et dépannage](docs/fr/faq.md) reprend les messa
 
 **Une faille de sécurité ?** Suis [SECURITY.md](SECURITY.md) et merci de ne pas ouvrir d’issue publique.
 
-## 🤝 Contribuer, licence et crédits
+<a id="soutenir"></a>
 
-**Soutenir.** Tramevia Dock est gratuit et le restera. S’il te simplifie tes lives, tu peux [laisser un tip sur Streamlabs](https://streamlabs.com/otelooow/tip) 💜. Ça aide à faire vivre le projet.
+## 💜 Soutenir Tramevia Dock
+
+> [!TIP]
+> **Tramevia Dock est gratuit et le restera : pas de pub, pas d’abonnement.**
+> Il est fait par un streamer, pour les streamers. S’il te fait gagner du temps avant chaque live, un tip aide le projet à vivre et à grandir.
+
+<p align="center">
+  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/Laisser%20un%20tip-Streamlabs-80f5d2?style=for-the-badge&logo=streamlabs&logoColor=black" height="48" alt="Laisser un tip sur Streamlabs"></a>
+</p>
+
+<p align="center"><sub>Pas de budget ? Mettre une étoile ⭐ au dépôt, en parler à un autre streamer ou signaler un bug aide beaucoup aussi.</sub></p>
+
+## 🤝 Contribuer, licence et crédits
 
 **Contribuer.** Les idées, les rapports de bugs et les contributions sont les bienvenus ! Avant de proposer un changement, lis [CONTRIBUTING.md](CONTRIBUTING.md). Pour bidouiller sans aucun compte, `npm run demo` lance le mode démo et `npm test` lance les tests.
 
