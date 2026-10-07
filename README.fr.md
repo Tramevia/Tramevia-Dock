@@ -16,7 +16,7 @@
   <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-1.0.0-8b5cf6" alt="Version 1.0.0"></a>
   <img src="https://img.shields.io/badge/plateformes-Twitch%20%C2%B7%20Kick%20%C2%B7%20YouTube%20%C2%B7%20TikTok-6441a5" alt="Plateformes : Twitch, Kick, YouTube, TikTok">
   <img src="https://img.shields.io/badge/pens%C3%A9%20pour-OBS%20Studio-302e31?logo=obsstudio&logoColor=white" alt="Pensé pour OBS Studio">
-  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/tip-Streamlabs-80f5d2?logo=streamlabs" alt="Laisser un tip sur Streamlabs"></a>
+  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/tip-Streamlabs-80f5d2?logo=streamlabs&logoColor=black" alt="Laisser un tip sur Streamlabs"></a>
 </p>
 
 <p align="center">
