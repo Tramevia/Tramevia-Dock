@@ -499,7 +499,9 @@ D’autres questions ? La [FAQ et dépannage](docs/fr/faq.md) reprend les messa
 
 [Signaler un problème](https://github.com/Tramevia/Tramevia-Dock/issues) · [Journal des versions](CHANGELOG.md)
 
-**Licence.** [AGPL-3.0](LICENSE). En clair : tu peux utiliser, étudier, modifier et partager Tramevia Dock librement. Si tu distribues une version modifiée, ou si tu la fais tourner pour d’autres personnes à travers un réseau, tu dois partager ton code source sous la même licence.
+**Licence.** [AGPL-3.0](LICENSE). En clair : tu peux utiliser, étudier, modifier et partager Tramevia Dock librement. Si tu distribues une version modifiée, ou si tu la fais tourner pour d’autres personnes à travers un réseau, tu dois partager ton code source sous la même licence, et garder la mention de copyright.
+
+**Copyright © 2026 Tramevia.** Le nom et le logo Tramevia ne sont pas couverts par la licence (AGPL-3.0, section 7e) : une version modifiée que tu distribues ou héberges doit utiliser son propre nom et son propre logo.
 
 **Crédits.**
 

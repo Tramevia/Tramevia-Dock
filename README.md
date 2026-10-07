@@ -478,7 +478,9 @@ Found a vulnerability? Please read [SECURITY.md](SECURITY.md) instead of opening
 
 **Contributing.** Ideas, bug reports and pull requests are welcome! Start with [CONTRIBUTING.md](CONTRIBUTING.md). Report a problem in the [issues](https://github.com/Tramevia/Tramevia-Dock/issues). What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 
-**License.** [AGPL-3.0](LICENSE). You are free to use, study and modify Tramevia Dock, on as many channels as you like. If you distribute a modified version, or host one for other people over a network, you must share its source code under the same license.
+**License.** [AGPL-3.0](LICENSE). You are free to use, study and modify Tramevia Dock, on as many channels as you like. If you distribute a modified version, or host one for other people over a network, you must share its source code under the same license, and keep the copyright notice.
+
+**Copyright © 2026 Tramevia.** The Tramevia name and logo are not covered by the license (AGPL-3.0 section 7e): a modified version you distribute or host must use its own name and logo.
 
 **Credits.**
 

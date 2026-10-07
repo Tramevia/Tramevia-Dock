@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Self-hosted multistream control room for OBS: unified chat, community lists and title/category/tags for Twitch, Kick, YouTube and TikTok.",
   "license": "AGPL-3.0-only",
+  "author": "Tramevia",
   "type": "module",
   "main": "src/server.js",
   "bin": { "tramevia-dock": "src/server.js" },
