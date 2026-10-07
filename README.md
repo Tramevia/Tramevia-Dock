@@ -221,7 +221,7 @@ The **overlay** is the chat your viewers see on top of your game.
 | Live status and viewers | ✅ | ✅ | ✅ unless you hide the count | ⚠️ |
 | Title | ✅ | ✅ | ✅ needs a live or scheduled broadcast | ❌ TikTok app / LIVE Studio only |
 | Category | ✅ search with box art | ✅ search with box art | 🟡 YouTube category list ("Game" only in Studio) | ❌ |
-| Tags | ✅ | ✅ | ✅ | ❌ |
+| Tags | ✅ | ❌ no longer editable on Kick | ✅ | ❌ |
 | Events | ✅ follows, subs, gifts, cheers, raids, redemptions | 🟡 follows, subs, gifts, KICKs, redemptions | 🟡 Super Chats, Super Stickers, memberships, Jewels (no follows) | ⚠️ gifts, follows, shares, subs, likes |
 | Stream markers and clips | ✅ | ❌ | ❌ | ❌ |
 

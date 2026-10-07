@@ -59,7 +59,7 @@ function replyContext(ctx, id) {
 const info = new Map(DEMO_ACCOUNTS.map(a => [a.id, {
   title: 'Soirée chill & ranked avec vous ! !discord',
   category: a.platform === 'youtube' || a.platform === 'tiktok' ? null : CATEGORIES[0],
-  tags: a.platform === 'twitch' ? ['Français', 'Chill', 'FR'] : a.platform === 'kick' ? ['French'] : a.platform === 'youtube' ? ['live', 'gaming'] : [],
+  tags: a.platform === 'twitch' ? ['Français', 'Chill', 'FR'] : a.platform === 'youtube' ? ['live', 'gaming'] : [],
   language: 'fr', labels: [], brandedContent: false,
   description: a.platform === 'youtube' ? 'Live gaming et discussion. Rejoins le Discord !' : undefined,
   ytCategoryId: a.platform === 'youtube' ? '20' : undefined,

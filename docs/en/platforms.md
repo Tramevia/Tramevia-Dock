@@ -164,7 +164,7 @@ Kick only offers chat officially through webhooks, which need a public HTTPS add
 - Moderation: delete, timeout, ban, unban. Kick counts timeouts in **whole minutes**, from 1 minute to 7 days, so there is no 10-second timeout on Kick.
 - Community: no official viewer list, so the Community dock shows **active chatters** (people who wrote recently).
 - Live status and viewer count.
-- Stream info: title, category search with box art, tags (up to 10; Tramevia Dock limits each tag to 20 characters).
+- Stream info: title and category search with box art. Tags can no longer be changed on Kick (it only shows its default tags), so Tramevia Dock does not offer them.
 - Events: follows, new subs and renewals, gifted subs, KICKs, reward redemptions, going live and offline. In Pusher mode, hosts/raids too.
 - No stream markers or clips.
 - Language and the mature flag can only be changed in the Kick dashboard (Stream info → **Manual steps** has a link).

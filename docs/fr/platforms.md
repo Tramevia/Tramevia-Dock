@@ -204,7 +204,7 @@ En mode webhooks, Tramevia Dock s’abonne lui-même aux événements et revéri
 - **Communauté** : Kick ne fournit pas la liste des spectateurs. Tramevia Dock affiche les personnes qui ont écrit récemment (« Actifs ces 15 dernières minutes », par exemple).
 - **Statistiques** : statut du live et nombre de spectateurs.
 - **Événements** : follows, abonnements, réabonnements, abonnements offerts, KICKs, récompenses de chaîne. En mode Pusher, les raids peuvent aussi apparaître.
-- **Infos du live** : titre (Tramevia Dock le limite à 140 caractères, Kick ne publie pas de maximum), catégorie avec recherche et jaquettes, tags (10 maximum ; Tramevia Dock limite chaque tag à 20 caractères, Kick ne publie pas de maximum).
+- **Infos du live** : titre (Tramevia Dock le limite à 140 caractères, Kick ne publie pas de maximum), catégorie avec recherche et jaquettes. Les tags ne sont plus modifiables sur Kick (seuls ses tags par défaut s’affichent) : Tramevia Dock ne les propose donc pas.
 - **Messages supprimés ailleurs** (par un autre modérateur, par exemple) : seul le mode Pusher les signale. Les webhooks ne transmettent que les bannissements.
 
 À faire à la main : la **langue** et le **contenu pour adultes**, réglables uniquement dans le [tableau de bord Kick](https://dashboard.kick.com/stream).

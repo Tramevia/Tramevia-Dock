@@ -360,12 +360,15 @@ test('stats / getInfo map GET channels; setInfo sends only present keys', async 
     const s = await kick.stats(ctx, acc());
     assert.deepEqual(s, { live: true, viewers: 321, startedAt: Date.parse('2025-01-01T10:00:00Z'), title: 'Hello', category: 'Just Chatting', subscribers: 12 });
     assert.equal(m.calls[0].url.searchParams.get('broadcaster_user_id'), '42');
-    assert.deepEqual(await kick.getInfo(ctx, acc()), { title: 'Hello', category: { id: '15', name: 'Just Chatting', image: 'https://files.kick.com/cat.webp' }, tags: ['French', 'Chill'] });
-    await kick.setInfo(ctx, acc(), { title: '  New  ', tags: ['A', ' ', 'B'] });
+    // Kick only shows its default tags now: no tags in getInfo, none sent, and an explicit refusal if asked.
+    assert.deepEqual(await kick.getInfo(ctx, acc()), { title: 'Hello', category: { id: '15', name: 'Just Chatting', image: 'https://files.kick.com/cat.webp' } });
+    assert.equal(kick.infoFields.tags, undefined);
+    await kick.setInfo(ctx, acc(), { title: '  New  ' });
     const patch = m.calls.at(-1);
     assert.equal(patch.init.method, 'PATCH');
     assert.equal(patch.url.href, 'https://api.kick.com/public/v1/channels');
-    assert.deepEqual(JSON.parse(patch.body), { stream_title: 'New', custom_tags: ['A', 'B'] });
+    assert.deepEqual(JSON.parse(patch.body), { stream_title: 'New' });
+    await assert.rejects(kick.setInfo(ctx, acc(), { tags: ['A'] }), { message: 'Kick no longer lets you change tags.' });
     const calls = m.calls.length;
     await kick.setInfo(ctx, acc(), {});
     assert.equal(m.calls.length, calls);

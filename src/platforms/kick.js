@@ -78,7 +78,8 @@ export function infoPatch(ctx, changes = {}) {
     body.category_id = Number(changes.category.id);
     if (!Number.isInteger(body.category_id) || body.category_id < 1) throw new Error(ctx.t('Catégorie Kick invalide.', 'Invalid Kick category.'));
   }
-  if (Array.isArray(changes.tags)) body.custom_tags = changes.tags.map(t => String(t).trim()).filter(Boolean);
+  // Kick no longer shows custom tags (only its default ones, confirmed by Kick support): tags are not editable.
+  if (changes.tags !== undefined) throw new Error(ctx.t('Kick ne permet plus de modifier les tags.', 'Kick no longer lets you change tags.'));
   return body;
 }
 
@@ -404,7 +405,7 @@ export default {
   infoFields: {
     title: { max: 140 },            // ponytail: Kick documents only minLength 1; 140 is a UX guess (verify live)
     category: { search: true },
-    tags: { max: 10, maxLength: 20, replaceAll: true }, // custom_tags maxItems 10 (documented); per-tag length undocumented
+    // No `tags`: Kick only displays its default tags now; custom tags can no longer be changed.
   },
 
   // Per-account options for the dashboard (PATCH /api/accounts/:id {options}).
@@ -530,7 +531,6 @@ export default {
     return {
       title: String(c.stream_title || ''),
       category: c.category?.id ? category(c.category) : null,
-      tags: Array.isArray(c.stream?.custom_tags) ? c.stream.custom_tags.map(String) : [],
     };
   },
 

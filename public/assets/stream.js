@@ -1223,7 +1223,7 @@ addI18n({
     'stream.manual.notifyHint': 'Twitch › Paramètres › Diffusion : colle le texte puis enregistre. Ouvre le lien dans le navigateur connecté au bon compte (un lien ne change pas de compte).',
     'stream.manual.yt': 'YouTube Studio', 'stream.manual.ytHint': 'Jeu, miniature et visibilité se règlent dans YouTube Studio.',
     'stream.manual.ytOpen': 'Gestion du direct YouTube',
-    'stream.manual.kickHint': 'Langue et contenu pour adultes : uniquement dans le tableau de bord Kick.', 'stream.manual.kickOpen': 'Tableau de bord Kick',
+    'stream.manual.kickHint': 'Langue et contenu pour adultes : uniquement dans le tableau de bord Kick. Les tags ne sont plus modifiables sur Kick (seuls ses tags par défaut s’affichent).', 'stream.manual.kickOpen': 'Tableau de bord Kick',
     'stream.manual.tiktokHint': 'Titre et sujet du live : dans TikTok LIVE Studio ou l’app TikTok (pas d’API).',
   },
   en: {
@@ -1320,7 +1320,7 @@ addI18n({
     'stream.manual.notifyHint': 'Twitch › Settings › Stream: paste the text and save. Open the link in the browser signed in to the right account (a link does not switch accounts).',
     'stream.manual.yt': 'YouTube Studio', 'stream.manual.ytHint': 'Game, thumbnail and visibility are set in YouTube Studio.',
     'stream.manual.ytOpen': 'YouTube live control room',
-    'stream.manual.kickHint': 'Language and mature flag: only in the Kick dashboard.', 'stream.manual.kickOpen': 'Kick dashboard',
+    'stream.manual.kickHint': 'Language and mature flag: only in the Kick dashboard. Tags can no longer be changed on Kick (it only shows its default tags).', 'stream.manual.kickOpen': 'Kick dashboard',
     'stream.manual.tiktokHint': 'Live title and topic: in TikTok LIVE Studio or the TikTok app (no API).',
   },
 });

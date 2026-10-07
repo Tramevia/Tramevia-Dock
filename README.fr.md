@@ -257,7 +257,7 @@ Légende : ✅ officiel · 🟡 officiel mais limité · ⚠️ non officiel ·
 | Spectateurs et statut du live | ✅ | ✅ | ✅ sauf si tu masques le compteur | ⚠️ |
 | Titre | ✅ 140 car. | ✅ | ✅ 100 car., sur un direct en cours ou programmé | ❌ app TikTok ou LIVE Studio |
 | Catégorie | ✅ recherche et jaquettes | ✅ recherche et jaquettes | 🟡 liste fixe, le « Jeu » se règle dans YouTube Studio | ❌ |
-| Tags | ✅ 10 tags de 25 car. | ✅ 10 tags | ✅ 500 car. au total | ❌ |
+| Tags | ✅ 10 tags de 25 car. | ❌ plus modifiables sur Kick | ✅ 500 car. au total | ❌ |
 | Événements | ✅ follows, abonnements, Bits, raids, points de chaîne | ✅ webhooks<br>⚠️ Pusher<br>follows, abonnements, KICKs, récompenses | 🟡 Super Chats, Super Stickers, adhésions, Jewels ; ni follows ni abonnements | ⚠️ cadeaux, follows, partages, abonnements, likes |
 | Marqueur et clip | ✅ | ❌ | ❌ | ❌ |
 
