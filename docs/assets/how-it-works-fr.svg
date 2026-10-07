@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 430" width="1200" height="430" role="img" aria-label="Pas de serveur Tramevia au milieu : tout tourne chez toi, et ton installation parle elle-même aux plateformes.">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#17122a"/><stop offset="1" stop-color="#211a32"/></linearGradient>
+<linearGradient id="hl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d3bfff"/><stop offset="1" stop-color="#9a7ff0"/></linearGradient>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#9685b1"/></marker>
+<style>.t{font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;fill:#f3effa}.m{fill:#c5bcd4}.b{font-weight:700}</style>
+</defs>
+<rect width="1200" height="430" rx="22" fill="url(#bg)"/>
+<text x="40" y="62" class="t m b" font-size="14" letter-spacing="1.5">TES CHAÎNES</text>
+<g transform="translate(40 92)"><rect width="210" height="50" rx="25" fill="#2b223f" stroke="#574869"/>
+<g transform="translate(16 13) scale(1)"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z" fill="#a970ff"/></g>
+<text x="54" y="31" class="t b" font-size="17">Twitch</text>
+<path d="M216 25 H 284" stroke="#9685b1" stroke-width="2" stroke-dasharray="5 4" marker-start="url(#ar)" marker-end="url(#ar)"/></g>
+<g transform="translate(40 158)"><rect width="210" height="50" rx="25" fill="#2b223f" stroke="#574869"/>
+<g transform="translate(16 13) scale(1)"><path d="M1.333 0h8v5.333H12V2.667h2.667V0h8v8H20v2.667h-2.667v2.666H20V16h2.667v8h-8v-2.667H12v-2.666H9.333V24h-8Z" fill="#53fc18"/></g>
+<text x="54" y="31" class="t b" font-size="17">Kick</text>
+<path d="M216 25 H 284" stroke="#9685b1" stroke-width="2" stroke-dasharray="5 4" marker-start="url(#ar)" marker-end="url(#ar)"/></g>
+<g transform="translate(40 224)"><rect width="210" height="50" rx="25" fill="#2b223f" stroke="#574869"/>
+<g transform="translate(16 13) scale(1)"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" fill="#ff3355"/></g>
+<text x="54" y="31" class="t b" font-size="17">YouTube</text>
+<path d="M216 25 H 284" stroke="#9685b1" stroke-width="2" stroke-dasharray="5 4" marker-start="url(#ar)" marker-end="url(#ar)"/></g>
+<g transform="translate(40 290)"><rect width="210" height="50" rx="25" fill="#2b223f" stroke="#574869"/>
+<g transform="translate(16 13) scale(1)"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" fill="#25f4ee"/></g>
+<text x="54" y="31" class="t b" font-size="17">TikTok</text>
+<path d="M216 25 H 284" stroke="#9685b1" stroke-width="2" stroke-dasharray="5 4" marker-start="url(#ar)" marker-end="url(#ar)"/></g>
+<g transform="translate(330 70)"><rect width="440" height="320" rx="20" fill="#2b223f" stroke="url(#hl)" stroke-width="2"/>
+<g transform="translate(26 26)"><rect width="52" height="52" rx="12" fill="#30264d"/><path d="M13 11.5h29.9l-2.6 9.1h-10.4l-5.2 18.2h-10.4l5.2-18.2H10.4z" fill="#d3bfff"/><rect x="10.4" y="41.6" width="31.2" height="3.6" rx="1.8" fill="#9a7ff0"/></g>
+<text x="96" y="56" class="t b" font-size="26">Tramevia Dock</text><text x="96" y="80" class="t m" font-size="14">tourne sur ton PC (ou ton propre serveur)</text></g>
+<g transform="translate(372 208)"><circle cx="8" cy="-5" r="8" fill="#654db0"/><path d="M4 -5 l3 3 l5 -6" stroke="#f3effa" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><text x="26" y="0" class="t" font-size="15">Chat et événements de toutes tes plateformes</text></g>
+<g transform="translate(372 242)"><circle cx="8" cy="-5" r="8" fill="#654db0"/><path d="M4 -5 l3 3 l5 -6" stroke="#f3effa" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><text x="26" y="0" class="t" font-size="15">Stats du live et qui est dans le chat</text></g>
+<g transform="translate(372 276)"><circle cx="8" cy="-5" r="8" fill="#654db0"/><path d="M4 -5 l3 3 l5 -6" stroke="#f3effa" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><text x="26" y="0" class="t" font-size="15">Titre · catégorie · tags partout</text></g>
+<g transform="translate(372 310)"><circle cx="8" cy="-5" r="8" fill="#654db0"/><path d="M4 -5 l3 3 l5 -6" stroke="#f3effa" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><text x="26" y="0" class="t" font-size="15">Jetons chiffrés sur ton disque</text></g>
+<g transform="translate(770 0)"><path d="M0 170 H 78" stroke="#9685b1" stroke-width="2" marker-end="url(#ar)"/><path d="M0 300 H 78" stroke="#9685b1" stroke-width="2" marker-end="url(#ar)"/></g>
+<text x="1040" y="62" class="t m b" font-size="14" letter-spacing="1.5" text-anchor="middle">OBS STUDIO</text>
+<g transform="translate(856 110)"><rect width="312" height="112" rx="16" fill="#2b223f" stroke="#574869"/>
+<g transform="translate(20 22)"><rect width="38" height="68" rx="6" fill="#30264d" stroke="#9685b1"/><rect x="6" y="8" width="26" height="5" rx="2" fill="#d3bfff"/><rect x="6" y="18" width="20" height="4" rx="2" fill="#9685b1"/><rect x="6" y="27" width="24" height="4" rx="2" fill="#9685b1"/><rect x="6" y="36" width="16" height="4" rx="2" fill="#9685b1"/></g>
+<text x="76" y="48" class="t b" font-size="18">Docks</text><text x="76" y="70" class="t m" font-size="13">Chat · Événements</text><text x="76" y="88" class="t m" font-size="13">Communauté · Infos du live</text></g>
+<g transform="translate(856 240)"><rect width="312" height="112" rx="16" fill="#2b223f" stroke="#574869"/>
+<g transform="translate(20 22)"><rect width="56" height="68" rx="6" fill="#654db0" opacity=".35"/><rect x="6" y="40" width="34" height="8" rx="4" fill="#f3effa"/><rect x="6" y="53" width="44" height="8" rx="4" fill="#f3effa"/></g>
+<text x="94" y="48" class="t b" font-size="18">Overlay de chat</text><text x="94" y="72" class="t m" font-size="13">Une source Navigateur sur ta scène</text></g>
+<text x="600" y="414" class="t m" font-size="14" text-anchor="middle">🔒  Pas de serveur Tramevia au milieu : tout tourne chez toi, et ton installation parle elle-même aux plateformes.</text>
+</svg>

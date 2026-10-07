@@ -29,7 +29,7 @@ Il te faut Docker avec Compose (Docker Desktop sur Windows et macOS, ou Docker E
 
    ```bash
    git clone https://github.com/Tramevia/Tramevia-Dock.git
-   cd tramevia-dock
+   cd Tramevia-Dock
    ```
 
 2. Crée un fichier `.env` à côté de `compose.yaml`, avec au minimum :

@@ -57,7 +57,7 @@ Install Node.js 24.15 or newer (from [nodejs.org](https://nodejs.org) or your di
 
 ```bash
 git clone https://github.com/Tramevia/Tramevia-Dock.git
-cd tramevia-dock
+cd Tramevia-Dock
 ./start.sh
 ```
 

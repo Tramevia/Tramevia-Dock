@@ -49,7 +49,7 @@ Tu peux aussi passer par le Terminal : place-toi dans le dossier et tape `./sta
 
    ```bash
    git clone https://github.com/Tramevia/Tramevia-Dock.git
-   cd tramevia-dock
+   cd Tramevia-Dock
    ./start.sh
    ```
 
