@@ -159,7 +159,7 @@ addI18n({
     'home.ovl.align': 'Alignement', 'home.ovl.align.left': 'Gauche', 'home.ovl.align.right': 'Droite',
     'home.ovl.display': 'Affichage', 'home.ovl.filters': 'Filtres', 'home.ovl.platforms': 'Plateformes', 'home.ovl.accounts': 'Comptes',
     'home.ovl.hideBots': 'Masquer les bots', 'home.ovl.hideCommands': 'Masquer les !commandes', 'home.ovl.badges': 'Badges',
-    'home.ovl.icons': 'Icônes des plateformes', 'home.ovl.avatars': 'Avatars', 'home.ovl.bubble': 'Bulles', 'home.ovl.outline': 'Contour du texte',
+    'home.ovl.icons': 'Icônes des plateformes', 'home.ovl.avatars': 'Avatars', 'home.ovl.bubble': 'Bulles', 'home.ovl.outline': 'Contour du texte', 'home.ovl.credit': 'Petite mention « Chat via Tramevia Dock » (merci 💜)',
     'home.ovl.events': 'Événements (follows, subs…)',
     'home.ovl.url': 'Adresse de l’overlay', 'home.ovl.preview': 'Aperçu en direct',
     'home.ovl.previewHint': 'Le damier représente la transparence.', 'home.ovl.previewTitle': 'Aperçu de l’overlay de chat',
@@ -366,7 +366,7 @@ addI18n({
     'home.ovl.align': 'Alignment', 'home.ovl.align.left': 'Left', 'home.ovl.align.right': 'Right',
     'home.ovl.display': 'Display', 'home.ovl.filters': 'Filters', 'home.ovl.platforms': 'Platforms', 'home.ovl.accounts': 'Accounts',
     'home.ovl.hideBots': 'Hide bots', 'home.ovl.hideCommands': 'Hide !commands', 'home.ovl.badges': 'Badges',
-    'home.ovl.icons': 'Platform icons', 'home.ovl.avatars': 'Avatars', 'home.ovl.bubble': 'Bubbles', 'home.ovl.outline': 'Text outline',
+    'home.ovl.icons': 'Platform icons', 'home.ovl.avatars': 'Avatars', 'home.ovl.bubble': 'Bubbles', 'home.ovl.outline': 'Text outline', 'home.ovl.credit': 'Small “Chat via Tramevia Dock” credit (thank you 💜)',
     'home.ovl.events': 'Events (follows, subs…)',
     'home.ovl.url': 'Overlay address', 'home.ovl.preview': 'Live preview',
     'home.ovl.previewHint': 'The checkerboard shows transparency.', 'home.ovl.previewTitle': 'Chat overlay preview',
@@ -425,10 +425,10 @@ const REPO = 'https://github.com/Tramevia/Tramevia-Dock';
 const KICK_SCOPES = ['user:read', 'channel:read', 'channel:write', 'chat:write', 'events:subscribe', 'moderation:ban', 'moderation:chat_message:manage', 'kicks:read'];
 const SECTIONS = [['overview', 'home'], ['accounts', 'users'], ['obs', 'monitor'], ['settings', 'settings']];
 const DOCKS = [['chat', '/chat', 'chat'], ['events', '/events', 'zap'], ['community', '/community', 'users'], ['stream', '/stream', 'edit'], ['home', '/', 'home']];
-const OV_BOOLS = ['hideBots', 'hideCommands', 'events', 'badges', 'icons', 'avatars', 'bubble', 'outline'];
+const OV_BOOLS = ['hideBots', 'hideCommands', 'events', 'badges', 'icons', 'avatars', 'bubble', 'outline', 'credit'];
 const OV_DEFAULTS = {
   mode: 'chat', theme: 'dark', max: 20, fade: 0, size: 16, align: 'left', featureSeconds: 15,
-  hideBots: true, hideCommands: true, events: true, badges: true, icons: true, avatars: false, bubble: false, outline: true,
+  hideBots: true, hideCommands: true, events: true, badges: true, icons: true, avatars: false, bubble: false, outline: true, credit: false,
   offPlatforms: [], offAccounts: [],
 };
 const AUTH_TIMEOUT = 600_000; // server forgets the OAuth state after 10 min
@@ -1170,7 +1170,7 @@ function renderOverlay() {
           featured ? num('featureSeconds', 0, 300) : [num('max', 1, 100), num('fade', 0, 600)],
           num('size', 10, 48)),
         h('div.stack.tight', h('span.label', t('home.ovl.display')),
-          h('div.ov-switches', ['badges', 'icons', 'avatars', ...(textOnly ? ['bubble', 'outline'] : [])].map(toggle))),
+          h('div.ov-switches', ['badges', 'icons', 'avatars', ...(textOnly ? ['bubble', 'outline'] : []), 'credit'].map(toggle))),
         !featured && h('div.stack.tight', h('span.label', t('home.ovl.filters')),
           h('div.ov-switches', ['hideBots', 'hideCommands', 'events'].map(toggle))),
         !featured && h('div.stack.tight', h('span.label', t('home.ovl.platforms')),

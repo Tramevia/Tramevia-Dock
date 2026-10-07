@@ -64,7 +64,7 @@ L’overlay affiche ton chat sur le stream, avec un fond transparent. Il utilise
 ### Ajouter l’overlay
 
 1. Dans le tableau de bord, section **OBS**, trouve la carte « Overlay de chat ».
-2. Règle l’apparence : type, thème, alignement, nombre de messages, disparition, taille du texte, badges, icônes, avatars, bulles, contour, filtres. L’« Aperçu en direct » se met à jour au fur et à mesure (le damier représente la transparence).
+2. Règle l’apparence : type, thème, alignement, nombre de messages, disparition, taille du texte, badges, icônes, avatars, bulles, contour, mention Tramevia Dock, filtres. L’« Aperçu en direct » se met à jour au fur et à mesure (le damier représente la transparence).
 3. Copie l’« Adresse de l’overlay ».
 4. Dans OBS : **Sources → + → Navigateur**, donne un nom à la source, colle l’adresse dans le champ URL, mets la largeur à **400** et la hauteur à **600**, puis valide.
 
@@ -107,6 +107,7 @@ Pour les interrupteurs, `1`, `true` ou `yes` activent l’option, toute autre va
 | `avatars` | interrupteur | désactivé | `0` | Avatars des auteurs. |
 | `bubble` | interrupteur | désactivé | `0` | Chaque message dans une bulle. |
 | `outline` | interrupteur | désactivé | `1` | Contour autour du texte, pour le lire sur n’importe quel fond. |
+| `credit` | interrupteur | désactivé | `0` | Petite mention « Chat via Tramevia Dock » sous le chat, pour faire connaître le projet. Jamais activée sans toi. |
 | `featureSeconds` | 0 à 3600 secondes (générateur : 0 à 300) | `0` | `15` | Mode mis en avant : durée d’affichage. `0` = jusqu’à ce que tu le retires. |
 
 En mode `featured`, les paramètres `max`, `fade`, `hideBots`, `hideCommands` et `events` sont ignorés, et l’avatar de l’auteur est toujours affiché.

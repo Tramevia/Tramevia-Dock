@@ -51,6 +51,13 @@ html, body { height: 100%; overflow: hidden; }
 }
 :root[data-overlay="light"].ov-outline .ov { --oc: rgb(255 255 255 / 92%); }
 
+/* Optional credit under the chat (?credit=1, off by default). */
+.ov-credit { width: fit-content; margin-top: 0.45em; font-size: 0.6em; font-weight: 600; opacity: 0.8; }
+.ov-right .ov-credit { margin-left: auto; }
+:root[data-overlay="dark"] .ov-credit, :root[data-overlay="light"] .ov-credit { padding: 0.2em 0.7em; border-radius: 1em; }
+:root[data-overlay="dark"] .ov-credit { background: rgb(18 19 25 / 85%); color: #eceef4; }
+:root[data-overlay="light"] .ov-credit { background: rgb(255 255 255 / 92%); color: #171923; }
+
 /* Featured mode: one large card fed by the dock's "Show on overlay" button. */
 .ov-featured #app.ov { justify-content: flex-end; align-items: flex-start; }
 .ov-featured.ov-right #app.ov { align-items: flex-end; }

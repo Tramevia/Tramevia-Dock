@@ -1,6 +1,6 @@
 // Chat overlay for OBS browser sources (/overlay/chat): read-only, transparent, configured only by URL params.
 // ?key=&theme=dark|light|transparent&max=12&fade=0&platforms=&accounts=&hideBots=1&hideCommands=1&badges=0&icons=0
-//  &avatars=1&size=18&align=left|right&events=1&bubble=1&outline=1&mode=featured&featureSeconds=0
+//  &avatars=1&size=18&align=left|right&events=1&bubble=1&outline=1&mode=featured&featureSeconds=0&credit=1
 import { boot, h, query, addI18n, t } from '/assets/core.js';
 import { renderMessage, renderEvent } from '/assets/chat-render.js';
 
@@ -96,6 +96,10 @@ function onFrame({ t: type, d }) {
 
 boot({
   page: '/overlay/chat', title: t('overlay.title'), header: false, admin: false,
-  onReady(state, app) { app.classList.add('ov'); app.append(list); },
+  onReady(state, app) {
+    app.classList.add('ov');
+    app.append(list);
+    if (flag('credit', false)) app.append(h('div.ov-credit', 'Chat via Tramevia Dock')); // opt-in, off by default
+  },
   onFrame,
 });

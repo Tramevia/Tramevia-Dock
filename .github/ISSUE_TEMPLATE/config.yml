@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or help / Question ou aide
+    url: https://github.com/Tramevia/Tramevia-Dock/discussions/categories/q-a
+    about: Install, setup, OBS… ask the community. / Installation, configuration, OBS… demande à la communauté.
+  - name: Security vulnerability / Faille de sécurité
+    url: https://github.com/Tramevia/Tramevia-Dock/security/advisories/new
+    about: Report it privately, never in a public issue. / Signale-la en privé, jamais dans une issue publique.
+  - name: Documentation and FAQ / Documentation et FAQ
+    url: https://github.com/Tramevia/Tramevia-Dock#readme
+    about: Most answers are already there. / La plupart des réponses s'y trouvent déjà.

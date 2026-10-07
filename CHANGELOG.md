@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Overlay: optional small “Chat via Tramevia Dock” credit under the chat (`credit=1`, off by default).
+- Overlay builder: says that the settings live in the address, so it must be pasted again into OBS after a change.
+- GitHub: issue forms ask for the install type and version, warn against pasting keys, and send questions to Discussions.
+
 ## 1.0.0 — first public release
 
 - Multi-account, multi-platform: Twitch (any number of accounts), Kick, YouTube Live, TikTok LIVE (read-only, unofficial).

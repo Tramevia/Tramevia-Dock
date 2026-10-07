@@ -2,10 +2,15 @@ name: Feature request / Suggestion
 description: Suggest an improvement / Propose une amélioration
 labels: [enhancement]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Not sure yet, or want to discuss it first? / Pas encore sûr, ou envie d'en discuter d'abord ? → [Ideas / Idées](https://github.com/Tramevia/Tramevia-Dock/discussions/categories/ideas)
   - type: textarea
     id: need
     attributes:
       label: What do you need and why? / De quoi as-tu besoin et pourquoi ?
+      description: Describe the situation on stream, not only the solution. / Décris la situation en live, pas seulement la solution.
     validations:
       required: true
   - type: dropdown
@@ -14,3 +19,7 @@ body:
       label: Platform / Plateforme
       multiple: true
       options: [Twitch, Kick, YouTube, TikTok, OBS, Other / Autre]
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: How do you do it today? / Comment fais-tu aujourd'hui ?

@@ -99,6 +99,7 @@ The builder writes the address for you. If you prefer to edit it by hand, here i
 | `avatars` | Avatars | 1 / 0 | 0 |
 | `bubble` | Bubbles | 1 / 0 | 0 |
 | `outline` | Text outline | 1 / 0 | 0 |
+| `credit` | Small “Chat via Tramevia Dock” credit under the chat, to help others find the project (never on unless you turn it on) | 1 / 0 | 0 |
 | `hideBots` | Hide bots | 1 / 0 (hides well-known bots such as Nightbot or StreamElements) | 0 |
 | `hideCommands` | Hide !commands | 1 / 0 (hides messages starting with `!`) | 0 |
 | `events` | Events (follows, subs…) | 1 / 0 | 1 |
