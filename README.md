@@ -36,6 +36,11 @@
 
 ### 👀 See it live
 
+<p align="center">
+  <a href="https://youtu.be/KAMHRxkFxqE"><img src="https://img.youtube.com/vi/KAMHRxkFxqE/maxresdefault.jpg" width="720" alt="Tramevia Dock presentation video on YouTube (32 seconds): click to watch"></a><br>
+  <sub>▶️ <b>Tramevia Dock in 30 seconds</b> (YouTube video)</sub>
+</p>
+
 <table>
   <tr>
     <td width="50%" align="center">
