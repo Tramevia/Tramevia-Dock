@@ -1,0 +1,29 @@
+name: Bug report / Signaler un bug
+description: Something does not work / Quelque chose ne fonctionne pas
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened? / Que s'est-il passé ?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / Étapes pour reproduire
+  - type: input
+    id: version
+    attributes:
+      label: Tramevia Dock version, OS, OBS version / Version, OS, version d'OBS
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform / Plateforme
+      multiple: true
+      options: [Twitch, Kick, YouTube, TikTok, OBS, Other / Autre]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (remove any token or password!) / Journaux (retire tout jeton ou mot de passe !)
+      render: text

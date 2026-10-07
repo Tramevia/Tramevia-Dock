@@ -1,0 +1,22 @@
+{
+  "name": "tramevia-dock",
+  "version": "1.0.0",
+  "description": "Self-hosted multistream control room for OBS: unified chat, community lists and title/category/tags for Twitch, Kick, YouTube and TikTok.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "main": "src/server.js",
+  "bin": { "tramevia-dock": "src/server.js" },
+  "engines": { "node": ">=24.15.0" },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "demo": "node src/server.js --demo",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "dependencies": {
+    "tiktok-live-connector": "2.5.0",
+    "ws": "^8.18.3"
+  },
+  "repository": { "type": "git", "url": "git+https://github.com/Tramevia/Tramevia-Dock.git" },
+  "keywords": ["obs", "twitch", "kick", "youtube", "tiktok", "multichat", "multistream", "streaming", "dock", "overlay"]
+}

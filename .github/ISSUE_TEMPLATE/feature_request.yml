@@ -1,0 +1,16 @@
+name: Feature request / Suggestion
+description: Suggest an improvement / Propose une amélioration
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What do you need and why? / De quoi as-tu besoin et pourquoi ?
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform / Plateforme
+      multiple: true
+      options: [Twitch, Kick, YouTube, TikTok, OBS, Other / Autre]

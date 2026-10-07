@@ -1,0 +1,33 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [24, 26]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Boot smoke test (demo mode)
+        shell: bash
+        run: |
+          NO_OPEN=1 DATA_DIR=./.ci-data PORT=8799 node src/server.js --demo &
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8799/healthz && exit 0; sleep 1; done
+          exit 1
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t tramevia-dock .

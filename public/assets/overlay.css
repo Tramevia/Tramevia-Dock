@@ -1,0 +1,70 @@
+/* Chat overlay for OBS browser sources. Page background is always transparent.
+   Themes: transparent = text only on the scene (bubble/outline options) · dark = dark cards · light = light cards. */
+:root, body { background: transparent; }
+html, body { height: 100%; overflow: hidden; }
+::-webkit-scrollbar { display: none; }
+
+#app.ov {
+  --chat-fs: var(--ov-fs, 20px);
+  position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 0.6em; overflow: hidden; font-size: var(--chat-fs);
+}
+.ov-list { display: flex; flex-direction: column; align-items: flex-start; gap: 0.3em; }
+.ov-right .ov-list { align-items: flex-end; text-align: right; }
+
+.ov .msg::before { display: none; }
+.ov .msg { padding: 0.15em 0.1em; background: none; outline: none; max-width: 100%; line-height: 1.4; animation: ov-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.ov .msg-author { cursor: default; text-decoration: none; }
+.ov .msg-sep { color: inherit; opacity: 0.7; }
+.ov .msg.first, .ov .msg.highlight, .ov .msg.mention-me, .ov .msg.keyword { background: none; }
+.ov .msg-tag { color: var(--ok); }
+.ov .evt { margin: 0; max-width: 100%; text-align: left; animation: ov-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.ov .gone { opacity: 0; transform: translateY(-0.3em); transition: opacity 0.4s ease, transform 0.4s ease; }
+@keyframes ov-in { from { opacity: 0; transform: translateX(-0.6em); } }
+.ov-right .ov .msg, .ov-right .ov .evt { animation-name: ov-in-right; }
+@keyframes ov-in-right { from { opacity: 0; transform: translateX(0.6em); } }
+
+/* Transparent (default): white text with a soft shadow, readable on most scenes. */
+:root[data-overlay="transparent"] { --text: #ffffff; --muted: #e3e6ef; --faint: #c9cdd8; }
+:root[data-overlay="transparent"] .ov { color: #fff; text-shadow: 0 1px 2px rgb(0 0 0 / 85%), 0 0 0.4em rgb(0 0 0 / 55%); }
+:root[data-overlay="transparent"] .ov .evt { background: rgb(12 13 18 / 62%); border-color: color-mix(in srgb, var(--evt) 45%, transparent); }
+:root[data-overlay="transparent"] .ov .mention { background: rgb(255 255 255 / 18%); }
+
+/* Dark / Light: every message on its own card (always on), platform colour stripe; no text shadow needed. */
+:root[data-overlay="dark"] .ov .msg, :root[data-overlay="light"] .ov .msg {
+  padding: 0.35em 0.75em; border-radius: 0.7em; border-left: 0.22em solid var(--pf, var(--accent));
+  box-shadow: 0 0.2em 0.8em rgb(0 0 0 / 30%);
+}
+:root[data-overlay="dark"] .ov .msg { background: rgb(18 19 25 / 92%); color: #eceef4; }
+:root[data-overlay="light"] .ov .msg { background: rgb(255 255 255 / 95%); color: #171923; }
+:root[data-overlay="dark"] .ov, :root[data-overlay="light"] .ov { text-shadow: none; }
+
+/* Bubble (transparent theme): rounded translucent card per message. */
+.ov-bubble .ov .msg { padding: 0.3em 0.7em; border-radius: 0.8em; background: color-mix(in srgb, var(--surface) 78%, transparent); box-shadow: 0 0.15em 0.6em rgb(0 0 0 / 22%); }
+:root[data-overlay="transparent"].ov-bubble .ov .msg { background: rgb(10 11 16 / 55%); }
+
+/* Outline: text stroke for readability on any scene. */
+.ov-outline .ov {
+  --o: max(1px, 0.07em); --oc: rgb(0 0 0 / 90%);
+  text-shadow: var(--o) 0 0 var(--oc), calc(-1 * var(--o)) 0 0 var(--oc), 0 var(--o) 0 var(--oc), 0 calc(-1 * var(--o)) 0 var(--oc),
+    var(--o) var(--o) 0 var(--oc), calc(-1 * var(--o)) calc(-1 * var(--o)) 0 var(--oc), var(--o) calc(-1 * var(--o)) 0 var(--oc), calc(-1 * var(--o)) var(--o) 0 var(--oc);
+}
+:root[data-overlay="light"].ov-outline .ov { --oc: rgb(255 255 255 / 92%); }
+
+/* Featured mode: one large card fed by the dock's "Show on overlay" button. */
+.ov-featured #app.ov { justify-content: flex-end; align-items: flex-start; }
+.ov-featured.ov-right #app.ov { align-items: flex-end; }
+.feat-card {
+  max-width: min(100%, 60em); padding: 0.7em 1em; border-radius: 1em; font-size: 1.25em;
+  background: color-mix(in srgb, var(--surface) 88%, transparent); border: 1px solid color-mix(in srgb, var(--pf, var(--accent)) 55%, transparent);
+  box-shadow: 0 0.4em 1.6em rgb(0 0 0 / 35%); animation: feat-in 0.45s cubic-bezier(0.2, 0.9, 0.25, 1.15) both;
+}
+:root[data-overlay="transparent"] .feat-card { background: rgb(10 11 16 / 72%); }
+.feat-card .msg { animation: none; padding: 0; text-align: left; }
+.feat-card .msg-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0.15em 0.3em; }
+.feat-card .msg-line > * { margin-right: 0; }
+.feat-card img.msg-avatar, .feat-card span.msg-avatar { width: 1.8em; height: 1.8em; font-size: 1em; vertical-align: middle; }
+.feat-card .msg-sep { display: none; }
+.feat-card .msg-text { flex-basis: 100%; font-size: 1.12em; line-height: 1.35; margin-top: 0.15em; }
+.feat-card.gone { opacity: 0; transform: translateY(0.4em) scale(0.98); transition: opacity 0.4s ease, transform 0.4s ease; }
+@keyframes feat-in { from { opacity: 0; transform: translateY(0.6em) scale(0.96); } }

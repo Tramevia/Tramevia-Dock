@@ -1,0 +1,10 @@
+node_modules
+data
+.data-*
+.env
+.git
+.github
+docs
+test
+*.md
+!README.md

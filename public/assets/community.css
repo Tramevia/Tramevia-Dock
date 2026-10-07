@@ -1,0 +1,161 @@
+/* Community dock — layout only; components come from ui.css. Works from a 300 px OBS dock to desktop. */
+.cm-page { max-width: 1180px; margin: 0 auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+
+/* ---------- Summary ---------- */
+.cm-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 12px 12px 12px 14px; }
+.cm-sum-body { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.cm-total { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.cm-total strong { font-size: 2.1rem; font-weight: 750; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.cm-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.cm-chip {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 3px 9px 3px 3px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--pf) 30%, var(--border)); background: color-mix(in srgb, var(--pf) 8%, var(--surface-2));
+  color: var(--text); font: inherit; font-size: 0.84rem; cursor: pointer; transition: background 0.12s, border-color 0.12s;
+}
+.cm-chip:hover { background: color-mix(in srgb, var(--pf) 16%, var(--surface-2)); border-color: color-mix(in srgb, var(--pf) 55%, var(--border)); }
+.cm-chip .pf-icon { width: 20px; height: 20px; border-radius: 50%; }
+.cm-chip .pf-icon svg { width: 11px; height: 11px; }
+.cm-chip-name { max-width: 110px; color: var(--muted); }
+.cm-chip strong { font-variant-numeric: tabular-nums; font-weight: 650; }
+.cm-nolive { display: inline-flex; align-items: center; gap: 7px; }
+.cm-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.cm-meta svg { flex: none; }
+.cm-refresh svg { transition: transform 0.3s; }
+.cm-refresh.spinning svg { animation: spin 0.8s linear infinite; }
+.cm-status:empty { display: none; }
+.cm-status-err { display: flex; align-items: center; gap: 6px; color: var(--danger); }
+.cm-status-err svg { flex: none; }
+
+/* ---------- Toolbar ---------- */
+.cm-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.cm-search { position: relative; flex: 1 1 180px; min-width: 0; display: block; }
+.cm-search > svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
+.cm-search input { padding-left: 32px; }
+.cm-window { flex: none; }
+.cm-window button { padding: 4px 9px; font-size: 0.84rem; font-variant-numeric: tabular-nums; }
+
+/* ---------- Accounts ---------- */
+.cm-accounts { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); align-items: start; }
+.cm-acc { overflow: hidden; }
+.cm-acc-h { margin: 0; font-size: inherit; font-weight: inherit; }
+.cm-acc-head {
+  width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 11px; border: 0; background: none;
+  color: inherit; font: inherit; text-align: left; cursor: pointer; transition: background 0.12s;
+}
+.cm-acc-head:hover:not(:disabled) { background: var(--surface-2); }
+.cm-acc-head:disabled { cursor: default; }
+.cm-acc-head:disabled .cm-chev { visibility: hidden; }
+.cm-acc-head:focus-visible, .cm-group-head:focus-visible, .cm-user:focus-visible { outline-offset: -2px; }
+.cm-acc-av { position: relative; flex: none; display: inline-grid; }
+.cm-acc-av .avatar { width: 34px; height: 34px; }
+.cm-acc-av .pf-icon { position: absolute; right: -4px; bottom: -4px; width: 17px; height: 17px; border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 2px var(--surface); }
+.cm-acc-av .pf-icon svg { width: 10px; height: 10px; }
+.cm-acc-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cm-acc-name { font-weight: 650; }
+.cm-acc-status { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; min-height: 18px; }
+/* Stats kept from an earlier poll (or unknown): dimmed, tooltip explains. Unknown viewers are not in the total. */
+.cm-stale { opacity: 0.55; cursor: help; }
+.cm-acc-status .cm-stale { display: inline-flex; align-items: center; gap: 8px; }
+.cm-total strong.cm-partial { color: var(--muted); }
+.cm-total .badge { align-self: center; cursor: help; }
+.cm-viewers { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cm-count {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; flex: none;
+  background: var(--surface-3); color: var(--muted); font-size: 0.8rem; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.cm-chev { flex: none; color: var(--faint); transition: transform 0.15s ease; }
+[aria-expanded="false"] > .cm-chev { transform: rotate(-90deg); }
+.cm-acc-body { border-top: 1px solid var(--border); padding: 8px 6px 6px; display: flex; flex-direction: column; gap: 4px; }
+.cm-in { animation: cm-in 0.16s ease-out; }
+.cm-banner { margin: 2px 4px 4px; padding: 7px 10px; align-items: center; overflow-wrap: anywhere; }
+.cm-banner svg { flex: none; }
+.cm-hint { display: flex; align-items: center; gap: 6px; padding: 2px 6px 4px; font-size: 0.78rem; color: var(--faint); cursor: help; }
+.cm-hint svg { flex: none; }
+.cm-empty-line { padding: 10px 6px 12px; color: var(--muted); font-size: 0.86rem; text-align: center; }
+
+/* ---------- Groups ---------- */
+.cm-group-h { margin: 0; font-size: inherit; }
+.cm-group-head {
+  width: 100%; display: flex; align-items: center; gap: 6px; padding: 5px 6px; border: 0; border-radius: 6px; background: none;
+  color: var(--muted); font: inherit; font-size: 0.74rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.07em;
+  text-align: left; cursor: pointer;
+}
+.cm-group-head:hover:not(:disabled) { color: var(--text); background: var(--surface-2); }
+.cm-group-head:disabled { cursor: default; }
+.cm-group-head:disabled .cm-chev { visibility: hidden; }
+.cm-group-count { color: var(--faint); font-variant-numeric: tabular-nums; }
+
+/* ---------- Users ---------- */
+.cm-users { list-style: none; margin: 0 0 4px; padding: 0; }
+.cm-user {
+  width: 100%; display: flex; align-items: center; gap: 8px; min-height: 28px; padding: 3px 6px; border: 0; border-radius: 6px;
+  background: none; color: inherit; font: inherit; font-size: 0.9rem; text-align: left; cursor: pointer; transition: background 0.1s;
+}
+.cm-user:hover { background: var(--surface-2); }
+.cm-user-name { flex: 1; }
+.cm-user-name .faint { font-size: 0.84em; }
+.cm-initial {
+  --c: hsl(var(--h, 260) 65% 55%);
+  width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  background: color-mix(in srgb, var(--c) 20%, transparent); color: color-mix(in srgb, var(--c) 70%, var(--text));
+  font-size: 0.68rem; font-weight: 700; line-height: 1;
+}
+.cm-initial.lg { width: 44px; height: 44px; font-size: 1.15rem; }
+.cm-role { display: inline-grid; place-items: center; flex: none; color: var(--faint); }
+.cm-role.r-moderator, .cm-role.r-broadcaster { color: var(--ok); }
+.cm-role.r-vip { color: var(--warn); }
+.cm-role.r-subscriber, .cm-role.r-member { color: var(--accent); }
+.cm-user-meta { display: inline-flex; align-items: center; gap: 3px; flex: none; color: var(--faint); font-size: 0.76rem; font-variant-numeric: tabular-nums; }
+.cm-dot { margin: 0 1px; }
+.cm-more { margin-top: 2px; color: var(--muted); }
+
+/* ---------- Empty / skeleton ---------- */
+.cm-empty { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.cm-empty-icon { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); }
+.cm-empty-icon.danger { background: var(--danger-soft); color: var(--danger); }
+.cm-sk-big { width: 120px; height: 34px; }
+.cm-sk-line { width: 70%; height: 12px; }
+.cm-sk-line.short { width: 40%; }
+.cm-sk-card { display: flex; gap: 10px; align-items: center; padding: 12px; }
+.cm-sk-av { width: 34px; height: 34px; border-radius: 9px; flex: none; }
+.cm-sk-lines { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+
+/* ---------- User card ---------- */
+.cm-card { width: min(400px, calc(100vw - 24px)); }
+.cm-card .dialog-body { gap: 10px; }
+.cm-card-head { display: flex; align-items: center; gap: 12px; }
+.cm-card-av { flex: none; display: inline-grid; }
+.cm-card-id { flex: 1; min-width: 0; }
+.cm-card-on { display: flex; align-items: center; gap: 8px; }
+.cm-card-roles { --gap: 5px; }
+.cm-facts { margin: 0; display: grid; gap: 6px; }
+.cm-facts:empty { display: none; }
+.cm-facts > div { display: flex; justify-content: space-between; gap: 12px; font-size: 0.86rem; }
+.cm-facts dt { color: var(--muted); }
+.cm-facts dd { margin: 0; text-align: right; }
+.cm-card-extra { display: flex; flex-direction: column; gap: 8px; }
+.cm-card-extra:empty { display: none; }
+.cm-card-extra .skeleton { height: 12px; }
+.cm-card-extra .skeleton.short { width: 60%; }
+.cm-card-desc { overflow-wrap: anywhere; }
+.cm-msgs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; }
+.cm-msgs li { display: flex; gap: 8px; font-size: 0.86rem; overflow-wrap: anywhere; }
+.cm-msgs time { flex: none; font-variant-numeric: tabular-nums; font-size: 0.78rem; padding-top: 1px; }
+.cm-card .dialog-actions { padding: 10px 16px; flex-wrap: wrap; }
+
+@keyframes cm-in { from { opacity: 0; transform: translateY(-3px); } }
+
+/* Multi-column desktop: bound each card so one long list does not push the others off screen. */
+@media (min-width: 700px) {
+  .cm-acc-body { max-height: min(68vh, 620px); overflow-y: auto; overscroll-behavior: contain; }
+}
+
+/* ---------- Narrow OBS docks ---------- */
+@media (max-width: 420px) {
+  .cm-page { padding: 8px; gap: 8px; }
+  .cm-summary { padding: 10px; }
+  .cm-total strong { font-size: 1.8rem; }
+  .cm-acc-head { gap: 8px; padding: 9px 8px 9px 9px; }
+  .cm-chip-name { max-width: 72px; }
+  .cm-card .dialog-actions { padding: 10px 12px; }
+}

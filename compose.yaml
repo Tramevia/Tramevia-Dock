@@ -1,0 +1,19 @@
+# docker compose up -d   →  http://localhost:8787
+services:
+  tramevia-dock:
+    build: .
+    image: tramevia-dock
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8787:8787"   # remove "127.0.0.1:" to expose it on your network
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8787}
+      # Always required in Docker (the container cannot know the port is only published on loopback).
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD (12+ characters) in .env}
+    volumes:
+      - tramevia-data:/data
+volumes:
+  tramevia-data:
