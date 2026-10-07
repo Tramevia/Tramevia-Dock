@@ -13,10 +13,10 @@
 
 1. GitHub account(s) with write access: 2FA on.
 2. Repo **Settings → General → Releases**: enable **Immutable releases** (assets and tag are locked once published).
-3. Organization **Settings → Packages → Package creation**: allow **Public**.
+3. (Organization accounts only) **Settings → Packages → Package creation**: allow **Public**. Tramevia is a user account: skip.
 4. Make the repository **public**.
 5. Publish the first release (steps below). Then open the package
-   (github.com/orgs/Tramevia/packages → tramevia-dock) → **Package settings → Danger Zone → Change visibility → Public**.
+   (https://github.com/users/Tramevia/packages/container/package/tramevia-dock) → **Package settings → Danger Zone → Change visibility → Public**.
    This cannot be undone, and making the repo public does NOT do it for you.
 6. Check an anonymous pull: `docker logout ghcr.io && docker pull ghcr.io/tramevia/tramevia-dock:1`
    and `docker buildx imagetools inspect ghcr.io/tramevia/tramevia-dock:1` (expect linux/amd64 and linux/arm64).
