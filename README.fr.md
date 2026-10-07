@@ -16,6 +16,7 @@
   <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-1.0.0-8b5cf6" alt="Version 1.0.0"></a>
   <img src="https://img.shields.io/badge/plateformes-Twitch%20%C2%B7%20Kick%20%C2%B7%20YouTube%20%C2%B7%20TikTok-6441a5" alt="Plateformes : Twitch, Kick, YouTube, TikTok">
   <img src="https://img.shields.io/badge/pens%C3%A9%20pour-OBS%20Studio-302e31?logo=obsstudio&logoColor=white" alt="Pensé pour OBS Studio">
+  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/tip-Streamlabs-80f5d2?logo=streamlabs" alt="Laisser un tip sur Streamlabs"></a>
 </p>
 
 <p align="center">
@@ -475,6 +476,8 @@ D’autres questions ? La [FAQ et dépannage](docs/fr/faq.md) reprend les messa
 **Une faille de sécurité ?** Suis [SECURITY.md](SECURITY.md) et merci de ne pas ouvrir d’issue publique.
 
 ## 🤝 Contribuer, licence et crédits
+
+**Soutenir.** Tramevia Dock est gratuit et le restera. S’il te simplifie tes lives, tu peux [laisser un tip sur Streamlabs](https://streamlabs.com/otelooow/tip) 💜. Ça aide à faire vivre le projet.
 
 **Contribuer.** Les idées, les rapports de bugs et les contributions sont les bienvenus ! Avant de proposer un changement, lis [CONTRIBUTING.md](CONTRIBUTING.md). Pour bidouiller sans aucun compte, `npm run demo` lance le mode démo et `npm test` lance les tests.
 
