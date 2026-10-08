@@ -253,7 +253,8 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 .status-dot.ok { background: var(--ok); }
 .status-dot.warn { background: var(--warn); }
 .status-dot.danger { background: var(--danger); }
-.status-dot.live { background: #e91916; box-shadow: 0 0 0 3px rgb(233 25 22 / 25%); animation: pulse 1.8s ease-in-out infinite; }
+/* No pulse: an endless box-shadow animation repainted every OBS dock ~60×/s while live (~15–20 % of a CPU core each). */
+.status-dot.live { background: #e91916; box-shadow: 0 0 0 3px rgb(233 25 22 / 25%); }
 .skeleton { background: linear-gradient(90deg, var(--surface-2), var(--surface-3), var(--surface-2)); background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: 6px; min-height: 14px; }
 
 /* ---------- Toasts ---------- */
@@ -282,7 +283,6 @@ dialog::backdrop { background: rgb(0 0 0 / 55%); backdrop-filter: blur(2px); }
 .table th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 650; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
-@keyframes pulse { 50% { box-shadow: 0 0 0 6px rgb(233 25 22 / 0%); } }
 @keyframes shimmer { to { background-position: -200% 0; } }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

@@ -229,7 +229,8 @@ function flush() {
     const frag = document.createDocumentFragment();
     for (const it of batch) { frag.append(render(it)); items.push(it); }
     list.append(frag);
-    while (items.length > MAX) {
+    // Trim in batches: removing the top row shifts (and repaints) the whole list, so do it every 50 messages, not every one.
+    if (items.length > MAX + 50) while (items.length > MAX) {
       const old = items.shift();
       if (old.el.contains(tools)) dropTools();
       old.el.remove();
@@ -259,7 +260,6 @@ function upsert(it) {
   const focused = old.el.contains(document.activeElement);
   if (old.el.contains(tools)) dropTools();
   old.el.replaceWith(render(old));
-  old.el.style.setProperty('animation', 'none');
   if (focused) old.el.focus();
   return true;
 }
