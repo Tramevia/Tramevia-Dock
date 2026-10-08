@@ -1,7 +1,18 @@
 # Changelog
 
-## Unreleased
+## 1.2.0 — lighter docks
 
+Docks use far less CPU in OBS, so OBS keeps more for your stream. Measured in Chrome with the demo mode (five live accounts):
+
+| Dock | Before | After |
+|---|---|---|
+| Chat, live, quiet chat | 15–20 % of a CPU core | under 1 % |
+| Stream info, live | about 17 % | under 0.1 % |
+| Chat, busy chat (15 messages per second) | about 35 % | about 6 % |
+
+- The red “live” dot no longer pulses: that animation redrew every dock without a break while you were live.
+- New chat messages and events show up without a slide-in animation (the OBS chat overlay keeps its animations).
+- The chat list scrolls without redrawing itself, and old messages are removed in batches instead of one by one.
 - Overlay: optional small “Chat via Tramevia Dock” credit under the chat (`credit=1`, off by default).
 - Overlay builder: says that the settings live in the address, so it must be pasted again into OBS after a change.
 - GitHub: issue forms ask for the install type and version, warn against pasting keys, and send questions to Discussions.
