@@ -62,58 +62,82 @@ On Linux under Wayland, OBS may not offer custom browser docks. Open the dock ad
 
 ![The chat overlay over a game scene: messages from Twitch, Kick and TikTok with platform icons, and a YouTube Super Sticker event card](../assets/screenshots/en/overlay.png)
 
+There are two overlays, each with its own settings and its own address:
+
+- **Chat**: your chat, message after message.
+- **Featured message**: only the message you pick in the Chat dock (see below).
+
+Their settings are saved in Tramevia Dock and **apply live**: change an option in the dashboard and the overlay in OBS follows right away. You paste each address into OBS **once**.
+
 ### Add the overlay
 
-1. In the dashboard's **OBS** section, go to **Chat overlay**. Adjust the options; the **Live preview** on the right updates as you go (the checkerboard shows transparency).
+1. In the dashboard's **OBS** section, go to **Chat overlay** and pick **Chat**. Adjust the options; the **Live preview** on the right updates as you go (the checkerboard shows transparency). Changes are saved by themselves.
 2. Copy the **Overlay address**.
 3. In OBS: **Sources → + → Browser**. Give it a name, then paste the address in **URL**.
 4. Set **Width 400** and **Height 600** (adjust to your layout), then click **OK**.
 
-The overlay address uses the **overlay key**, which is **read-only**: it can show your chat but cannot act on your accounts. You can regenerate it in **Settings → Security → Overlay key**; then paste the new address into the Browser source.
+For the featured message, pick **Featured message** in the dashboard and add its address as a **second** Browser source.
 
-### Featured message mode
+After that, you never paste the address again when you change a setting. You only paste it again if the address itself changes: after you regenerate the overlay key (**Settings → Security → Overlay key**), or after you change the port or `PUBLIC_URL`.
 
-Set **Type** to **Featured message** to make a second overlay that shows only one message at a time, chosen by you:
+The overlay address uses the **overlay key**, which is **read-only**: it can show your chat and read the overlay settings, but it cannot change them or act on your accounts.
 
-1. Add this address as another Browser source.
+**Reset** puts the selected overlay back to its default settings (live too): Dark theme, 20 messages, text size 16 px, bots and `!commands` hidden, text outline on, and 15 seconds for a featured message.
+
+**Filters.** Platforms and accounts you untick are hidden. Everything else is shown, so an account you connect later shows up on the overlay by itself.
+
+### Featured message
+
+The Featured message overlay shows only one message at a time, chosen by you:
+
+1. Add its address as a Browser source (see above).
 2. In the Chat dock, hover a message and click **Show on overlay**. Click **Remove from overlay** to take it down.
 3. **Duration (s, 0 = until removed)** controls how long it stays.
 
-A message deleted by moderation is never shown again.
+A message deleted by moderation is never shown again. If OBS reloads the source, the featured message comes back for the time it had left.
 
-### Overlay address parameters
+### Advanced: settings in the address
 
-The builder writes the address for you. If you prefer to edit it by hand, here is every parameter. On/off options accept `1` (on) or `0` (off).
+You can also put settings in the address itself. Two cases:
+
+- **A variant of a saved overlay.** Add parameters to a saved address (the one with `&id=chat` or `&id=featured`): each parameter replaces that one setting, and the others still follow the dashboard live. For example, a smaller version for another scene: `…&id=chat&size=14&max=5`.
+- **Older addresses without `&id=`** (made before saved overlays). They keep working exactly as before, configured only by their parameters, but they **do not follow the dashboard**. To get live settings, copy the new address once.
+
+On/off options are on with `1`, `true` or `yes`; any other value, even empty, turns them off. A number outside its range is brought back into it. The "If missing" column applies to addresses without `&id=`; on a saved address, a missing parameter means the saved setting.
 
 | Parameter | Builder option | Values | If missing from the address |
 |---|---|---|---|
 | `key` | (added automatically) | the overlay key | required |
-| `mode` | Type | `featured` for the Featured message mode | normal chat |
+| `id` | (added automatically) | `chat` or `featured`: the saved overlay to follow | none: settings come only from the address |
+| `mode` | | `featured` for the Featured message mode, any other value for normal chat | normal chat (`featured` with `id=featured`) |
 | `theme` | Theme | `transparent`, `dark`, `light` | `transparent` |
 | `max` | Max messages | 1 to 100 | 12 |
-| `fade` | Fade out (s, 0 = never) | seconds, 0 = messages never fade | 0 |
-| `size` | Text size (px) | text size in pixels | overlay's default size |
+| `fade` | Fade out (s, 0 = never) | 0 to 3600 seconds, 0 = messages never fade | 0 |
+| `size` | Text size (px) | 8 to 120 pixels | 20 px |
 | `align` | Alignment | `left`, `right` | `left` |
-| `badges` | Badges | 1 / 0 | 1 |
-| `icons` | Platform icons | 1 / 0 | 1 |
-| `avatars` | Avatars | 1 / 0 | 0 |
-| `bubble` | Bubbles | 1 / 0 | 0 |
-| `outline` | Text outline | 1 / 0 | 0 |
-| `credit` | Small “Chat via Tramevia Dock” credit under the chat, to help others find the project (never on unless you turn it on) | 1 / 0 | 0 |
-| `hideBots` | Hide bots | 1 / 0 (hides well-known bots such as Nightbot or StreamElements) | 0 |
-| `hideCommands` | Hide !commands | 1 / 0 (hides messages starting with `!`) | 0 |
-| `events` | Events (follows, subs…) | 1 / 0 | 1 |
-| `platforms` | Platforms | comma-separated list: `twitch,kick,youtube,tiktok` | all platforms |
-| `accounts` | Accounts (shown when you have several) | comma-separated account ids | all accounts |
-| `featureSeconds` | Duration (s, 0 = until removed) | seconds, 0 = until removed (Featured message mode) | 0 |
+| `badges` | Badges | on / off | on |
+| `icons` | Platform icons | on / off | on |
+| `avatars` | Avatars | on / off | off |
+| `bubble` | Bubbles | on / off | off |
+| `outline` | Text outline | on / off | off |
+| `credit` | Small “Chat via Tramevia Dock” credit under the chat, to help others find the project (never on unless you turn it on) | on / off | off |
+| `hideBots` | Hide bots | on / off (hides well-known bots such as Nightbot or StreamElements) | off |
+| `hideCommands` | Hide !commands | on / off (hides messages starting with `!`) | off |
+| `events` | Events (follows, subs…) | on / off | on |
+| `platforms` | | comma-separated platforms to **show**: `twitch,kick,youtube,tiktok` | all platforms |
+| `accounts` | | comma-separated account ids to **show** | all accounts |
+| `featureSeconds` | Duration (s, 0 = until removed) | 0 to 3600 seconds, 0 = until removed (Featured message mode) | 0 |
 
-The builder starts from its own settings, which differ from the "if missing" column: Dark theme, 20 messages, text size 16 px, bots and `!commands` hidden, text outline on, and 15 seconds for a featured message. **Reset** goes back to them.
+In the address, `platforms` and `accounts` list what to **show**, while the dashboard filters list what to hide. On a saved address both apply: a message must pass the dashboard filters and the address lists.
+
+In Featured message mode, `max`, `fade`, `hideBots`, `hideCommands` and `events` are ignored and the author's avatar is always shown; `platforms` and `accounts` still apply.
 
 ## Tips
 
 - **No custom CSS needed.** The overlay is transparent by itself. Leave the Browser source's *Custom CSS* field as OBS fills it.
 - **Overlay not up to date after an update?** Open the Browser source's properties and click **Refresh cache of current page**.
-- **Several scenes.** Add the same overlay source to other scenes with **Add Existing** instead of creating copies.
+- **Overlay not following your settings?** Check that its address contains `&id=` (see [Advanced: settings in the address](#advanced-settings-in-the-address)), then click **Refresh cache of current page**.
+- **Several scenes.** Add the same overlay source to other scenes with **Add Existing** instead of creating copies. For a variant (smaller text, one platform only…), add a source with extra parameters in its address.
 - **Reconnects by itself.** If the connection drops or Tramevia Dock restarts, docks and overlays reconnect on their own. After a reconnect or an OBS refresh, the overlay shows the recent messages again; messages from before an Tramevia Dock restart are gone, because they are only kept in memory. The small dot at the top right of each dock shows whether it is connected.
 - **Start Tramevia Dock before OBS.** A dock opened while Tramevia Dock is not running stays blank. Close it and reopen it from the **Docks** menu once Tramevia Dock is running.
 - **Language or theme for one dock.** Add `&lang=en` or `&lang=fr`, or `&theme=dark`, `&theme=light` or `&theme=auto`, at the end of a dock address to override the dashboard setting for that dock only.

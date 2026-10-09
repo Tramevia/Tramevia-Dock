@@ -424,9 +424,10 @@ function loginScreen(onSuccess) {
  *  - checks the session (shows the login screen if needed)
  *  - renders the header (unless header:false — overlays)
  *  - loads /api/state, applies theme + language, opens the realtime hub
+ *  - ownTheme: true = the page sets data-theme itself (saved overlays), the dashboard theme is never applied
  * Returns the <main id="app"> element the page renders into.
  */
-export async function boot({ page, title, header: withHeader = true, admin = true, onReady, onFrame }) {
+export async function boot({ page, title, header: withHeader = true, admin = true, ownTheme = false, onReady, onFrame }) {
   document.documentElement.lang = currentLang;
   if (inObs) document.documentElement.classList.add('dock-mode');
   if (title) document.title = `${title} · Tramevia Dock`;
@@ -452,7 +453,7 @@ export async function boot({ page, title, header: withHeader = true, admin = tru
   window.addEventListener('od:unauthorized', () => location.reload(), { once: true });
   if (withHeader) document.body.prepend(header(page));
   const state = await statePromise;
-  applyTheme(params.get('theme') || state.ui?.theme || 'dark');
+  if (!ownTheme) applyTheme(params.get('theme') || state.ui?.theme || 'dark');
   // The dashboard language (server ui.lang) is the source of truth; localStorage is only a first-paint cache.
   const serverLang = state.ui?.lang === 'fr' || state.ui?.lang === 'en' ? state.ui.lang : null;
   if (!params.get('lang') && serverLang && serverLang !== currentLang) {
@@ -472,7 +473,7 @@ export async function boot({ page, title, header: withHeader = true, admin = tru
   deliver = frame => {
     if (frame.t === 'settings' || frame.t === 'hello') {
       const ui = frame.t === 'settings' ? frame.d : frame.d.ui;
-      if (ui?.theme && !params.get('theme')) applyTheme(ui.theme);
+      if (ui?.theme && !params.get('theme') && !ownTheme) applyTheme(ui.theme);
       // Language changed from the dashboard (live, or while this page was disconnected): follow it.
       // Pages build their strings once → reload. The dashboard itself calls setLang() first, so its own echo is a no-op.
       // Skip the echo of this page's own PUT /api/settings during a quick FR↔EN toggle (index.js sets __odUiWriteAt).

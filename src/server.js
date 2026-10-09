@@ -13,6 +13,8 @@ import { createRouter, hostAllowed, writeAllowed, securityHeaders, sendJson, sen
 import { createAuth } from './auth.js';
 import { createHub } from './hub.js';
 import { createAccounts } from './accounts.js';
+import { createOverlays } from './overlays.js';
+import { OVERLAY_IDS } from '../public/assets/overlay-settings.js';
 import { request, ApiError } from './net.js';
 import { adapters, platformMeta, PLATFORMS } from './platforms/index.js';
 import * as upd from './update.js';
@@ -92,6 +94,7 @@ const ctx = {
   emitDelete: d => hub.publish('chat:delete', d),
 };
 ctx.accounts = createAccounts(ctx);
+ctx.overlays = createOverlays({ settings, hub });
 
 function adapterFor(account) {
   return adapters.get(account.demo ? 'demo' : account.platform);
@@ -130,6 +133,7 @@ router.get('/api/state', ({ access }) => {
     accounts: access === 'admin' ? accounts
       : accounts.map(({ id, platform, login, displayName, avatar, stats }) => ({ id, platform, login, displayName, avatar, stats })),
     ui: settings.get('ui', {}),
+    overlays: ctx.overlays.all(), overlaysSaved: ctx.overlays.saved(),
   };
 }, { access: 'read' });
 
@@ -148,6 +152,21 @@ router.put('/api/settings', ({ body }) => {
   if ('updateCheck' in body || 'updateAuto' in body) publishUpdate();
   return merged;
 });
+
+// --- Saved overlays (OBS URL with &id=chat|featured, applied live) ---------
+router.get('/api/overlays', () => ({ overlays: ctx.overlays.all(), saved: ctx.overlays.saved() }), { access: 'read' });
+const overlayId = id => {
+  if (!OVERLAY_IDS.includes(id)) throw new HttpError(404, ctx.t('Overlay inconnu.', 'Unknown overlay.'), 'unknown_overlay');
+  return id;
+};
+router.put('/api/overlays/:id', ({ params, body }) => {
+  const id = overlayId(params.id);
+  if (!body || typeof body !== 'object' || Array.isArray(body) || JSON.stringify(body).length > 4000) {
+    throw new HttpError(400, ctx.t('Réglages d’overlay invalides.', 'Invalid overlay settings.'), 'invalid_overlay');
+  }
+  return { id, settings: ctx.overlays.save(id, body) };
+});
+router.delete('/api/overlays/:id', ({ params }) => { const id = overlayId(params.id); return { id, settings: ctx.overlays.reset(id) }; });
 
 // --- Platform apps (client id / secret) -------------------------------------
 router.get('/api/apps', () => PLATFORMS.filter(p => p.auth === 'oauth').map(p => {
@@ -419,6 +438,7 @@ server.on('upgrade', (req, socket, head) => {
       accounts: level === 'admin' ? ctx.accounts.list().map(ctx.accounts.describe)
         : ctx.accounts.list().map(a => ({ id: a.id, platform: a.platform, login: a.login, displayName: a.displayName, avatar: a.avatar, stats: ctx.accounts.stats(a.id) })),
       ui: settings.get('ui', {}),
+      overlays: ctx.overlays.all(), overlaysSaved: ctx.overlays.saved(),
     }), () => auth.access(req, url));
   } catch {
     socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');

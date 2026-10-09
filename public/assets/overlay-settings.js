@@ -1,0 +1,73 @@
+// Chat overlay settings: one source of truth for the server (src/overlays.js), the overlay page and the dashboard builder.
+// Pure module (no DOM, no imports): Node can import it from src/, browsers from /assets/.
+//
+// Two kinds of overlay URL:
+//  - saved:  /overlay/chat?key=…&id=chat|featured  → settings stored on the server, applied live; any param below that
+//            the URL also carries overrides that one setting (a variant for another scene, the builder's draft preview).
+//  - legacy: /overlay/chat?key=…&theme=…&max=…     → no id: configured only by its params, exactly like before 1.3.
+
+export const OVERLAY_IDS = ['chat', 'featured'];
+export const BOOLS = ['hideBots', 'hideCommands', 'events', 'badges', 'icons', 'avatars', 'bubble', 'outline', 'credit'];
+export const THEMES = ['transparent', 'dark', 'light'];
+/** [min, max] of every number (the overlay page clamps URL values to the same ranges). */
+export const RANGES = { max: [1, 100], fade: [0, 3600], size: [8, 120], featureSeconds: [0, 3600] };
+const LIST_MAX = 50;
+
+const SAVED_BASE = {
+  theme: 'dark', max: 20, fade: 0, size: 16, align: 'left', featureSeconds: 15,
+  hideBots: true, hideCommands: true, events: true, badges: true, icons: true, avatars: false, bubble: false, outline: true, credit: false,
+  offPlatforms: [], offAccounts: [],
+};
+/** Defaults of a saved overlay (what the dashboard builder starts from). */
+export const DEFAULTS = { chat: { ...SAVED_BASE }, featured: { ...SAVED_BASE } };
+
+/** What a legacy URL means when a param is missing (the overlay page's behaviour before saved overlays). size null = CSS default. */
+export const LEGACY = {
+  theme: 'transparent', max: 12, fade: 0, size: null, align: 'left', featureSeconds: 0,
+  hideBots: false, hideCommands: false, events: true, badges: true, icons: true, avatars: false, bubble: false, outline: false, credit: false,
+  offPlatforms: [], offAccounts: [],
+};
+
+const clamp = (n, [min, max]) => Math.min(max, Math.max(min, n));
+const idList = v => (Array.isArray(v) ? [...new Set(v.filter(x => typeof x === 'string' && x && x.length <= 64))].slice(0, LIST_MAX) : []);
+
+/**
+ * Validated, complete saved settings: every known key present, unknown keys dropped, numbers rounded and clamped,
+ * enums whitelisted. `input` may be partial or untrusted (an HTTP body); missing or invalid values come from `base`.
+ */
+export function cleanOverlay(input, base = SAVED_BASE) {
+  const src = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
+  const out = {};
+  out.theme = THEMES.includes(src.theme) ? src.theme : base.theme;
+  out.align = src.align === 'left' || src.align === 'right' ? src.align : base.align;
+  for (const [k, range] of Object.entries(RANGES)) {
+    const n = typeof src[k] === 'number' ? src[k] : typeof src[k] === 'string' && src[k].trim() !== '' ? Number(src[k]) : NaN;
+    out[k] = Number.isFinite(n) ? clamp(Math.round(n), range) : base[k];
+  }
+  for (const k of BOOLS) out[k] = typeof src[k] === 'boolean' ? src[k] : base[k];
+  for (const k of ['offPlatforms', 'offAccounts']) out[k] = Array.isArray(src[k]) ? idList(src[k]) : idList(base[k]);
+  return out;
+}
+
+/**
+ * Settings the overlay page runs with.
+ * query: URLSearchParams of the page. saved: { chat, featured } from the server (only used when the URL has a valid id).
+ * Returns { id, featured, settings, onlyPlatforms, onlyAccounts }: id null = legacy URL; only* = inclusion lists from the URL.
+ */
+export function overlayFromQuery(query, saved) {
+  const id = OVERLAY_IDS.includes(query.get('id')) ? query.get('id') : null;
+  const base = id ? cleanOverlay(saved?.[id], DEFAULTS[id]) : { ...LEGACY };
+  const has = k => query.get(k) !== null && query.get(k) !== '';
+  const s = { ...base };
+  // Same parsing rules as the overlay page always had (1.0–1.2): numbers clamped, flags = 1/true/yes, unknown values ignored.
+  for (const [k, range] of Object.entries(RANGES)) {
+    const n = Number(query.get(k));
+    if (has(k) && Number.isFinite(n)) s[k] = clamp(n, range);
+  }
+  for (const k of BOOLS) if (query.has(k)) s[k] = ['1', 'true', 'yes'].includes(query.get(k));
+  if (THEMES.includes(query.get('theme'))) s.theme = query.get('theme');
+  if (query.has('align')) s.align = query.get('align') === 'right' ? 'right' : 'left';
+  const csv = k => (query.get(k) || '').split(',').map(x => x.trim()).filter(Boolean);
+  const featured = has('mode') ? query.get('mode') === 'featured' : id === 'featured';
+  return { id, featured, settings: s, onlyPlatforms: csv('platforms').map(p => p.toLowerCase()), onlyAccounts: csv('accounts') };
+}

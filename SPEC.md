@@ -40,9 +40,11 @@ src/chat/emotes.js         tokenizer + 7TV/BTTV/FFZ       + test/emotes.test.js
 src/chat/routes.js         chat HTTP API                  + test/chat-routes.test.js
 src/community.js           community HTTP API             + test/community.test.js
 src/stream-info.js         stream info + presets          + test/stream-info.test.js
+src/overlays.js            saved overlay settings (§7.4)
 src/update.js              update check + self-update (node: built-ins only) + test/update.test.js
 public/index.html + assets/index.{js,css}                 dashboard
 public/chat.html + assets/chat.{js,css}, assets/chat-render.js, overlay.html + assets/overlay.{js,css}   chat dock + overlay
+public/assets/overlay-settings.js                         overlay settings rules (pure, shared by server, overlay and dashboard)
 public/community.html + assets/community.{js,css}         community dock
 public/stream.html + assets/stream.{js,css}               stream info dock
 ```
@@ -184,7 +186,8 @@ A limit applies only when the adapter declares it in `infoFields`; an undeclared
 ## 7. HTTP API
 
 Core (implemented in `src/server.js`): `GET /healthz`, `GET /api/session`, `POST /api/login|logout`, `GET /api/state`
-(`{access, version, demo, publicUrl, platforms: meta[], accounts: describe[] (admin) | {id, platform, login, displayName, avatar, stats}[] (read), ui}`), `GET|PUT /api/settings` (UI
+(`{access, version, demo, publicUrl, platforms: meta[], accounts: describe[] (admin) | {id, platform, login, displayName, avatar, stats}[] (read), ui, overlays, overlaysSaved}`;
+`overlays` and `overlaysSaved` for read and admin access, §7.4), `GET|PUT /api/settings` (UI
 settings object, ≤32 KB, broadcast as topic `settings`; `updateCheck` / `updateAuto` must be booleans or `null`), `GET /api/apps`, `PUT|DELETE /api/apps/:platform`,
 `POST /api/apps/:platform/test`, `POST /api/accounts/:platform/connect {reconnect?, openOnServer?} → {url, opened}`,
 `GET /auth/:platform/callback`, `POST /api/accounts/username/:platform {username}`,
@@ -230,13 +233,29 @@ Errors: `{error, code}`; an `ApiError` thrown by a handler becomes `502 {error, 
   title?, category?, tags?, language?, labels?, brandedContent?, description?, ytCategoryId?}}}` — absent/`null`
   per-account field = inherit the common value.
 
+### 7.4 Overlays (`src/overlays.js`)
+Two saved overlays, ids `chat` and `featured` (`OVERLAY_IDS`), stored in the settings key `overlays` (`{chat, featured}`; absent
+= defaults, no migration). Validation is `cleanOverlay()` from `public/assets/overlay-settings.js`: complete object, unknown keys
+dropped, numbers rounded and clamped (`max` 1–100, `fade` 0–3600, `size` 8–120, `featureSeconds` 0–3600), enums whitelisted,
+`offPlatforms` / `offAccounts` = **exclusion** lists of ids (an account added later is shown).
+- `GET /api/overlays` (read) → `{overlays: {chat, featured}, saved}` (`saved` = the settings key exists).
+- `PUT /api/overlays/:id {…patch}` (admin) → `{id, settings}`: merged over the current settings, cleaned, saved, published as
+  topic `overlay`. `400 {code:'invalid_overlay'}` if the body is not a plain object or its JSON is over 4000 chars;
+  `404 {code:'unknown_overlay'}` for another id.
+- `DELETE /api/overlays/:id` (admin) → `{id, settings}`: back to the defaults, saved and published.
+
+Overlay page (`/overlay/chat`): `?key=…&id=chat|featured` = saved settings, applied live from `overlay` frames; any setting param
+also in the URL overrides that one setting. Without `id` (legacy URL) the page is configured only by its params, exactly as in 1.2,
+and ignores `overlay` frames. URL `platforms=` / `accounts=` are **inclusion** lists; a message is shown when it passes both lists.
+
 ## 8. Realtime (`/ws`)
 
-Frames `{t, d}`. First frame `hello {access, version, accounts, ui, backlog: [{t, d}]}` (backlog = last 400 chat/event). `version` is sent
+Frames `{t, d}`. First frame `hello {access, version, accounts, ui, overlays, overlaysSaved, backlog: [{t, d}]}` (backlog = last 400 chat/event;
+`overlays`/`overlaysSaved` as in `GET /api/overlays`, for every access level). `version` is sent
 to every access level: `connectHub` reloads the page when it differs from the first one seen (an update was installed).
 Close code `4001` = credentials rotated/revoked: pages with a header reload (login screen), overlays stop.
-Topics: `chat`, `chat:delete`, `event`, `stats`, `feature` (read-only clients get only these; the last featured
-message is replayed after `hello`) and admin-only `accounts` (full list), `settings` (merged UI settings object;
+Topics: `chat`, `chat:delete`, `event`, `stats`, `feature`, `overlay` (`{id, settings}` after a save or reset, §7.4) (read-only
+clients get only these; the last featured message is replayed after `hello`) and admin-only `accounts` (full list), `settings` (merged UI settings object;
 `PUT /api/settings` is a shallow merge, `null` deletes a key), `presets` (`{presets}` after any preset change), `update` (`UpdateStatus`, §11, on every change). Pages act through HTTP, never by sending WS frames.
 
 ## 9. Front-end conventions

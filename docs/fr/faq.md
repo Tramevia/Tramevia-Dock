@@ -20,7 +20,7 @@ Cherche ton symptôme ci-dessous. Les messages entre guillemets sont ceux qu’a
 - [YouTube, déconnecté au bout de 7 jours](#youtube-déconnecté-au-bout-de-7-jours)
 - [TikTok, hors ligne, introuvable ou limité](#tiktok-hors-ligne-introuvable-ou-limité)
 - [Docks vides ou qui demandent un mot de passe dans OBS](#docks-vides-ou-qui-demandent-un-mot-de-passe-dans-obs)
-- [L’overlay n’affiche rien](#loverlay-naffiche-rien)
+- [L’overlay n’affiche rien ou ne suit pas tes réglages](#loverlay-naffiche-rien-ou-ne-suit-pas-tes-réglages)
 - [J’ai perdu le mot de passe du tableau de bord](#jai-perdu-le-mot-de-passe-du-tableau-de-bord)
 - [J’ai changé de PC](#jai-changé-de-pc)
 
@@ -147,10 +147,13 @@ La connexion à TikTok est non officielle et en lecture seule : une mise à jou
 
 Sous Linux avec Wayland, OBS peut ne pas proposer les docks de navigateur : ouvre leurs adresses dans une fenêtre de navigateur classique.
 
-### L’overlay n’affiche rien
+### L’overlay n’affiche rien ou ne suit pas tes réglages
 
 - Regarde l’« Aperçu en direct » dans le tableau de bord : s’il fonctionne, recopie l’adresse dans la source Navigateur.
-- Tu as régénéré la clé de l’overlay ? Recopie l’adresse. (Elle ne change pas quand tu changes de mot de passe.)
+- Vérifie que l’adresse de la source contient `&id=chat` ou `&id=featured`. Les anciennes adresses, avec les réglages écrits dedans, marchent toujours mais ne suivent pas le tableau de bord : remplace-la une fois par l’adresse affichée dans la section **OBS**.
+- Un réglage écrit dans l’adresse (par exemple `&size=14`) passe avant celui du tableau de bord. Enlève-le pour que ce réglage suive de nouveau le tableau de bord.
+- Tu as changé de port ou de `PUBLIC_URL` ? L’adresse a changé aussi : recopie-la.
+- Tu as régénéré la clé de l’overlay ? Recopie les adresses. (Elle ne change pas quand tu changes de mot de passe.)
 - Vérifie les filtres : plateformes ou comptes décochés, bots et !commandes masqués.
 - En mode « Message mis en avant », rien ne s’affiche tant que tu n’as pas cliqué sur l’étoile d’un message dans le dock Chat.
 - Dans les propriétés de la source, clique sur « Actualiser le cache de la page actuelle ».

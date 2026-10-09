@@ -137,8 +137,8 @@ Twitch, Kick and YouTube ask you to create a free **developer app** in your own 
 
 The **overlay** is the chat your viewers see on top of your game.
 
-1. In the dashboard's **OBS** section, scroll down to **Chat overlay**.
-2. Pick a **Theme** and play with the options. The **Live preview** updates as you go.
+1. In the dashboard's **OBS** section, scroll down to **Chat overlay** and pick **Chat**.
+2. Pick a **Theme** and play with the options. The **Live preview** updates as you go, and your settings are saved by themselves.
 3. Copy the **Overlay address**.
 4. In OBS: **Sources → + → Browser**, give it a name, paste the address in **URL**, set **Width 400** and **Height 600**, then click **OK**.
 
@@ -148,8 +148,10 @@ The **overlay** is the chat your viewers see on top of your game.
 - **Dark**: each message on a dark card with its platform colour. Readable on any background.
 - **Light**: each message on a light card with dark text.
 
+You paste the address **once**: when you change a setting later, the overlay in OBS follows live. Paste it again only after you regenerate the overlay key or change the port or `PUBLIC_URL`.
+
 > [!TIP]
-> The overlay address uses a separate **read-only** key: it can show your chat, but it can't act on your accounts. Want to put just one message on screen? Add a second Browser source with the *Featured message* type, then click **Show on overlay** on a message in the Chat dock. All options: [OBS guide](docs/en/obs.md).
+> The overlay address uses a separate **read-only** key: it can show your chat, but it can't act on your accounts. Want to put just one message on screen? Pick *Featured message* in the overlay card, add its address as a second Browser source, then click **Show on overlay** on a message in the Chat dock. All options: [OBS guide](docs/en/obs.md).
 
 ### 5️⃣ Before each live: set your title everywhere at once
 
@@ -213,7 +215,7 @@ The **overlay** is the chat your viewers see on top of your game.
 - **Events:** follows, subs, gifted subs, cheers, KICKs, Super Chats, Super Stickers, memberships, Jewels, raids, channel point redemptions and TikTok gifts.
 - **Community:** combined viewer count and the detail per channel · the real Twitch chatter list, grouped by role (broadcaster, moderators, VIPs, bots) · "active chatters" from the last 5, 15 or 60 minutes on Kick, YouTube and TikTok, which don't share that list.
 - **Stream info:** title, category (one search on every platform, with box art) and tags for all your channels · per-account overrides · Twitch language, content classification and branded content · YouTube description and category · presets · preview before sending, a result per channel, and a button to retry only the ones that failed · copy-and-open shortcuts for settings that have no API (Twitch go-live notification, YouTube "Game").
-- **Overlay:** transparent chat overlay for an OBS Browser source, with three themes and a visual builder with live preview · "Featured message" mode to put one message on screen from the Chat dock.
+- **Overlay:** transparent chat overlay for an OBS Browser source, with three themes and a visual builder with live preview · settings saved in the app and applied live, so the address is pasted into OBS only once · "Featured message" mode to put one message on screen from the Chat dock.
 - **Setup & security:** a wizard for each platform with the exact addresses to paste and a test button · several accounts per platform (two Twitch channels, for example) · tokens encrypted on disk · password required as soon as the app is reachable from the network · dock and overlay keys you can regenerate · runs on Windows, macOS or Linux, or online with Docker or Railway · English and French interface.
 
 </details>
@@ -455,7 +457,7 @@ More answers and fixes for common errors: [FAQ and troubleshooting](docs/en/faq.
 
 **Network.** Without `ADMIN_PASSWORD`, the server only listens on `127.0.0.1` and only answers this computer. As soon as it is reachable from the network (cloud, LAN, tunnel), `ADMIN_PASSWORD` is required (12 characters or more). Login attempts are rate-limited.
 
-**Stored** in `data/tramevia-dock.db` on your machine: your platform app credentials (encrypted), connected accounts (name, avatar, granted permissions, encrypted tokens), presets and interface settings, the dock and overlay keys, the ids of chatters already seen (for the "first message" highlight), the ids of YouTube bans made from the app (so you can unban), the YouTube quota counter and your Kick chat room id. Chat messages and events are kept in memory only (the last 400) and are not written to disk.
+**Stored** in `data/tramevia-dock.db` on your machine: your platform app credentials (encrypted), connected accounts (name, avatar, granted permissions, encrypted tokens), presets, interface and overlay settings, the dock and overlay keys, the ids of chatters already seen (for the "first message" highlight), the ids of YouTube bans made from the app (so you can unban), the YouTube quota counter and your Kick chat room id. Chat messages and events are kept in memory only (the last 400) and are not written to disk.
 
 **Other services contacted:** the platforms themselves, Kick's Pusher chat socket (for Kick chat in unofficial mode), the 7TV, BetterTTV and FrankerFaceZ emote APIs (with your channel id), for TikTok the Euler Stream signing server used by tiktok-live-connector, and GitHub once a day to check for a new version (turn it off in **Settings → About**, or with `UPDATE_CHECK=0`). Apart from the platforms you connect, none of these services receives your tokens or passwords.
 

@@ -366,12 +366,14 @@ function syncToolbar() {
 
 /**
  * 'feature' frame (null = cleared). The overlay hides the card after its featureSeconds, so the star must not keep saying
- * "remove" afterwards. ponytail: the dock cannot read the overlay URL; it uses this browser's overlay-builder duration
- * (dashboard default 15 s, 0 = until removed). Have /api/chat/feature carry the duration if overlays ever need to diverge.
+ * "remove" afterwards. The duration is the saved Featured overlay's featureSeconds (0 = until removed); a legacy overlay URL
+ * with its own featureSeconds may differ.
  */
+let featureSecs = 15;
+const setOverlays = o => { if (Number.isFinite(o?.featured?.featureSeconds)) featureSecs = o.featured.featureSeconds; };
 function setFeatured(d, replayed = false) {
   clearTimeout(featureTimer);
-  const secs = Math.min(3600, Number(store.get('home.overlay', {})?.featureSeconds ?? 15));
+  const secs = featureSecs;
   // Like the overlay: only the copy replayed after 'hello' is aged by featuredAt (server clock).
   const left = secs > 0 ? secs * 1000 - (replayed && d?.featuredAt ? Math.max(0, Date.now() - d.featuredAt) : 0) : Infinity;
   featuredId = d?.id && left > 0 ? d.id : null;
@@ -971,12 +973,13 @@ function onFrame({ t: type, d }) {
   const replayed = afterHello;
   afterHello = type === 'hello';
   // The hub replays 'feature' right after hello only when something is still featured: forget the old one first.
-  if (type === 'hello') { setFeatured(null); setAccounts(d.accounts); resetList(d.backlog); }
+  if (type === 'hello') { setOverlays(d.overlays); setFeatured(null); setAccounts(d.accounts); resetList(d.backlog); }
   else if (type === 'chat' || type === 'event') push({ kind: type, d });
   else if (type === 'chat:delete') applyDelete(d);
   else if (type === 'stats') { stats.set(d.accountId, d); renderStrip(); if (d.quota) renderTargets(); }
   else if (type === 'accounts') setAccounts(d);
   else if (type === 'feature') setFeatured(d, replayed);
+  else if (type === 'overlay' && d?.id === 'featured') setOverlays({ featured: d.settings });
   else if (type === 'settings' && !query.get('theme') && d?.theme) { applyTheme(d.theme); rerenderAll(); }
 }
 
@@ -989,6 +992,7 @@ boot({
     list.append(...Array.from({ length: 7 }, (_, i) => h('div.msg-skel', { style: { '--w': `${45 + ((i * 37) % 45)}%` } }, h('span.skeleton'), h('span.skeleton'))));
     root.append(strip, toolbar, searchRow, connBanner, listWrap);
     if (!EVENTS_ONLY) root.append(composer);
+    setOverlays(state.overlays);
     setAccounts(state.accounts);
     syncToolbar();
     applyLayoutPrefs();

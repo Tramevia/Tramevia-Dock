@@ -135,7 +135,7 @@ Tramevia Dock n’a pas de serveur central. Pour parler à ta chaîne, il utilis
 
 L’overlay se règle dans la même section **OBS**, juste sous les docks.
 
-1. Dans la carte « Overlay de chat », choisis un **Thème**. L’« Aperçu en direct » te montre le résultat au fur et à mesure.
+1. Dans la carte « Overlay de chat », choisis « Chat », puis un **Thème**. L’« Aperçu en direct » te montre le résultat au fur et à mesure, et tes réglages s’enregistrent tout seuls.
 2. Copie l’« Adresse de l’overlay ».
 3. Dans OBS : **Sources → + → Navigateur**, donne un nom à la source, colle l’adresse dans le champ URL, mets la largeur à **400** et la hauteur à **600**, puis valide.
 
@@ -147,10 +147,10 @@ L’overlay se règle dans la même section **OBS**, juste sous les docks.
 - **Sombre** : chaque message dans une carte sombre, avec la couleur de sa plateforme. Lisible sur n’importe quel fond.
 - **Clair** : chaque message dans une carte claire à texte foncé, avec la couleur de sa plateforme.
 
-Les réglages font partie de l’adresse : si tu les changes, recolle la nouvelle adresse dans la source. L’overlay utilise une clé à part, en lecture seule : son adresse ne permet aucune action sur tes comptes.
+Tu colles l’adresse **une seule fois** : quand tu changes un réglage ensuite, l’overlay suit en direct dans OBS. Recolle-la seulement après avoir régénéré la clé de l’overlay, ou changé de port ou de `PUBLIC_URL`. L’overlay utilise une clé à part, en lecture seule : son adresse ne permet aucune action sur tes comptes.
 
 > [!TIP]
-> Envie de mettre une seule question à l’écran ? Choisis le type « Message mis en avant », ajoute cette adresse comme deuxième source Navigateur, puis, dans le dock Chat, survole un message et clique sur son étoile « Afficher sur l’overlay ». Tous les réglages : [guide OBS](docs/fr/obs.md).
+> Envie de mettre une seule question à l’écran ? Choisis « Message mis en avant » dans la carte de l’overlay, ajoute son adresse comme deuxième source Navigateur, puis, dans le dock Chat, survole un message et clique sur son étoile « Afficher sur l’overlay ». Tous les réglages : [guide OBS](docs/fr/obs.md).
 
 ### 5️⃣ Avant chaque live : titre, catégorie et tags partout
 
@@ -238,7 +238,7 @@ Ce que les plateformes ne permettent pas de changer à distance (le texte de not
 
 **🖼️ Overlay**
 
-- Overlay de chat transparent pour une source Navigateur d’OBS, réglé entièrement par son adresse (thème, taille, disparition, filtres…).
+- Overlay de chat transparent pour une source Navigateur d’OBS, réglé dans le tableau de bord (thème, taille, disparition, filtres…) : les réglages s’appliquent en direct, l’adresse se colle une seule fois dans OBS.
 - Mode « Message mis en avant » : tu choisis un message dans le dock Chat, il s’affiche à l’écran.
 - Aperçu en direct dans le tableau de bord pendant que tu règles.
 
@@ -474,7 +474,7 @@ D’autres questions ? La [FAQ et dépannage](docs/fr/faq.md) reprend les messa
 <details>
 <summary><b>Le détail : ce qui est enregistré, et ce qui sort de ton PC</b></summary>
 
-**Données enregistrées** (dans `data/tramevia-dock.db`) : tes réglages, tes préréglages, les identifiants chiffrés de tes apps, les clés des docks et de l’overlay, et pour chaque compte connecté son pseudo, son avatar, les permissions accordées et ses jetons chiffrés. S’y ajoutent les identifiants des personnes qui ont déjà écrit dans ton chat (pour repérer les premiers messages), ceux des bannissements YouTube faits depuis Tramevia Dock (pour pouvoir les lever), un compteur de quota YouTube et le numéro de ton salon de chat Kick. Les messages du chat et les événements restent en mémoire uniquement (les 400 derniers) et ne sont pas écrits sur le disque.
+**Données enregistrées** (dans `data/tramevia-dock.db`) : tes réglages, ceux de l’overlay, tes préréglages, les identifiants chiffrés de tes apps, les clés des docks et de l’overlay, et pour chaque compte connecté son pseudo, son avatar, les permissions accordées et ses jetons chiffrés. S’y ajoutent les identifiants des personnes qui ont déjà écrit dans ton chat (pour repérer les premiers messages), ceux des bannissements YouTube faits depuis Tramevia Dock (pour pouvoir les lever), un compteur de quota YouTube et le numéro de ton salon de chat Kick. Les messages du chat et les événements restent en mémoire uniquement (les 400 derniers) et ne sont pas écrits sur le disque.
 
 **Connexions sortantes** : les plateformes elles-mêmes (Twitch, Kick, Google/YouTube, TikTok), le socket Pusher qu’utilise kick.com (chat Kick en mode non officiel), les services d’émotes 7TV, BTTV et FFZ (avec l’identifiant de ta chaîne), le serveur de signature Euler Stream pour TikTok, et GitHub une fois par jour pour vérifier s’il existe une nouvelle version (désactivable dans **Paramètres → À propos**, ou avec `UPDATE_CHECK=0`). À part les plateformes que tu connectes, aucun de ces services ne reçoit tes jetons ni tes mots de passe.
 

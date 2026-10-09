@@ -21,6 +21,7 @@ Only the latest release receives security fixes. / Seule la dernière version re
 - Host header allow-list (DNS-rebinding protection), same-origin checks on every write and WebSocket,
   strict Content-Security-Policy, no third-party scripts.
 - Dock links carry a revocable key; overlay links carry a separate **read-only** key. Rotate them from the dashboard.
+  The overlay key can show the chat and read the overlay settings (`GET /api/overlays`), never change them or anything else.
 - Kick webhooks are verified with Kick's RSA signature; replayed or stale events are rejected.
 - Never share your `data/` folder, `.env`, dock links or overlay links with a key: treat them like passwords.
 

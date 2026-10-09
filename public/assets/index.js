@@ -3,6 +3,7 @@ import {
   boot, h, api, t, addI18n, lang, setLang, applyTheme, openAuth, copy, copyField, toast, busy,
   confirmDialog, fmt, icon, platformIcon, store, withKey, accessKey, query, $, $$,
 } from '/assets/core.js';
+import { OVERLAY_IDS, DEFAULTS as OV_DEFAULTS, cleanOverlay } from '/assets/overlay-settings.js';
 
 addI18n({
   fr: {
@@ -145,11 +146,11 @@ addI18n({
     'home.obs.masked': 'Clé masquée : utilise le bouton Copier',
     'home.obs.done': 'J’ai ajouté mes docks', 'home.obs.doneState': 'Docks ajoutés', 'home.obs.doneToast': 'Parfait, tout est prêt !',
     'home.ovl.title': 'Overlay de chat',
-    'home.ovl.sub': 'Affiche ton chat sur le stream. Règle-le ici, puis copie l’adresse dans une source Navigateur.',
-    'home.ovl.how': 'Dans OBS : Sources → + → Navigateur → colle l’URL, largeur 400, hauteur 600. Tes réglages sont dans l’adresse : après un changement, recopie-la dans la source (clic droit → Propriétés → URL).',
+    'home.ovl.sub': 'Affiche ton chat sur le stream. Tes réglages sont enregistrés ici et s’appliquent en direct.',
+    'home.ovl.how': 'Dans OBS : Sources → + → Navigateur → colle l’adresse, largeur 400, hauteur 600. Chaque overlay a sa propre adresse : une source Navigateur pour chacun. Colle-la une seule fois, ensuite tes changements s’appliquent en direct. Une ancienne adresse qui contient des réglages marche toujours, mais ne suit plus le tableau de bord.',
     'home.ovl.readonly': 'Cette adresse utilise la clé overlay, en lecture seule : elle ne permet aucune action sur tes comptes.',
-    'home.ovl.mode': 'Type', 'home.ovl.mode.chat': 'Chat', 'home.ovl.mode.featured': 'Message mis en avant',
-    'home.ovl.featuredHint': 'Affiche seulement le message que tu mets en avant depuis le dock Chat.',
+    'home.ovl.mode': 'Overlay à régler', 'home.ovl.mode.chat': 'Chat', 'home.ovl.mode.featured': 'Message mis en avant',
+    'home.ovl.hint.chat': 'Affiche les messages de tes chats.', 'home.ovl.hint.featured': 'Affiche seulement le message que tu mets en avant depuis le dock Chat.',
     'home.ovl.theme': 'Thème', 'home.ovl.theme.dark': 'Sombre', 'home.ovl.theme.light': 'Clair', 'home.ovl.theme.transparent': 'Transparent',
     'home.ovl.themeHint.transparent': 'Texte seul, posé directement sur ta scène. Active « Bulles » ou « Contour du texte » si ton fond est chargé.',
     'home.ovl.themeHint.dark': 'Chaque message dans une carte sombre, avec la couleur de sa plateforme : lisible sur n’importe quel fond.',
@@ -161,7 +162,7 @@ addI18n({
     'home.ovl.hideBots': 'Masquer les bots', 'home.ovl.hideCommands': 'Masquer les !commandes', 'home.ovl.badges': 'Badges',
     'home.ovl.icons': 'Icônes des plateformes', 'home.ovl.avatars': 'Avatars', 'home.ovl.bubble': 'Bulles', 'home.ovl.outline': 'Contour du texte', 'home.ovl.credit': 'Petite mention « Chat via Tramevia Dock » (merci 💜)',
     'home.ovl.events': 'Événements (follows, subs…)',
-    'home.ovl.url': 'Adresse de l’overlay', 'home.ovl.preview': 'Aperçu en direct',
+    'home.ovl.url': 'Adresse de l’overlay « {name} »', 'home.ovl.preview': 'Aperçu en direct', 'home.ovl.saved': 'Enregistré · appliqué en direct',
     'home.ovl.previewHint': 'Le damier représente la transparence.', 'home.ovl.previewTitle': 'Aperçu de l’overlay de chat',
     'home.ovl.reset': 'Réinitialiser',
     'home.set.title': 'Paramètres', 'home.set.appearance': 'Apparence',
@@ -178,7 +179,7 @@ addI18n({
     'home.sec.dockTitle': 'Régénérer la clé des docks ?',
     'home.sec.dockBody': 'L’ancienne clé ne donnera plus accès : recopie les nouvelles adresses des docks depuis la section OBS. (Sans mot de passe, les docks ouverts sur ce PC continuent de marcher ; ce sont les autres appareils qui sont coupés.)',
     'home.sec.overlayTitle': 'Régénérer la clé de l’overlay ?',
-    'home.sec.overlayBody': 'L’ancienne adresse de l’overlay ne donnera plus accès : recopie la nouvelle dans la source Navigateur d’OBS. (Sans mot de passe, un overlay ouvert sur ce PC continue de marcher.)',
+    'home.sec.overlayBody': 'Les anciennes adresses des overlays ne donneront plus accès : recopie les nouvelles dans tes sources Navigateur d’OBS (Chat et Message mis en avant).',
     'home.sec.sessionsTitle': 'Déconnecter toutes les sessions ?',
     'home.sec.sessionsBody': 'Tous les navigateurs, y compris celui-ci, devront ressaisir le mot de passe. Les docks OBS (clé) ne sont pas concernés.',
     'home.sec.rotated': 'Nouvelle clé générée : mets à jour les adresses dans OBS.',
@@ -352,11 +353,11 @@ addI18n({
     'home.obs.masked': 'Key hidden: use the Copy button',
     'home.obs.done': 'I added my docks', 'home.obs.doneState': 'Docks added', 'home.obs.doneToast': 'Great, you are all set!',
     'home.ovl.title': 'Chat overlay',
-    'home.ovl.sub': 'Shows your chat on stream. Tune it here, then copy the address into a Browser source.',
-    'home.ovl.how': 'In OBS: Sources → + → Browser → paste the URL, width 400, height 600. Your settings live in the address: after a change, paste it again into the source (right-click → Properties → URL).',
+    'home.ovl.sub': 'Shows your chat on stream. Your settings are saved here and apply live.',
+    'home.ovl.how': 'In OBS: Sources → + → Browser → paste the address, width 400, height 600. Each overlay has its own address: one Browser source for each. Paste it once, then your changes apply live. An older address that carries settings keeps working but no longer follows the dashboard.',
     'home.ovl.readonly': 'This address uses the read-only overlay key: it cannot act on your accounts.',
-    'home.ovl.mode': 'Type', 'home.ovl.mode.chat': 'Chat', 'home.ovl.mode.featured': 'Featured message',
-    'home.ovl.featuredHint': 'Shows only the message you feature from the Chat dock.',
+    'home.ovl.mode': 'Overlay to edit', 'home.ovl.mode.chat': 'Chat', 'home.ovl.mode.featured': 'Featured message',
+    'home.ovl.hint.chat': 'Shows the messages from your chats.', 'home.ovl.hint.featured': 'Shows only the message you feature from the Chat dock.',
     'home.ovl.theme': 'Theme', 'home.ovl.theme.dark': 'Dark', 'home.ovl.theme.light': 'Light', 'home.ovl.theme.transparent': 'Transparent',
     'home.ovl.themeHint.transparent': 'Text only, right on top of your scene. Turn on "Bubbles" or "Text outline" if your background is busy.',
     'home.ovl.themeHint.dark': 'Each message on a dark card with its platform colour: readable on any background.',
@@ -368,7 +369,7 @@ addI18n({
     'home.ovl.hideBots': 'Hide bots', 'home.ovl.hideCommands': 'Hide !commands', 'home.ovl.badges': 'Badges',
     'home.ovl.icons': 'Platform icons', 'home.ovl.avatars': 'Avatars', 'home.ovl.bubble': 'Bubbles', 'home.ovl.outline': 'Text outline', 'home.ovl.credit': 'Small “Chat via Tramevia Dock” credit (thank you 💜)',
     'home.ovl.events': 'Events (follows, subs…)',
-    'home.ovl.url': 'Overlay address', 'home.ovl.preview': 'Live preview',
+    'home.ovl.url': '“{name}” overlay address', 'home.ovl.preview': 'Live preview', 'home.ovl.saved': 'Saved · applied live',
     'home.ovl.previewHint': 'The checkerboard shows transparency.', 'home.ovl.previewTitle': 'Chat overlay preview',
     'home.ovl.reset': 'Reset',
     'home.set.title': 'Settings', 'home.set.appearance': 'Appearance',
@@ -385,7 +386,7 @@ addI18n({
     'home.sec.dockTitle': 'Regenerate the dock key?',
     'home.sec.dockBody': 'The old key will no longer grant access: copy the new dock addresses from the OBS section. (Without a password, docks opened on this PC keep working; other devices are cut off.)',
     'home.sec.overlayTitle': 'Regenerate the overlay key?',
-    'home.sec.overlayBody': 'The old overlay address will no longer grant access: copy the new one into the OBS Browser source. (Without a password, an overlay opened on this PC keeps working.)',
+    'home.sec.overlayBody': 'The old overlay addresses will no longer grant access: copy the new ones into your OBS Browser sources (Chat and Featured message).',
     'home.sec.sessionsTitle': 'Sign out all sessions?',
     'home.sec.sessionsBody': 'Every browser, including this one, will have to enter the password again. OBS docks (key) are not affected.',
     'home.sec.rotated': 'New key generated: update the addresses in OBS.',
@@ -425,20 +426,14 @@ const REPO = 'https://github.com/Tramevia/Tramevia-Dock';
 const KICK_SCOPES = ['user:read', 'channel:read', 'channel:write', 'chat:write', 'events:subscribe', 'moderation:ban', 'moderation:chat_message:manage', 'kicks:read'];
 const SECTIONS = [['overview', 'home'], ['accounts', 'users'], ['obs', 'monitor'], ['settings', 'settings']];
 const DOCKS = [['chat', '/chat', 'chat'], ['events', '/events', 'zap'], ['community', '/community', 'users'], ['stream', '/stream', 'edit'], ['home', '/', 'home']];
-const OV_BOOLS = ['hideBots', 'hideCommands', 'events', 'badges', 'icons', 'avatars', 'bubble', 'outline', 'credit'];
-const OV_DEFAULTS = {
-  mode: 'chat', theme: 'dark', max: 20, fade: 0, size: 16, align: 'left', featureSeconds: 15,
-  hideBots: true, hideCommands: true, events: true, badges: true, icons: true, avatars: false, bubble: false, outline: true, credit: false,
-  offPlatforms: [], offAccounts: [],
-};
 const AUTH_TIMEOUT = 600_000; // server forgets the OAuth state after 10 min
 
 const S = { state: null, accounts: [], apps: null, keys: null, session: null, ui: {}, pending: {}, update: null };
 const el = {};
 const forms = {}; // username forms survive re-renders (keeps typed text)
-let ov = { ...OV_DEFAULTS, ...store.get('home.overlay', {}) };
+let ovId = 'chat'; // saved overlay shown in the builder
+const ovSync = {}; // per overlay: debounce timer, writes in flight, last write time
 let spy = null;
-let previewTimer = 0;
 
 // ---------------------------------------------------------------- helpers
 const platform = id => S.state.platforms.find(p => p.id === id);
@@ -1097,92 +1092,162 @@ function renderObs() {
   renderOverlay();
 }
 
-function overlayParams() {
-  const q = new URLSearchParams({ key: S.keys.overlay });
-  const featured = ov.mode === 'featured';
-  if (featured) q.set('mode', 'featured');
-  q.set('theme', ov.theme);
-  if (featured) q.set('featureSeconds', ov.featureSeconds); else { q.set('max', ov.max); q.set('fade', ov.fade); }
-  q.set('size', ov.size);
-  q.set('align', ov.align);
-  for (const k of OV_BOOLS) if (!featured || !['hideBots', 'hideCommands', 'events'].includes(k)) q.set(k, ov[k] ? '1' : '0');
-  if (!featured) {
-    const pfs = S.state.platforms.map(p => p.id).filter(id => !ov.offPlatforms.includes(id));
-    if (ov.offPlatforms.length && pfs.length) q.set('platforms', pfs.join(','));
-    const accs = S.accounts.map(a => a.id).filter(id => !ov.offAccounts.includes(id));
-    if (S.accounts.some(a => ov.offAccounts.includes(a.id)) && accs.length) q.set('accounts', accs.join(','));
-  }
-  return q;
+/** Every saved overlay, complete (defaults fill in what the server did not send). */
+const allOverlays = o => Object.fromEntries(OVERLAY_IDS.map(id => [id, cleanOverlay(o?.[id], OV_DEFAULTS[id])]));
+const overlayUrl = (id, base = '') => `${base}/overlay/chat?${new URLSearchParams({ key: S.keys.overlay, id })}`;
+const ovSyncOf = id => (ovSync[id] ||= { timer: 0, busy: 0, at: 0, queue: Promise.resolve(), dirty: new Set() });
+/** Unsent edit, write in flight or written under 1.5 s ago: frames for this overlay are our own echo (or older). */
+const ovQuiet = id => { const s = ovSync[id]; return Boolean(s && (s.timer || s.busy || Date.now() - s.at < 1500)); };
+const ovStatus = text => { if (el.ovStatus) el.ovStatus.textContent = text; };
+
+/** Server answer for an overlay: taken when no local edit is waiting (it also carries changes made in another tab). */
+function adoptOverlay(id, settings) {
+  const s = ovSyncOf(id);
+  if (s.timer || s.dirty.size || JSON.stringify(settings) === JSON.stringify(S.state.overlays[id])) return;
+  S.state.overlays = { ...S.state.overlays, [id]: settings };
+  if (id === ovId) renderOverlayForm();
+}
+
+/**
+ * Debounced save of one overlay (number inputs fire on every keystroke). Only the changed settings are sent, so a
+ * change made meanwhile in another tab is not overwritten. Writes (and resets) are serialized per overlay.
+ */
+function saveOverlay(id, key) {
+  const s = ovSyncOf(id);
+  s.dirty.add(key);
+  clearTimeout(s.timer);
+  ovStatus('');
+  s.timer = setTimeout(() => {
+    s.timer = 0;
+    const patch = Object.fromEntries([...s.dirty].map(k => [k, S.state.overlays[id][k]]));
+    s.dirty.clear();
+    s.busy++;
+    s.queue = s.queue.then(async () => {
+      try {
+        const r = await api(`/api/overlays/${id}`, { method: 'PUT', body: patch });
+        adoptOverlay(id, r.settings);
+        if (id === ovId && !s.timer) ovStatus(t('home.ovl.saved'));
+      } catch (err) { toast(err.message, 'error', 6000); } finally { s.busy--; s.at = Date.now(); }
+    });
+  }, 500);
+}
+
+async function resetOverlay(button) {
+  const id = ovId;
+  const s = ovSyncOf(id);
+  clearTimeout(s.timer);
+  s.timer = 0;
+  s.dirty.clear();
+  s.busy++;
+  try {
+    await busy(button, () => (s.queue = s.queue.then(async () => { // after any PUT still in flight
+      const r = await api(`/api/overlays/${id}`, { method: 'DELETE' });
+      S.state.overlays = { ...S.state.overlays, [id]: r.settings };
+      if (id === ovId) { renderOverlayForm(); ovStatus(t('home.ovl.saved')); }
+    })));
+  } finally { s.busy--; s.at = Date.now(); }
+}
+
+/** One-time move of this browser's 1.2 builder settings (localStorage) to the server, while it has none saved. */
+let migrating = false;
+async function migrateOverlay() {
+  const old = store.get('home.overlay');
+  if (migrating || S.state.overlaysSaved !== false || !old || typeof old !== 'object') return;
+  migrating = true;
+  const id = old.mode === 'featured' ? 'featured' : 'chat';
+  // 1.2 never applied the platform/account filters to the featured overlay, and its one duration was the dock's.
+  const body = id === 'featured' ? { ...cleanOverlay(old, OV_DEFAULTS[id]), offPlatforms: [], offAccounts: [] } : cleanOverlay(old, OV_DEFAULTS[id]);
+  try {
+    const r = await api(`/api/overlays/${id}`, { method: 'PUT', body });
+    if (id === 'chat' && Number.isFinite(old.featureSeconds)) await api('/api/overlays/featured', { method: 'PUT', body: { featureSeconds: old.featureSeconds } }).catch(() => {});
+    store.remove('home.overlay');
+    S.state.overlaysSaved = true;
+    if (!ovQuiet(id)) { S.state.overlays = { ...S.state.overlays, [id]: r.settings }; if (id === ovId) renderOverlayForm(); }
+  } catch { /* kept: tried again at the next load */ } finally { migrating = false; }
 }
 
 function renderOverlay() {
-  const featured = ov.mode === 'featured';
-  const urlBox = h('div');
-  const frame = h('iframe', { title: t('home.ovl.previewTitle'), loading: 'lazy' });
-  const update = () => {
-    store.set('home.overlay', ov);
-    const q = overlayParams();
-    keepFocus(() => urlBox.replaceChildren(secretField(`${S.state.publicUrl}/overlay/chat?${q}`, 'ov:url')));
-    frame.style.setProperty('color-scheme', ov.theme === 'light' ? 'light' : 'dark'); // must match the overlay page or the iframe turns opaque
-    clearTimeout(previewTimer);
-    previewTimer = setTimeout(() => { frame.src = `/overlay/chat?${q}`; }, 350);
-  };
+  el.ovFrame = h('iframe', { title: t('home.ovl.previewTitle'), loading: 'lazy' });
+  keepFocus(() => el.overlay.replaceChildren(
+    h('div.ovl-head',
+      h('div.stack.tight', h('h3.card-title', icon('layers'), t('home.ovl.title')), h('p.small.muted', t('home.ovl.sub'))),
+      h('button.btn.sm.ghost', { type: 'button', dataset: { focus: 'ov:reset' }, onclick: e => resetOverlay(e.currentTarget) }, icon('refresh'), t('home.ovl.reset'))),
+    h('div.ov-builder',
+      el.ovForm = h('div.ov-form'),
+      h('div.ov-preview',
+        h('div.row', h('span.label', t('home.ovl.preview')), h('span.spacer'), h('span.tiny.muted', t('home.ovl.previewHint'))),
+        h('div.checker', el.ovFrame)))));
+  renderOverlayForm();
+}
+
+/** Form of the selected overlay. The preview iframe stays in place (live frames update it): its src only changes with the selection or key. */
+function renderOverlayForm() {
+  if (!el.ovForm) return;
+  const id = ovId;
+  const o = S.state.overlays[id];
+  const featured = id === 'featured';
+  const set = (key, value) => { o[key] = value; saveOverlay(id, key); };
   const num = (key, min, max) => {
     const input = h('input', {
-      id: `ov-${key}`, type: 'number', min, max, step: 1, value: ov[key],
+      id: `ov-${key}`, type: 'number', min, max, step: 1, value: o[key], dataset: { focus: `ov:${key}` },
       oninput: () => {
         const n = Number(input.value);
         const ok = input.value !== '' && Number.isInteger(n) && n >= min && n <= max;
-        if (ok) { ov[key] = n; update(); }
+        if (ok) set(key, n);
         if (ok) input.removeAttribute('aria-invalid'); else input.setAttribute('aria-invalid', 'true');
       },
     });
     return h('div.field', h('label', { htmlFor: input.id }, t(`home.ovl.${key}`)), input);
   };
-  const toggle = key => h('label.switch', h('input', { type: 'checkbox', checked: ov[key], dataset: { focus: `ov:${key}` }, onchange: e => { ov[key] = e.target.checked; update(); } }), h('span'), h('span', t(`home.ovl.${key}`)));
-  const chip = (list, all, id, label, iconEl) => h('button.toggle-chip', {
-    type: 'button', dataset: { focus: `ov:${list}:${id}` }, attrs: { 'aria-pressed': String(!ov[list].includes(id)) },
+  const toggle = key => h('label.switch', h('input', { type: 'checkbox', checked: o[key], dataset: { focus: `ov:${key}` }, onchange: e => set(key, e.target.checked) }), h('span'), h('span', t(`home.ovl.${key}`)));
+  const chip = (list, all, item, label, iconEl) => h('button.toggle-chip', {
+    type: 'button', dataset: { focus: `ov:${list}:${item}` }, attrs: { 'aria-pressed': String(!o[list].includes(item)) },
     onclick: e => {
-      const next = ov[list].includes(id) ? ov[list].filter(x => x !== id) : [...ov[list], id];
+      const next = o[list].includes(item) ? o[list].filter(x => x !== item) : [...o[list], item];
       if (all.every(x => next.includes(x))) return; // keep at least one selected
-      ov[list] = next;
-      e.currentTarget.setAttribute('aria-pressed', String(!ov[list].includes(id)));
-      update();
+      e.currentTarget.setAttribute('aria-pressed', String(!next.includes(item)));
+      set(list, next);
     },
   }, iconEl, label);
   const choice = (key, values, rerender = false) => h('div.field', h('span.label', t(`home.ovl.${key}`)),
-    segmented(t(`home.ovl.${key}`), values.map(v => [v, t(`home.ovl.${key}.${v}`)]), ov[key], v => { ov[key] = v; if (rerender) renderOverlay(); else update(); }, `ov:${key}`));
+    segmented(t(`home.ovl.${key}`), values.map(v => [v, t(`home.ovl.${key}.${v}`)]), o[key], v => { set(key, v); if (rerender) renderOverlayForm(); }, `ov:${key}`));
   // Bubbles and outline only change something on the transparent theme (dark/light always draw cards).
-  const textOnly = ov.theme === 'transparent';
+  const textOnly = o.theme === 'transparent';
 
-  keepFocus(() => el.overlay.replaceChildren(
-    h('div.ovl-head',
-      h('div.stack.tight', h('h3.card-title', icon('layers'), t('home.ovl.title')), h('p.small.muted', t('home.ovl.sub'))),
-      h('button.btn.sm.ghost', { type: 'button', dataset: { focus: 'ov:reset' }, onclick: () => { ov = structuredClone(OV_DEFAULTS); renderOverlay(); } }, icon('refresh'), t('home.ovl.reset'))),
-    h('div.ov-builder',
-      h('div.ov-form',
-        h('div.field', h('span.label', t('home.ovl.mode')),
-          segmented(t('home.ovl.mode'), [['chat', t('home.ovl.mode.chat')], ['featured', t('home.ovl.mode.featured')]], ov.mode, v => { ov.mode = v; renderOverlay(); }, 'ov:mode')),
-        featured && h('p.small.muted', t('home.ovl.featuredHint')),
-        h('div.row.ov-choices', choice('theme', ['transparent', 'dark', 'light'], true), choice('align', ['left', 'right'])),
-        h('p.small.muted', t(`home.ovl.themeHint.${ov.theme}`)),
-        h('div.ov-fields',
-          featured ? num('featureSeconds', 0, 300) : [num('max', 1, 100), num('fade', 0, 600)],
-          num('size', 10, 48)),
-        h('div.stack.tight', h('span.label', t('home.ovl.display')),
-          h('div.ov-switches', ['badges', 'icons', 'avatars', ...(textOnly ? ['bubble', 'outline'] : []), 'credit'].map(toggle))),
-        !featured && h('div.stack.tight', h('span.label', t('home.ovl.filters')),
-          h('div.ov-switches', ['hideBots', 'hideCommands', 'events'].map(toggle))),
-        !featured && h('div.stack.tight', h('span.label', t('home.ovl.platforms')),
-          h('div.row.tight', S.state.platforms.map((p, _, all) => chip('offPlatforms', all.map(x => x.id), p.id, p.name, platformIcon(p.id))))),
-        !featured && S.accounts.length > 1 && h('div.stack.tight', h('span.label', t('home.ovl.accounts')),
-          h('div.row.tight', S.accounts.map((a, _, all) => chip('offAccounts', all.map(x => x.id), a.id, a.displayName, platformIcon(a.platform))))),
-        h('div.stack.tight', h('span.label', t('home.ovl.url')), urlBox,
-          h('p.small.muted', t('home.ovl.how')), h('p.tiny.muted', icon('shield', 12), ' ', t('home.ovl.readonly')))),
-      h('div.ov-preview',
-        h('div.row', h('span.label', t('home.ovl.preview')), h('span.spacer'), h('span.tiny.muted', t('home.ovl.previewHint'))),
-        h('div.checker', frame)))));
-  update();
+  const src = overlayUrl(id);
+  if (el.ovFrame.getAttribute('src') !== src) el.ovFrame.src = src;
+  el.ovFrame.style.setProperty('color-scheme', o.theme === 'light' ? 'light' : 'dark'); // must match the overlay page or the iframe turns opaque
+  keepFocus(() => el.ovForm.replaceChildren(
+    h('div.field', h('span.label', t('home.ovl.mode')),
+      segmented(t('home.ovl.mode'), OVERLAY_IDS.map(v => [v, t(`home.ovl.mode.${v}`)]), id, v => { ovId = v; renderOverlayForm(); }, 'ov:mode')),
+    h('p.small.muted', t(`home.ovl.hint.${id}`)),
+    h('div.stack.tight', h('span.label', t('home.ovl.url', { name: t(`home.ovl.mode.${id}`) })), secretField(overlayUrl(id, S.state.publicUrl), 'ov:url'),
+      h('p.small.muted', t('home.ovl.how')), h('p.tiny.muted', icon('shield', 12), ' ', t('home.ovl.readonly'))),
+    h('div.row.ov-choices', choice('theme', ['transparent', 'dark', 'light'], true), choice('align', ['left', 'right'])),
+    h('p.small.muted', t(`home.ovl.themeHint.${o.theme}`)),
+    h('div.ov-fields',
+      featured ? num('featureSeconds', 0, 300) : [num('max', 1, 100), num('fade', 0, 600)],
+      num('size', 10, 48)),
+    h('div.stack.tight', h('span.label', t('home.ovl.display')),
+      h('div.ov-switches', ['badges', 'icons', 'avatars', ...(textOnly ? ['bubble', 'outline'] : []), 'credit'].map(toggle))),
+    !featured && h('div.stack.tight', h('span.label', t('home.ovl.filters')),
+      h('div.ov-switches', ['hideBots', 'hideCommands', 'events'].map(toggle))),
+    !featured && h('div.stack.tight', h('span.label', t('home.ovl.platforms')),
+      h('div.row.tight', S.state.platforms.map((p, _, all) => chip('offPlatforms', all.map(x => x.id), p.id, p.name, platformIcon(p.id))))),
+    !featured && S.accounts.length > 1 && h('div.stack.tight', h('span.label', t('home.ovl.accounts')),
+      h('div.row.tight', S.accounts.map((a, _, all) => chip('offAccounts', all.map(x => x.id), a.id, a.displayName, platformIcon(a.platform))))),
+    el.ovStatus = h('p.small.muted', { attrs: { role: 'status' } })));
+}
+
+/** 'hello' / 'overlay' frames: settings changed elsewhere (another tab, a reset). Our own echoes are skipped. */
+function setOverlays(next) {
+  let changed = false;
+  for (const id of OVERLAY_IDS) {
+    if (!next?.[id] || ovQuiet(id)) continue;
+    S.state.overlays = { ...S.state.overlays, [id]: cleanOverlay(next[id], OV_DEFAULTS[id]) };
+    changed ||= id === ovId;
+  }
+  if (changed) renderOverlayForm();
 }
 
 // ---------------------------------------------------------------- 5. settings
@@ -1357,9 +1422,10 @@ function setAccounts(list) {
 
 function onFrame({ t: topic, d }) {
   if (!S.apps || !el.overview) return;
-  if (topic === 'hello') { setAccounts(d.accounts); refreshUpdate(); } // reconnect after a restart (e.g. rolled-back update)
+  if (topic === 'hello') { setAccounts(d.accounts); refreshUpdate(); setOverlays(d.overlays); if ('overlaysSaved' in d) S.state.overlaysSaved = d.overlaysSaved; migrateOverlay(); } // reconnect after a restart (e.g. rolled-back update)
   else if (topic === 'accounts') setAccounts(d);
   else if (topic === 'update') setUpdate(d);
+  else if (topic === 'overlay' && OVERLAY_IDS.includes(d?.id)) setOverlays({ [d.id]: d.settings });
   else if (topic === 'stats') {
     const a = S.accounts.find(x => x.id === d.accountId);
     if (a) { a.stats = d; paintStats(); }
@@ -1398,8 +1464,10 @@ boot({
     S.state = state;
     S.accounts = state.accounts || [];
     S.ui = state.ui || {};
+    S.state.overlays = allOverlays(state.overlays);
     el.root = root;
     await load();
+    migrateOverlay();
   },
   onFrame,
 });

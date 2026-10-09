@@ -59,64 +59,82 @@ Sous Linux avec Wayland, OBS peut ne pas proposer les docks de navigateur. Ouvre
 
 ## Overlay de chat
 
-L’overlay affiche ton chat sur le stream, avec un fond transparent. Il utilise une clé à part, **en lecture seule** : son adresse ne permet aucune action sur tes comptes.
+L’overlay affiche ton chat sur le stream, avec un fond transparent. Il utilise une clé à part, **en lecture seule** : elle permet d’afficher ton chat et de lire les réglages de l’overlay, jamais de les modifier ni d’agir sur tes comptes.
+
+Il y a deux overlays, chacun avec ses réglages et son adresse :
+
+- **Chat** : ton chat, message après message ;
+- **Message mis en avant** : seulement le message que tu choisis dans le dock Chat (voir plus bas).
+
+Leurs réglages sont enregistrés dans Tramevia Dock et **s’appliquent en direct** : change une option dans le tableau de bord, l’overlay suit tout de suite dans OBS. Tu colles chaque adresse dans OBS **une seule fois**.
 
 ### Ajouter l’overlay
 
-1. Dans le tableau de bord, section **OBS**, trouve la carte « Overlay de chat ».
-2. Règle l’apparence : type, thème, alignement, nombre de messages, disparition, taille du texte, badges, icônes, avatars, bulles, contour, mention Tramevia Dock, filtres. L’« Aperçu en direct » se met à jour au fur et à mesure (le damier représente la transparence).
+1. Dans le tableau de bord, section **OBS**, trouve la carte « Overlay de chat » et choisis « Chat ».
+2. Règle l’apparence : thème, alignement, nombre de messages, disparition, taille du texte, badges, icônes, avatars, bulles, contour, mention Tramevia Dock, filtres. L’« Aperçu en direct » se met à jour au fur et à mesure (le damier représente la transparence). Tout s’enregistre tout seul.
 3. Copie l’« Adresse de l’overlay ».
 4. Dans OBS : **Sources → + → Navigateur**, donne un nom à la source, colle l’adresse dans le champ URL, mets la largeur à **400** et la hauteur à **600**, puis valide.
 
 ![Overlay de chat sur une scène de jeu : bulles de messages avec l’icône de chaque plateforme, réponses et un follow](../assets/screenshots/fr/overlay.png)
 
-Les réglages font partie de l’adresse. Si tu les modifies dans le tableau de bord, recopie l’adresse dans les propriétés de la source.
+Pour le message mis en avant, choisis « Message mis en avant » dans le tableau de bord et ajoute son adresse comme **deuxième** source Navigateur.
+
+Ensuite, plus besoin de recoller l’adresse quand tu changes un réglage. Tu ne la recolles que si l’adresse elle-même change : après avoir régénéré la clé de l’overlay (**Paramètres → Sécurité → Clé de l’overlay**), ou après un changement de port ou de `PUBLIC_URL`.
+
+« Réinitialiser » remet l’overlay choisi à ses réglages par défaut (en direct, lui aussi) : thème sombre, 20 messages, texte de 16 px, bots et !commandes masqués, contour du texte activé, et 15 secondes pour un message mis en avant.
+
+**Filtres.** Les plateformes et les comptes que tu décoches sont masqués. Tout le reste s’affiche : un compte que tu connectes plus tard apparaît tout seul sur l’overlay.
 
 ### Mode « Message mis en avant »
 
 Ce mode affiche un seul message, celui que tu choisis pendant le live : une question, un bon mot, un message de soutien…
 
-1. Dans la carte « Overlay de chat », choisis le type « Message mis en avant », règle la « Durée (s, 0 = jusqu’au retrait) », puis copie l’adresse.
-2. Ajoute-la dans OBS comme **deuxième** source Navigateur (garde ta source de chat classique à côté si tu veux les deux).
-3. Pendant le live, dans le dock Chat, survole un message et clique sur l’étoile « Afficher sur l’overlay ». Clique de nouveau dessus (« Retirer de l’overlay ») pour l’enlever avant la fin de la durée.
+1. Ajoute l’adresse du « Message mis en avant » comme source Navigateur (voir plus haut) et règle sa « Durée (s, 0 = jusqu’au retrait) ».
+2. Pendant le live, dans le dock Chat, survole un message et clique sur l’étoile « Afficher sur l’overlay ». Clique de nouveau dessus (« Retirer de l’overlay ») pour l’enlever avant la fin de la durée.
 
 Un message supprimé par la modération n’est jamais affiché. Si OBS recharge la source, le message mis en avant revient pour le temps qu’il lui restait.
 
-### Paramètres de l’adresse de l’overlay
+### Avancé : des réglages dans l’adresse
 
-L’overlay se règle uniquement par son adresse : `/overlay/chat?key=…&theme=…`. Le générateur du tableau de bord écrit ces paramètres pour toi ; ce tableau sert si tu veux ajuster une adresse à la main.
+Tu peux aussi écrire des réglages dans l’adresse elle-même. Deux cas :
 
-Pour les interrupteurs, `1`, `true` ou `yes` activent l’option, toute autre valeur la désactive. La colonne « Si absent » donne la valeur utilisée quand le paramètre ne figure pas dans l’adresse ; le générateur, lui, écrit toujours ses propres valeurs (colonne « Générateur »).
+- **Une variante d’un overlay enregistré.** Ajoute des paramètres à une adresse enregistrée (celle qui contient `&id=chat` ou `&id=featured`) : chaque paramètre remplace ce réglage-là, les autres suivent toujours le tableau de bord en direct. Par exemple, une version plus petite pour une autre scène : `…&id=chat&size=14&max=5`.
+- **Les anciennes adresses sans `&id=`** (créées avant les overlays enregistrés). Elles marchent exactement comme avant, réglées uniquement par leurs paramètres, mais elles **ne suivent pas le tableau de bord**. Pour profiter des réglages en direct, copie la nouvelle adresse une fois.
 
-| Paramètre | Valeurs | Si absent | Générateur | Effet |
-|---|---|---|---|---|
-| `key` | clé de l’overlay | — | ajoutée automatiquement | Obligatoire. La clé en lecture seule. |
-| `mode` | `featured` | chat classique | ajouté en mode « Message mis en avant » | Affiche seulement le message mis en avant depuis le dock Chat. |
-| `theme` | `transparent`, `dark`, `light` | `transparent` | `dark` | Thème : transparent, sombre ou clair. |
-| `max` | 1 à 100 | `12` | `20` | Nombre maximal de messages à l’écran. |
-| `fade` | 0 à 3600 secondes (générateur : 0 à 600) | `0` | `0` | Durée avant qu’un message disparaisse. `0` = jamais. |
-| `size` | 8 à 120 pixels (générateur : 10 à 48) | 20 px | `16` | Taille du texte. |
-| `align` | `left`, `right` | `left` | `left` | Alignement à gauche ou à droite. |
-| `platforms` | liste séparée par des virgules : `twitch,kick,youtube,tiktok` | toutes | ajouté seulement si tu en décoches | Plateformes affichées. |
-| `accounts` | identifiants de comptes, séparés par des virgules | tous | ajouté seulement si tu en décoches | Comptes affichés. Utilise le générateur : les identifiants sont internes. |
-| `hideBots` | interrupteur | désactivé | `1` | Masque les bots connus (Nightbot, StreamElements, Moobot…). |
-| `hideCommands` | interrupteur | désactivé | `1` | Masque les messages qui commencent par `!`. |
-| `events` | interrupteur | activé | `1` | Affiche aussi les événements (follows, abonnements…). |
-| `badges` | interrupteur | activé | `1` | Badges des auteurs. |
-| `icons` | interrupteur | activé | `1` | Icône de la plateforme devant chaque message. |
-| `avatars` | interrupteur | désactivé | `0` | Avatars des auteurs. |
-| `bubble` | interrupteur | désactivé | `0` | Chaque message dans une bulle. |
-| `outline` | interrupteur | désactivé | `1` | Contour autour du texte, pour le lire sur n’importe quel fond. |
-| `credit` | interrupteur | désactivé | `0` | Petite mention « Chat via Tramevia Dock » sous le chat, pour faire connaître le projet. Jamais activée sans toi. |
-| `featureSeconds` | 0 à 3600 secondes (générateur : 0 à 300) | `0` | `15` | Mode mis en avant : durée d’affichage. `0` = jusqu’à ce que tu le retires. |
+Pour les interrupteurs, `1`, `true` ou `yes` activent l’option ; toute autre valeur, même vide, la désactive. Un nombre hors limites est ramené dans les limites. La colonne « Si absent » vaut pour les adresses sans `&id=` ; sur une adresse enregistrée, un paramètre absent veut dire « le réglage enregistré ».
 
-En mode `featured`, les paramètres `max`, `fade`, `hideBots`, `hideCommands` et `events` sont ignorés, et l’avatar de l’auteur est toujours affiché.
+| Paramètre | Valeurs | Si absent | Effet |
+|---|---|---|---|
+| `key` | clé de l’overlay | — | Obligatoire. La clé en lecture seule. Ajoutée automatiquement. |
+| `id` | `chat`, `featured` | aucun : réglages seulement depuis l’adresse | L’overlay enregistré à suivre. Ajouté automatiquement. |
+| `mode` | `featured` | chat classique (`featured` avec `id=featured`) | Affiche seulement le message mis en avant depuis le dock Chat. Toute autre valeur : chat classique. |
+| `theme` | `transparent`, `dark`, `light` | `transparent` | Thème : transparent, sombre ou clair. |
+| `max` | 1 à 100 | `12` | Nombre maximal de messages à l’écran. |
+| `fade` | 0 à 3600 secondes | `0` | Durée avant qu’un message disparaisse. `0` = jamais. |
+| `size` | 8 à 120 pixels | 20 px | Taille du texte. |
+| `align` | `left`, `right` | `left` | Alignement à gauche ou à droite. |
+| `platforms` | liste séparée par des virgules : `twitch,kick,youtube,tiktok` | toutes | Plateformes **affichées**. |
+| `accounts` | identifiants de comptes, séparés par des virgules | tous | Comptes **affichés**. Les identifiants sont internes : préfère les filtres du tableau de bord. |
+| `hideBots` | interrupteur | désactivé | Masque les bots connus (Nightbot, StreamElements, Moobot…). |
+| `hideCommands` | interrupteur | désactivé | Masque les messages qui commencent par `!`. |
+| `events` | interrupteur | activé | Affiche aussi les événements (follows, abonnements…). |
+| `badges` | interrupteur | activé | Badges des auteurs. |
+| `icons` | interrupteur | activé | Icône de la plateforme devant chaque message. |
+| `avatars` | interrupteur | désactivé | Avatars des auteurs. |
+| `bubble` | interrupteur | désactivé | Chaque message dans une bulle. |
+| `outline` | interrupteur | désactivé | Contour autour du texte, pour le lire sur n’importe quel fond. |
+| `credit` | interrupteur | désactivé | Petite mention « Chat via Tramevia Dock » sous le chat, pour faire connaître le projet. Jamais activée sans toi. |
+| `featureSeconds` | 0 à 3600 secondes | `0` | Mode mis en avant : durée d’affichage. `0` = jusqu’à ce que tu le retires. |
+
+Dans l’adresse, `platforms` et `accounts` listent ce qu’il faut **afficher**, alors que les filtres du tableau de bord listent ce qu’il faut masquer. Sur une adresse enregistrée, les deux s’appliquent : un message doit passer les filtres du tableau de bord et les listes de l’adresse.
+
+En mode `featured`, les paramètres `max`, `fade`, `hideBots`, `hideCommands` et `events` sont ignorés, et l’avatar de l’auteur est toujours affiché ; `platforms` et `accounts` s’appliquent toujours.
 
 ## Astuces
 
-- **Pas besoin de CSS personnalisé.** Thème, taille, bulles et contour se règlent dans l’adresse. Tu peux laisser le champ CSS de la source Navigateur tel qu’OBS le propose.
-- **L’overlay n’a pas pris tes nouveaux réglages ?** Vérifie que tu as bien recollé la nouvelle adresse, puis, dans les propriétés de la source, clique sur « Actualiser le cache de la page actuelle ».
-- **Plusieurs scènes.** Pour utiliser le même overlay dans plusieurs scènes, ajoute-le comme source existante (**Sources → + → Navigateur → Ajouter une source existante**) plutôt que d’en créer une nouvelle. Pour des variantes (un overlay par plateforme, par exemple), crée une source par adresse.
+- **Pas besoin de CSS personnalisé.** Thème, taille, bulles et contour se règlent dans le tableau de bord. Tu peux laisser le champ CSS de la source Navigateur tel qu’OBS le propose.
+- **L’overlay n’a pas pris tes nouveaux réglages ?** Vérifie que son adresse contient `&id=` (voir [Avancé : des réglages dans l’adresse](#avancé--des-réglages-dans-ladresse)), puis, dans les propriétés de la source, clique sur « Actualiser le cache de la page actuelle ».
+- **Plusieurs scènes.** Pour utiliser le même overlay dans plusieurs scènes, ajoute-le comme source existante (**Sources → + → Navigateur → Ajouter une source existante**) plutôt que d’en créer une nouvelle. Pour des variantes (un overlay par plateforme, par exemple), crée une source avec des paramètres en plus dans son adresse.
 - **Après un rechargement**, l’overlay réaffiche les derniers messages récents. Avec `fade`, seuls ceux qui n’auraient pas encore disparu reviennent.
-- **Clé de l’overlay compromise ?** **Paramètres → Sécurité → Clé de l’overlay → « Régénérer »**, puis recopie la nouvelle adresse dans la source Navigateur.
+- **Clé de l’overlay compromise ?** **Paramètres → Sécurité → Clé de l’overlay → « Régénérer »**, puis recopie les nouvelles adresses dans tes sources Navigateur.
 - **Les docks ne répondent plus ?** Vérifie que Tramevia Dock tourne toujours (la fenêtre noire est ouverte). Les autres causes sont dans la [FAQ](faq.md#docks-vides-ou-qui-demandent-un-mot-de-passe-dans-obs).

@@ -18,6 +18,7 @@ Find your symptom below. Error messages are quoted as Tramevia Dock shows them i
 - [YouTube: disconnected after 7 days](#youtube-disconnected-after-7-days)
 - [TikTok: offline, not found or rate limited](#tiktok-offline-not-found-or-rate-limited)
 - [Docks are blank or ask for a password in OBS](#docks-are-blank-or-ask-for-a-password-in-obs)
+- [The overlay shows nothing or does not follow my settings](#the-overlay-shows-nothing-or-does-not-follow-my-settings)
 - [I lost the dashboard password](#i-lost-the-dashboard-password)
 - [I moved to a new PC](#i-moved-to-a-new-pc)
 
@@ -128,6 +129,16 @@ TikTok is an unofficial, read-only integration: it can stop working when TikTok 
 - **You changed the port or `PUBLIC_URL`.** The dock addresses changed too: copy them again.
 
 The overlay works the same way, with its own read-only key (**Settings → Security → Overlay key**). It does not change when you change the password.
+
+### The overlay shows nothing or does not follow my settings
+
+- Look at the **Live preview** in the dashboard: if it works, copy the address into the Browser source again.
+- Check that the source address contains `&id=chat` or `&id=featured`. Older addresses, with the settings written in them, still work but do not follow the dashboard: replace it once with the address shown in the **OBS** section.
+- A setting written in the address (for example `&size=14`) wins over the dashboard. Remove it so that setting follows the dashboard again.
+- You changed the port or `PUBLIC_URL`, or regenerated the overlay key? The addresses changed: copy them again.
+- Check the filters: unticked platforms or accounts, hidden bots and `!commands`.
+- With the Featured message, nothing shows until you click **Show on overlay** on a message in the Chat dock.
+- In the source properties, click **Refresh cache of current page**.
 
 ### I lost the dashboard password
 

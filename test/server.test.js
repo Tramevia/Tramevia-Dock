@@ -172,3 +172,62 @@ test('pages and scripts stamp their asset URLs; only a current stamp is cached f
     await srv.stop();
   }
 });
+
+test('saved overlays: read key reads + gets live frames, only admin writes, validated body', async () => {
+  const srv = await startServer({ ADMIN_PASSWORD: 'correct-horse-battery', UPDATE_CHECK: '0' });
+  try {
+    const login = await fetch(srv.base + '/api/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Origin: srv.base }, body: JSON.stringify({ password: 'correct-horse-battery' }),
+    });
+    const cookie = login.headers.get('set-cookie').split(';')[0];
+    const { overlay } = await (await fetch(srv.base + '/api/keys', { headers: { Cookie: cookie } })).json();
+    const admin = (method, path, body) => fetch(srv.base + path, { method, headers: { 'Content-Type': 'application/json', Origin: srv.base, Cookie: cookie }, body: body === undefined ? undefined : JSON.stringify(body) });
+    const reader = (method, path, body) => fetch(srv.base + path, { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${overlay}` }, body: body === undefined ? undefined : JSON.stringify(body) });
+
+    const ws = new WebSocket(`ws://localhost:${srv.port}/ws?key=${overlay}`);
+    const frames = [];
+    ws.onmessage = e => frames.push(JSON.parse(e.data));
+    const next = t => new Promise((resolve, reject) => {
+      const timer = setInterval(() => { const f = frames.find(x => x.t === t); if (f) { clearInterval(timer); resolve(f); } }, 20);
+      setTimeout(() => { clearInterval(timer); reject(new Error(`no ${t} frame`)); }, 5000);
+    });
+    const hello = (await next('hello')).d;
+    assert.equal(hello.access, 'read');
+    assert.equal(hello.overlaysSaved, false);
+    assert.equal(hello.overlays.chat.max, 20);
+    assert.ok(hello.overlays.featured);
+
+    const got = await reader('GET', '/api/overlays');
+    assert.equal(got.status, 200);
+    assert.deepEqual(Object.keys((await got.json()).overlays).sort(), ['chat', 'featured']);
+    assert.equal((await reader('PUT', '/api/overlays/chat', { max: 5 })).status, 403);
+    assert.equal((await reader('DELETE', '/api/overlays/chat')).status, 403);
+
+    assert.equal((await admin('PUT', '/api/overlays/nope', { max: 5 })).status, 404);
+    const bad = await admin('PUT', '/api/overlays/chat', [1, 2]);
+    assert.equal(bad.status, 400);
+    assert.equal((await bad.json()).code, 'invalid_overlay');
+    assert.equal((await admin('PUT', '/api/overlays/chat', { offAccounts: ['x'.repeat(4000)] })).status, 400);
+
+    const put = await admin('PUT', '/api/overlays/chat', { max: 500, fade: -3, theme: 'light' });
+    assert.equal(put.status, 200);
+    const saved = await put.json();
+    assert.equal(saved.id, 'chat');
+    assert.equal(saved.settings.max, 100);
+    assert.equal(saved.settings.fade, 0);
+    const frame = await next('overlay');
+    assert.deepEqual(frame.d, saved);
+    await admin('PUT', '/api/settings', { lang: 'fr' });
+    await new Promise(r => setTimeout(r, 200));
+    assert.ok(!frames.some(f => f.t === 'settings'), 'settings topic stays admin-only');
+
+    const state = await (await reader('GET', '/api/state')).json();
+    assert.equal(state.overlaysSaved, true);
+    assert.equal(state.overlays.chat.theme, 'light');
+    const reset = await (await admin('DELETE', '/api/overlays/chat')).json();
+    assert.equal(reset.settings.max, 20);
+    ws.close();
+  } finally {
+    await srv.stop();
+  }
+});

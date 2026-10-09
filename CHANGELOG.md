@@ -6,6 +6,7 @@ Switching tabs in a dock (Chat, Community, Stream info, Dashboard) is about twic
 
 - The browser now keeps the dock's scripts, styles and logo between tabs. Their addresses change with every update, so a dock never mixes old and new files.
 - A page asks the server for the session, its data and the live connection at the same time, instead of one after the other.
+- Overlay: settings are saved in Tramevia Dock and apply live. Chat and Featured message each have one fixed address: paste it into OBS once, then every change in the dashboard shows up on stream right away (paste again only after regenerating the overlay key or changing the port or `PUBLIC_URL`). The first time you open the dashboard, the overlay settings it had remembered in your browser are saved for you. Older overlay addresses (without `&id=`) work exactly as before but don't follow the dashboard; parameters added to a new address still override one setting, for a variant in another scene. Filters now hide the platforms and accounts you untick, so an account connected later shows up by itself.
 
 ## 1.2.0 — lighter docks
 
