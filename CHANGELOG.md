@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+Switching tabs in a dock (Chat, Community, Stream info, Dashboard) is about twice as fast when Tramevia Dock runs on a server such as Railway. Measured with 200 ms of network delay: 1.3 s → 0.6 s on average, and the chat 1.1 s → 0.46 s.
+
+- The browser now keeps the dock's scripts, styles and logo between tabs. Their addresses change with every update, so a dock never mixes old and new files.
+- A page asks the server for the session, its data and the live connection at the same time, instead of one after the other.
+
 ## 1.2.0 — lighter docks
 
 Docks use far less CPU in OBS, so OBS keeps more for your stream. Measured in Chrome with the demo mode (five live accounts):
