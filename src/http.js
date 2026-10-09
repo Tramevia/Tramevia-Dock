@@ -1,5 +1,6 @@
 // Tiny router + request guard + static files on node:http. No framework.
-import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import { extname, join, resolve, sep } from 'node:path';
 import { LOOPBACK } from './config.js';
 
@@ -124,15 +125,34 @@ const TYPES = {
   '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.woff2': 'font/woff2',
 };
 
-/** Serve a file from `root`, refusing path traversal. Returns false when not found. */
-export async function serveStatic(res, root, path) {
+/** Fingerprint of root/assets (names, sizes, dates): changes with every update or edit of any asset. */
+async function assetStamp(root) {
+  const dir = join(root, 'assets');
+  const hash = createHash('sha256');
+  for (const name of (await readdir(dir)).sort()) {
+    const s = await stat(join(dir, name));
+    hash.update(`${name} ${s.size} ${s.mtimeMs}\n`);
+  }
+  return hash.digest('base64url').slice(0, 12);
+}
+const ASSET_REF = /(["'])\/assets\/([\w.-]+\.(?:js|css|svg))\1/g;
+
+/**
+ * Serve a file from `root`, refusing path traversal. Returns false when not found.
+ * Pages and scripts get their /assets/ references stamped (?v=): a stamped asset is cached for good (tab switches in
+ * a dock load nothing again), and any changed asset changes every stamp, so a browser never mixes old and new files.
+ */
+export async function serveStatic(res, root, path, v = null) {
   const base = resolve(root);
   const file = resolve(join(base, path));
   if (file !== base && !file.startsWith(base + sep)) return false;
   let data;
   try { data = await readFile(file); } catch { return false; }
   const type = TYPES[extname(file)] || 'application/octet-stream';
-  res.writeHead(200, { 'Content-Type': type, 'Cache-Control': type.startsWith('text/html') ? 'no-store' : 'no-cache' });
+  const html = type.startsWith('text/html');
+  const stamp = await assetStamp(base);
+  if (html || extname(file) === '.js') data = String(data).replace(ASSET_REF, (_, q, name) => `${q}/assets/${name}?v=${stamp}${q}`);
+  res.writeHead(200, { 'Content-Type': type, 'Cache-Control': html ? 'no-store' : v === stamp ? 'public, max-age=31536000, immutable' : 'no-cache' });
   res.end(data);
   return true;
 }

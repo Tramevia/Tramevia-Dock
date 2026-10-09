@@ -155,3 +155,20 @@ test('update API: status object, demo refusal, validated settings, hub topic, ve
     await srv.stop();
   }
 });
+
+test('pages and scripts stamp their asset URLs; only a current stamp is cached for good', async () => {
+  const srv = await startServer();
+  try {
+    const page = await fetch(srv.base + '/chat');
+    assert.equal(page.headers.get('cache-control'), 'no-store');
+    const stamp = (await page.text()).match(/\/assets\/chat\.js\?v=([\w-]+)"/)?.[1];
+    assert.ok(stamp, 'chat.js is referenced with a stamp');
+    const js = await fetch(`${srv.base}/assets/chat.js?v=${stamp}`);
+    assert.equal(js.headers.get('cache-control'), 'public, max-age=31536000, immutable');
+    assert.ok((await js.text()).includes(`from '/assets/core.js?v=${stamp}'`)); // one stamp for every module: no mixed versions
+    assert.equal((await fetch(`${srv.base}/assets/chat.js?v=old`)).headers.get('cache-control'), 'no-cache');
+    assert.equal((await fetch(`${srv.base}/assets/chat.js`)).headers.get('cache-control'), 'no-cache');
+  } finally {
+    await srv.stop();
+  }
+});

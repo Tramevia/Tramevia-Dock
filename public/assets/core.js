@@ -399,7 +399,8 @@ function header(page) {
   return h('header.app-header',
     h('a.brand', { href: withKey('/'), title: 'Tramevia Dock' }, h('img', { src: '/assets/logo.svg', alt: '' }), h('span', 'Tramevia Dock')),
     nav, h('div.spacer'),
-    h('span#conn-dot.conn-dot', { title: t('common.offline') }));
+    // The hub may already be connected when the header is built.
+    h('span#conn-dot.conn-dot', { class: connected === null ? '' : connected ? 'on' : 'off', title: t(connected ? 'common.online' : 'common.offline') }));
 }
 
 function loginScreen(onSuccess) {
@@ -430,19 +431,27 @@ export async function boot({ page, title, header: withHeader = true, admin = tru
   if (inObs) document.documentElement.classList.add('dock-mode');
   if (title) document.title = `${title} · Tramevia Dock`;
   const root = $('#app') || document.body.appendChild(h('main#app'));
+  // Session, state and realtime hub all at once: one round trip to the server before the page shows, not three.
+  const statePromise = api('/api/state');
+  statePromise.catch(() => {}); // awaited below, once the session allows it
+  const early = []; // hub frames received before the page is ready
+  let deliver = frame => early.push(frame);
+  const hub = connectHub(frame => deliver(frame), withHeader ? () => location.reload() : null);
   let session;
   try { session = await api('/api/session'); } catch (err) {
+    hub.close();
     root.replaceChildren(h('div.center-page', h('div.card.stack', h('h2', t('common.error')), h('p', err.message), h('button.btn', { onclick: () => location.reload() }, t('common.retry')))));
     return root;
   }
   if (session.access === 'public' || (admin && session.access !== 'admin')) {
+    hub.close();
     if (session.access === 'read') { root.replaceChildren(h('div.center-page', h('p.muted', t('err.forbidden')))); return root; }
     document.body.replaceChildren(loginScreen(() => location.reload()));
     return root;
   }
   window.addEventListener('od:unauthorized', () => location.reload(), { once: true });
   if (withHeader) document.body.prepend(header(page));
-  const state = await api('/api/state');
+  const state = await statePromise;
   applyTheme(params.get('theme') || state.ui?.theme || 'dark');
   // The dashboard language (server ui.lang) is the source of truth; localStorage is only a first-paint cache.
   const serverLang = state.ui?.lang === 'fr' || state.ui?.lang === 'en' ? state.ui.lang : null;
@@ -460,7 +469,7 @@ export async function boot({ page, title, header: withHeader = true, admin = tru
   let updated = null; // set by connectHub just before the reload that follows an update
   try { updated = sessionStorage.getItem('od:updated'); sessionStorage.removeItem('od:updated'); } catch { /* storage blocked */ }
   if (updated && withHeader) toast(t('common.updated', { v: updated }), 'ok', 6000); // never on an overlay (it is on stream)
-  connectHub(frame => {
+  deliver = frame => {
     if (frame.t === 'settings' || frame.t === 'hello') {
       const ui = frame.t === 'settings' ? frame.d : frame.d.ui;
       if (ui?.theme && !params.get('theme')) applyTheme(ui.theme);
@@ -474,6 +483,7 @@ export async function boot({ page, title, header: withHeader = true, admin = tru
       }
     }
     onFrame?.(frame);
-  }, withHeader ? () => location.reload() : null);
+  };
+  for (const frame of early.splice(0)) deliver(frame);
   return root;
 }

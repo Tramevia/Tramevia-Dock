@@ -381,7 +381,7 @@ async function handle(req, res) {
     }
     if (req.method === 'GET') {
       if (PAGES[url.pathname] && await serveStatic(res, PUBLIC_DIR, PAGES[url.pathname])) return;
-      if (url.pathname.startsWith('/assets/') && await serveStatic(res, PUBLIC_DIR, url.pathname.slice(1))) return;
+      if (url.pathname.startsWith('/assets/') && await serveStatic(res, PUBLIC_DIR, url.pathname.slice(1), url.searchParams.get('v'))) return;
       if (url.pathname === '/favicon.ico' && await serveStatic(res, PUBLIC_DIR, 'assets/logo.svg')) return;
     }
     throw new HttpError(404, 'Not found', 'not_found');
