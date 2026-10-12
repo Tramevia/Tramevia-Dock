@@ -1228,7 +1228,7 @@ function renderOverlayForm() {
   const src = overlayUrl(id);
   if (el.ovFrame.getAttribute('src') !== src) el.ovFrame.src = src;
   el.ovFrame.style.setProperty('color-scheme', o.theme === 'light' ? 'light' : 'dark'); // must match the overlay page or the iframe turns opaque
-  keepFocus(() => el.ovForm.replaceChildren(
+  keepFocus(() => el.ovForm.replaceChildren(...[ // replaceChildren() would print a skipped (false/null) item as text
     h('div.field', h('span.label', t('home.ovl.mode')),
       segmented(t('home.ovl.mode'), OVERLAY_IDS.map(v => [v, t(`home.ovl.mode.${v}`)]), id, v => { ovId = v; renderOverlayForm(); }, 'ov:mode')),
     h('p.small.muted', t(`home.ovl.hint.${id}`)),
@@ -1250,7 +1250,8 @@ function renderOverlayForm() {
     !featured && S.accounts.length > 1 && h('div.stack.tight', h('span.label', t('home.ovl.accounts')),
       h('div.row.tight', S.accounts.map((a, _, all) => chip('offAccounts', all.map(x => x.id), a.id, a.displayName, platformIcon(a.platform))))),
     alerts && h('button.btn.sm', { type: 'button', dataset: { focus: 'ov:test' }, onclick: e => testAlert(e.currentTarget) }, icon('zap'), t('home.ovl.test')),
-    el.ovStatus = h('p.small.muted', { attrs: { role: 'status' } })));
+    el.ovStatus = h('p.small.muted', { attrs: { role: 'status' } }),
+  ].filter(c => c instanceof Node)));
 }
 
 /** A sample alert for the preview and the OBS source (sent after any pending save, so it respects the toggles just changed). */
