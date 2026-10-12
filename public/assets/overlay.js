@@ -1,15 +1,16 @@
 // Chat overlay for OBS browser sources (/overlay/chat): read-only, transparent. Two kinds of URL:
-//  - saved:  ?key=&id=chat|featured → settings stored on the server (dashboard builder), re-applied live on every change
+//  - saved:  ?key=&id=chat|featured|alerts → settings stored on the server (dashboard builder), re-applied live on every change
 //            without reloading; any setting param also in the URL overrides that one setting.
+//            id=alerts shows live events one at a time (follows, subs, tips, raids…), never the backlog.
 //  - legacy: ?key= without id → configured only by its params, as in 1.2, ignores live updates:
 //            &theme=dark|light|transparent&max=12&fade=0&platforms=&accounts=&hideBots=1&hideCommands=1&badges=0&icons=0
 //            &avatars=1&size=18&align=left|right&events=1&bubble=1&outline=1&mode=featured&featureSeconds=0&credit=1
 // platforms=/accounts= are inclusion lists; saved settings exclude with offPlatforms/offAccounts. Parsing: overlay-settings.js.
 import { boot, h, query, addI18n, t } from '/assets/core.js';
 import { renderMessage, renderEvent } from '/assets/chat-render.js';
-import { overlayFromQuery } from '/assets/overlay-settings.js';
+import { overlayFromQuery, alertCategory } from '/assets/overlay-settings.js';
 
-addI18n({ fr: { 'overlay.title': 'Overlay du chat' }, en: { 'overlay.title': 'Chat overlay' } });
+addI18n({ fr: { 'overlay.title': 'Overlay du chat', 'overlay.alerts': 'Overlay des alertes' }, en: { 'overlay.title': 'Chat overlay', 'overlay.alerts': 'Alerts overlay' } });
 
 const BOTS = new Set(['nightbot', 'streamelements', 'moobot', 'streamlabs', 'fossabot', 'wizebot', 'sery_bot', 'botrixoficial', 'kickbot', 'soundalerts']);
 const KEEP = 200; // live chat/event frames kept for a rebuild (max is 100, the rest absorbs filtering); the hello backlog is kept whole
@@ -25,6 +26,9 @@ let opts = {};
 let frames = []; // { t, d, at } (at = receive time)
 let feature = null; // last 'feature' payload, kept even in chat mode: { m, start }
 let featureTimer = 0;
+const ALERT_QUEUE = 20; // alerts waiting their turn; beyond that the oldest waiting ones are dropped
+let alerts = []; // events waiting (alerts mode)
+let alertTimer = 0; // 0 = nothing on screen
 
 /** Root attributes, classes and render options from the current settings (idempotent). */
 function apply() {
@@ -33,7 +37,8 @@ function apply() {
   root.dataset.overlay = S.theme;
   if (C.id) root.dataset.theme = S.theme === 'light' ? 'light' : 'dark';
   if (S.size) root.style.setProperty('--ov-fs', `${S.size}px`); else root.style.removeProperty('--ov-fs');
-  for (const [cls, on] of [['ov-right', S.align === 'right'], ['ov-bubble', S.bubble], ['ov-outline', S.outline], ['ov-featured', C.featured]]) root.classList.toggle(cls, on);
+  for (const [cls, on] of [['ov-right', S.align === 'right'], ['ov-bubble', S.bubble], ['ov-outline', S.outline], ['ov-featured', C.featured], ['ov-alerts', C.alerts]]) root.classList.toggle(cls, on);
+  root.dataset.position = C.alerts ? S.position : '';
   if (app && S.credit) app.append(credit); else credit.remove();
 }
 if (!C.id) apply(); // legacy: at import time, as before; saved URLs wait for the server settings
@@ -96,6 +101,30 @@ function showFeatured(f, still = false) {
   if (S.featureSeconds) featureTimer = setTimeout(() => showFeatured(null), left);
 }
 
+// ------------------------------------------------------------------ alerts (id=alerts): one event at a time
+function alertWanted(d) {
+  const cat = alertCategory(d.type);
+  return Boolean(cat) && !S.offTypes.includes(cat) && shown(d);
+}
+
+/** Shows the next waiting alert for S.alertSeconds, then the one after. Nothing waiting = screen left empty. */
+function nextAlert() {
+  clearTimeout(alertTimer);
+  alertTimer = 0;
+  for (const old of list.children) remove(old);
+  const d = alerts.shift();
+  if (!d) return;
+  list.append(h('div.alert-card', { class: `pf-${String(d.platform).replace(/[^a-z]/g, '')}` }, renderEvent(d, { ...opts, timestamps: false })));
+  alertTimer = setTimeout(nextAlert, S.alertSeconds * 1000);
+}
+
+function enqueueAlert(d) {
+  if (!alertWanted(d)) return;
+  alerts.push(d);
+  if (alerts.length > ALERT_QUEUE) alerts.splice(0, alerts.length - ALERT_QUEUE);
+  if (!alertTimer) nextAlert();
+}
+
 /** Saved URLs: settings from the server (+ URL overrides), re-rendered in place. */
 function reconfigure(overlays, rebuild) {
   if (!C.id || !overlays) return;
@@ -104,7 +133,8 @@ function reconfigure(overlays, rebuild) {
   apply();
   if (!rebuild) return;
   clearTimeout(featureTimer);
-  if (C.featured) showFeatured(feature, true); else renderChat(true);
+  if (C.alerts) alerts = alerts.filter(alertWanted); // the card on screen stays; its duration applies from the next one
+  else if (C.featured) showFeatured(feature, true); else renderChat(true);
 }
 
 const isMatch = (d, x) => x.account === d.accountId && (d.messageId ? x.id === d.messageId : d.userId ? x.user === String(d.userId) : true);
@@ -116,9 +146,13 @@ function onFrame({ t: type, d }) {
   afterHello = type === 'hello';
   if (type === 'hello') {
     reconfigure(d.overlays, false);
+    if (C.alerts) return; // alerts never replay the backlog: an old follow must not pop up again after a reconnect
     frames = (d.backlog || []).filter(f => f.t === 'chat' || f.t === 'event').map(f => ({ t: f.t, d: f.d, at: f.d.ts }));
     feature = null;
     renderChat();
+  } else if (C.alerts) {
+    if (type === 'event' || type === 'alert:test') enqueueAlert(d);
+    else if (type === 'overlay' && d?.id === C.id) reconfigure({ ...saved, [d.id]: d.settings }, true);
   } else if (type === 'chat' || type === 'event') {
     frames.push({ t: type, d, at: Date.now() });
     if (frames.length > KEEP) frames.splice(0, frames.length - KEEP);
@@ -134,7 +168,7 @@ function onFrame({ t: type, d }) {
 }
 
 boot({
-  page: '/overlay/chat', title: t('overlay.title'), header: false, admin: false, ownTheme: Boolean(C.id),
+  page: '/overlay/chat', title: t(C.alerts ? 'overlay.alerts' : 'overlay.title'), header: false, admin: false, ownTheme: Boolean(C.id),
   onReady(state, el) {
     app = el;
     app.classList.add('ov');

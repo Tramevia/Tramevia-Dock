@@ -150,7 +150,7 @@ L’overlay se règle dans la même section **OBS**, juste sous les docks.
 Tu colles l’adresse **une seule fois** : quand tu changes un réglage ensuite, l’overlay suit en direct dans OBS. Recolle-la seulement après avoir régénéré la clé de l’overlay, ou changé de port ou de `PUBLIC_URL`. L’overlay utilise une clé à part, en lecture seule : son adresse ne permet aucune action sur tes comptes.
 
 > [!TIP]
-> Envie de mettre une seule question à l’écran ? Choisis « Message mis en avant » dans la carte de l’overlay, ajoute son adresse comme deuxième source Navigateur, puis, dans le dock Chat, survole un message et clique sur son étoile « Afficher sur l’overlay ». Tous les réglages : [guide OBS](docs/fr/obs.md).
+> Envie de mettre une seule question à l’écran ? Choisis « Message mis en avant » dans la carte de l’overlay, ajoute son adresse comme deuxième source Navigateur, puis, dans le dock Chat, survole un message et clique sur son étoile « Afficher sur l’overlay ». Envie d’alertes ? Choisis « Alertes » : chaque follow, sub, don ou raid de toutes tes plateformes s’affiche à l’écran, une alerte à la fois, et un bouton « Envoyer une alerte de test » te permet de vérifier. Tous les réglages : [guide OBS](docs/fr/obs.md).
 
 ### 5️⃣ Avant chaque live : titre, catégorie et tags partout
 
@@ -240,6 +240,7 @@ Ce que les plateformes ne permettent pas de changer à distance (le texte de not
 
 - Overlay de chat transparent pour une source Navigateur d’OBS, réglé dans le tableau de bord (thème, taille, disparition, filtres…) : les réglages s’appliquent en direct, l’adresse se colle une seule fois dans OBS.
 - Mode « Message mis en avant » : tu choisis un message dans le dock Chat, il s’affiche à l’écran.
+- Overlay « Alertes » : follows, subs, dons et raids de toutes tes plateformes à l’écran, une alerte à la fois, avec un bouton de test.
 - Aperçu en direct dans le tableau de bord pendant que tu règles.
 
 **🛡️ Installation et sécurité**

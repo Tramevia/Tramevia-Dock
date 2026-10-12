@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Alerts overlay**: a third overlay (OBS → Overlay → *Alerts*) shows every follow, sub, gifted sub, tip (bits, KICKs, Super Chats, TikTok and YouTube gifts), raid, channel point reward, TikTok like and share on screen, one card at a time, for Twitch, Kick, YouTube and TikTok together. Settings: theme, position (top / middle / bottom), duration of each alert, text size, which alerts to show, platforms and accounts. Like the other overlays, it has one fixed address and follows the dashboard live. A **Send a test alert** button shows a sample alert in the preview and in OBS. Old alerts are never replayed when the source reconnects.
+
 ## 1.3.0 — faster docks, live overlay settings
 
 Switching tabs in a dock (Chat, Community, Stream info, Dashboard) is about twice as fast when Tramevia Dock runs on a server such as Railway. Measured with 200 ms of network delay: 1.3 s → 0.6 s on average, and the chat 1.1 s → 0.46 s.

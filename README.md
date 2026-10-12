@@ -151,7 +151,7 @@ The **overlay** is the chat your viewers see on top of your game.
 You paste the address **once**: when you change a setting later, the overlay in OBS follows live. Paste it again only after you regenerate the overlay key or change the port or `PUBLIC_URL`.
 
 > [!TIP]
-> The overlay address uses a separate **read-only** key: it can show your chat, but it can't act on your accounts. Want to put just one message on screen? Pick *Featured message* in the overlay card, add its address as a second Browser source, then click **Show on overlay** on a message in the Chat dock. All options: [OBS guide](docs/en/obs.md).
+> The overlay address uses a separate **read-only** key: it can show your chat, but it can't act on your accounts. Want to put just one message on screen? Pick *Featured message* in the overlay card, add its address as a second Browser source, then click **Show on overlay** on a message in the Chat dock. Want alerts? Pick *Alerts*: every follow, sub, tip or raid from all your platforms pops up on screen, one at a time, and a **Send a test alert** button lets you check it. All options: [OBS guide](docs/en/obs.md).
 
 ### 5️⃣ Before each live: set your title everywhere at once
 
@@ -215,7 +215,7 @@ You paste the address **once**: when you change a setting later, the overlay in 
 - **Events:** follows, subs, gifted subs, cheers, KICKs, Super Chats, Super Stickers, memberships, Jewels, raids, channel point redemptions and TikTok gifts.
 - **Community:** combined viewer count and the detail per channel · the real Twitch chatter list, grouped by role (broadcaster, moderators, VIPs, bots) · "active chatters" from the last 5, 15 or 60 minutes on Kick, YouTube and TikTok, which don't share that list.
 - **Stream info:** title, category (one search on every platform, with box art) and tags for all your channels · per-account overrides · Twitch language, content classification and branded content · YouTube description and category · presets · preview before sending, a result per channel, and a button to retry only the ones that failed · copy-and-open shortcuts for settings that have no API (Twitch go-live notification, YouTube "Game").
-- **Overlay:** transparent chat overlay for an OBS Browser source, with three themes and a visual builder with live preview · settings saved in the app and applied live, so the address is pasted into OBS only once · "Featured message" mode to put one message on screen from the Chat dock.
+- **Overlay:** transparent chat overlay for an OBS Browser source, with three themes and a visual builder with live preview · settings saved in the app and applied live, so the address is pasted into OBS only once · "Featured message" mode to put one message on screen from the Chat dock. · "Alerts" overlay: follows, subs, tips and raids from every platform on screen, one at a time, with a test button.
 - **Setup & security:** a wizard for each platform with the exact addresses to paste and a test button · several accounts per platform (two Twitch channels, for example) · tokens encrypted on disk · password required as soon as the app is reachable from the network · dock and overlay keys you can regenerate · runs on Windows, macOS or Linux, or online with Docker or Railway · English and French interface.
 
 </details>

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { OVERLAY_IDS, DEFAULTS, LEGACY, cleanOverlay, overlayFromQuery } from '../public/assets/overlay-settings.js';
+import { OVERLAY_IDS, DEFAULTS, LEGACY, ALERT_TYPES, alertCategory, cleanOverlay, overlayFromQuery } from '../public/assets/overlay-settings.js';
 
 const q = s => new URLSearchParams(s);
 const legacy = s => overlayFromQuery(q(s), null);
@@ -105,4 +105,22 @@ test('cleanOverlay: id lists deduped, typed, bounded', () => {
 test('OVERLAY_IDS and DEFAULTS agree', () => {
   assert.deepEqual(Object.keys(DEFAULTS).sort(), [...OVERLAY_IDS].sort());
   for (const id of OVERLAY_IDS) assert.deepEqual(cleanOverlay(DEFAULTS[id], DEFAULTS[id]), DEFAULTS[id]);
+});
+
+test('alerts: id=alerts, position, duration, categories', () => {
+  const r = overlayFromQuery(q('id=alerts'), {});
+  assert.deepEqual([r.id, r.alerts, r.featured], ['alerts', true, false]);
+  assert.deepEqual(r.settings, DEFAULTS.alerts);
+  assert.equal(overlayFromQuery(q('id=alerts&mode=featured'), {}).featured, false);
+  assert.equal(overlayFromQuery(q('id=chat'), {}).alerts, false);
+  assert.equal(overlayFromQuery(q('id=alerts&position=bottom&alertSeconds=99'), {}).settings.position, 'bottom');
+  assert.equal(overlayFromQuery(q('id=alerts&alertSeconds=99'), {}).settings.alertSeconds, 60);
+  assert.equal(overlayFromQuery(q('id=alerts&position=left'), {}).settings.position, 'top');
+  const s = cleanOverlay({ position: 'center', alertSeconds: 0.4, offTypes: ['tip', 'tip', 3] }, DEFAULTS.alerts);
+  assert.deepEqual([s.position, s.alertSeconds, s.offTypes, s.size], ['center', 1, ['tip'], 28]);
+  for (const [type, cat] of [['follow', 'follow'], ['resub', 'sub'], ['membership', 'sub'], ['giftmembership', 'giftsub'], ['superchat', 'tip'], ['tiktok_gift', 'tip'], ['raid', 'raid'], ['like', 'like']]) {
+    assert.equal(alertCategory(type), cat, type);
+  }
+  for (const type of ['announcement', 'stream_online', 'stream_offline', 'bogus', undefined]) assert.equal(alertCategory(type), null, String(type));
+  assert.deepEqual(Object.values(ALERT_TYPES).flat().sort(), [...new Set(Object.values(ALERT_TYPES).flat())].sort(), 'a type belongs to one category');
 });

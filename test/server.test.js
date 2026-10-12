@@ -199,7 +199,7 @@ test('saved overlays: read key reads + gets live frames, only admin writes, vali
 
     const got = await reader('GET', '/api/overlays');
     assert.equal(got.status, 200);
-    assert.deepEqual(Object.keys((await got.json()).overlays).sort(), ['chat', 'featured']);
+    assert.deepEqual(Object.keys((await got.json()).overlays).sort(), ['alerts', 'chat', 'featured']);
     assert.equal((await reader('PUT', '/api/overlays/chat', { max: 5 })).status, 403);
     assert.equal((await reader('DELETE', '/api/overlays/chat')).status, 403);
 
@@ -226,6 +226,16 @@ test('saved overlays: read key reads + gets live frames, only admin writes, vali
     assert.equal(state.overlays.chat.theme, 'light');
     const reset = await (await admin('DELETE', '/api/overlays/chat')).json();
     assert.equal(reset.settings.max, 20);
+
+    // Test alert: admin only, reaches read-only sockets on its own topic, respects the kept-on categories, never stored.
+    assert.equal((await reader('POST', '/api/overlays/alerts/test')).status, 403);
+    await admin('PUT', '/api/overlays/alerts', { offTypes: ['sub', 'giftsub', 'tip', 'raid', 'redemption', 'like', 'share'] });
+    const test = await (await admin('POST', '/api/overlays/alerts/test')).json();
+    assert.equal(test.type, 'follow');
+    const alert = await next('alert:test');
+    assert.equal(alert.d.type, 'follow');
+    assert.equal(alert.d.test, true);
+    assert.ok(!frames.some(f => f.t === 'event'), 'a test alert is not an event');
     ws.close();
   } finally {
     await srv.stop();

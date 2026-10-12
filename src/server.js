@@ -14,7 +14,7 @@ import { createAuth } from './auth.js';
 import { createHub } from './hub.js';
 import { createAccounts } from './accounts.js';
 import { createOverlays } from './overlays.js';
-import { OVERLAY_IDS } from '../public/assets/overlay-settings.js';
+import { OVERLAY_IDS, alertCategory } from '../public/assets/overlay-settings.js';
 import { request, ApiError } from './net.js';
 import { adapters, platformMeta, PLATFORMS } from './platforms/index.js';
 import * as upd from './update.js';
@@ -167,6 +167,22 @@ router.put('/api/overlays/:id', ({ params, body }) => {
   return { id, settings: ctx.overlays.save(id, body) };
 });
 router.delete('/api/overlays/:id', ({ params }) => { const id = overlayId(params.id); return { id, settings: ctx.overlays.reset(id) }; });
+// Test alert: a sample event sent only to alerts overlays (topic alert:test, never the docks, never stored). Picks a category the user kept on.
+const SAMPLE_ALERTS = [
+  { type: 'follow' }, { type: 'sub', tier: '1000' }, { type: 'giftsub', count: 5, tier: '1000' }, { type: 'cheer', amount: 500, text: 'Cheer500 GG !' },
+  { type: 'raid', count: 42 }, { type: 'superchat', amount: 5, currency: 'EUR', text: 'Merci !' }, { type: 'redemption', label: 'Hydrate-toi', amount: 300 },
+];
+router.post('/api/overlays/alerts/test', () => {
+  const off = ctx.overlays.all().alerts.offTypes;
+  const pool = SAMPLE_ALERTS.filter(s => !off.includes(alertCategory(s.type)));
+  const sample = pool[Math.floor(Math.random() * pool.length)] || SAMPLE_ALERTS[0];
+  const account = ctx.accounts.list().find(a => a.status !== 'disabled');
+  hub.publish('alert:test', {
+    id: randomId(8), platform: account?.platform || 'twitch', accountId: account?.id || '', channel: account?.login || '', ts: Date.now(),
+    user: { id: 'test', name: 'Tramevia' }, ...sample, test: true,
+  });
+  return { ok: true, type: sample.type };
+});
 
 // --- Platform apps (client id / secret) -------------------------------------
 router.get('/api/apps', () => PLATFORMS.filter(p => p.auth === 'oauth').map(p => {

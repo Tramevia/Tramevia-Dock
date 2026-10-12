@@ -61,10 +61,11 @@ Sous Linux avec Wayland, OBS peut ne pas proposer les docks de navigateur. Ouvre
 
 L’overlay affiche ton chat sur le stream, avec un fond transparent. Il utilise une clé à part, **en lecture seule** : elle permet d’afficher ton chat et de lire les réglages de l’overlay, jamais de les modifier ni d’agir sur tes comptes.
 
-Il y a deux overlays, chacun avec ses réglages et son adresse :
+Il y a trois overlays, chacun avec ses réglages et son adresse :
 
 - **Chat** : ton chat, message après message ;
-- **Message mis en avant** : seulement le message que tu choisis dans le dock Chat (voir plus bas).
+- **Message mis en avant** : seulement le message que tu choisis dans le dock Chat (voir plus bas) ;
+- **Alertes** : chaque follow, sub, sub offert, don (bits, KICKs, Super Chats, cadeaux), raid, récompense de points, j’aime et partage TikTok, une alerte à la fois, sur toutes tes plateformes (voir plus bas).
 
 Leurs réglages sont enregistrés dans Tramevia Dock et **s’appliquent en direct** : change une option dans le tableau de bord, l’overlay suit tout de suite dans OBS. Tu colles chaque adresse dans OBS **une seule fois**.
 
@@ -78,6 +79,12 @@ Leurs réglages sont enregistrés dans Tramevia Dock et **s’appliquent en dire
 ![Overlay de chat sur une scène de jeu : bulles de messages avec l’icône de chaque plateforme, réponses et un follow](../assets/screenshots/fr/overlay.png)
 
 Pour le message mis en avant, choisis « Message mis en avant » dans le tableau de bord et ajoute son adresse comme **deuxième** source Navigateur.
+
+### Alertes
+
+Choisis « Alertes » dans le tableau de bord et ajoute son adresse comme une autre source Navigateur, à la taille de ta scène (par exemple largeur **1920**, hauteur **1080**) : l’alerte apparaît centrée en **haut**, au **milieu** ou en **bas** de la source, à ton choix. Chaque alerte reste le temps de la **durée** réglée (6 secondes par défaut) ; les suivantes attendent leur tour. Dans « Alertes affichées », désactive celles que tu ne veux pas à l’écran. Clique sur « Envoyer une alerte de test » pour en voir une dans l’aperçu et dans OBS sans attendre un vrai follow.
+
+Les alertes s’affichent seulement au moment où elles arrivent : quand OBS recharge la source, les anciennes ne repassent pas.
 
 Ensuite, plus besoin de recoller l’adresse quand tu changes un réglage. Tu ne la recolles que si l’adresse elle-même change : après avoir régénéré la clé de l’overlay (**Paramètres → Sécurité → Clé de l’overlay**), ou après un changement de port ou de `PUBLIC_URL`.
 

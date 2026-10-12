@@ -62,10 +62,11 @@ On Linux under Wayland, OBS may not offer custom browser docks. Open the dock ad
 
 ![The chat overlay over a game scene: messages from Twitch, Kick and TikTok with platform icons, and a YouTube Super Sticker event card](../assets/screenshots/en/overlay.png)
 
-There are two overlays, each with its own settings and its own address:
+There are three overlays, each with its own settings and its own address:
 
 - **Chat**: your chat, message after message.
 - **Featured message**: only the message you pick in the Chat dock (see below).
+- **Alerts**: every follow, sub, gifted sub, tip (bits, KICKs, Super Chats, gifts), raid, channel point reward, TikTok like and share, one card at a time, from all your platforms (see below).
 
 Their settings are saved in Tramevia Dock and **apply live**: change an option in the dashboard and the overlay in OBS follows right away. You paste each address into OBS **once**.
 
@@ -77,6 +78,12 @@ Their settings are saved in Tramevia Dock and **apply live**: change an option i
 4. Set **Width 400** and **Height 600** (adjust to your layout), then click **OK**.
 
 For the featured message, pick **Featured message** in the dashboard and add its address as a **second** Browser source.
+
+### Alerts
+
+Pick **Alerts** in the dashboard and add its address as another Browser source, sized like your scene (for example **Width 1920**, **Height 1080**): the alert appears centred at the **top**, **middle** or **bottom** of the source, as you choose. Each alert stays for the **duration** you set (6 seconds by default); the next ones wait their turn. Under **Alerts shown**, turn off the kinds you don't want on screen. Click **Send a test alert** to see one in the preview and in OBS without waiting for a real follow.
+
+Alerts are shown only as they happen: when OBS reloads the source, old alerts are not replayed.
 
 After that, you never paste the address again when you change a setting. You only paste it again if the address itself changes: after you regenerate the overlay key (**Settings → Security → Overlay key**), or after you change the port or `PUBLIC_URL`.
 
