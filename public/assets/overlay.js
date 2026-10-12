@@ -108,31 +108,14 @@ function alertWanted(d) {
   return Boolean(cat) && !S.offTypes.includes(cat) && shown(d);
 }
 
-let audio = null; // AudioContext, created at the first alert (browsers refuse one created before any interaction)
-/** Synthesized chime (no audio file): two soft bell notes, G5 then C6, each a sine with two quiet partials that decay fast. */
+let chimeEl = null; // <audio>: OBS captures media elements in both of its audio modes (Web Audio is not always picked up)
+/** The built-in chime (/assets/chime.wav, two soft bell notes) at `volume` %. */
 function chime(volume) {
   if (!volume) return;
-  try {
-    audio ||= new AudioContext();
-    if (audio.state === 'suspended') audio.resume();
-    const t0 = audio.currentTime;
-    const master = audio.createGain();
-    master.gain.value = (volume / 100) * 0.5;
-    master.connect(audio.destination);
-    for (const [freq, at] of [[784, 0], [1047, 0.18]]) {
-      for (const [mult, level, decay] of [[1, 1, 1.5], [2, 0.22, 0.7], [3, 0.07, 0.4]]) {
-        const osc = audio.createOscillator();
-        const g = audio.createGain();
-        osc.frequency.value = freq * mult;
-        g.gain.setValueAtTime(0, t0 + at);
-        g.gain.linearRampToValueAtTime(level, t0 + at + 0.012);
-        g.gain.exponentialRampToValueAtTime(0.0005, t0 + at + decay);
-        osc.connect(g).connect(master);
-        osc.start(t0 + at);
-        osc.stop(t0 + at + decay + 0.05);
-      }
-    }
-  } catch { /* no audio output here (blocked autoplay, no device): the alert still shows */ }
+  chimeEl ||= new Audio('/assets/chime.wav');
+  chimeEl.volume = volume / 100;
+  chimeEl.currentTime = 0;
+  chimeEl.play().catch(() => {}); // blocked autoplay (a browser tab before any click), no audio device: the alert still shows
 }
 
 /** Shows the next waiting alert for S.alertSeconds, then the one after. Nothing waiting = screen left empty. */
