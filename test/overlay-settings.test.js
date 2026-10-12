@@ -116,6 +116,10 @@ test('alerts: id=alerts, position, duration, categories', () => {
   assert.equal(overlayFromQuery(q('id=alerts&position=bottom&alertSeconds=99'), {}).settings.position, 'bottom');
   assert.equal(overlayFromQuery(q('id=alerts&alertSeconds=99'), {}).settings.alertSeconds, 60);
   assert.equal(overlayFromQuery(q('id=alerts&position=left'), {}).settings.position, 'top');
+  assert.equal(overlayFromQuery(q('id=alerts&layout=wide&volume=250'), {}).settings.layout, 'wide');
+  assert.equal(overlayFromQuery(q('id=alerts&layout=wide&volume=250'), {}).settings.volume, 100);
+  assert.deepEqual(cleanOverlay({ layout: 'huge', volume: -5 }, DEFAULTS.alerts).layout, 'compact');
+  assert.equal(cleanOverlay({ layout: 'huge', volume: -5 }, DEFAULTS.alerts).volume, 0);
   const s = cleanOverlay({ position: 'center', alertSeconds: 0.4, offTypes: ['tip', 'tip', 3] }, DEFAULTS.alerts);
   assert.deepEqual([s.position, s.alertSeconds, s.offTypes, s.size], ['center', 1, ['tip'], 28]);
   for (const [type, cat] of [['follow', 'follow'], ['resub', 'sub'], ['membership', 'sub'], ['giftmembership', 'giftsub'], ['superchat', 'tip'], ['tiktok_gift', 'tip'], ['raid', 'raid'], ['like', 'like']]) {

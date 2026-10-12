@@ -237,7 +237,7 @@ Errors: `{error, code}`; an `ApiError` thrown by a handler becomes `502 {error, 
 Three saved overlays, ids `chat`, `featured` and `alerts` (`OVERLAY_IDS`), stored in the settings key `overlays` (`{chat, featured, alerts}`;
 absent = defaults, no migration; a missing id = its defaults). Validation is `cleanOverlay()` from `public/assets/overlay-settings.js`: complete object, unknown keys
 dropped, numbers rounded and clamped (`max` 1–100, `fade` 0–3600, `size` 8–120, `featureSeconds` 0–3600, `alertSeconds` 1–60), enums whitelisted
-(`position` top|center|bottom), `offPlatforms` / `offAccounts` / `offTypes` = **exclusion** lists of ids (an account added later is shown).
+(`position` top|center|bottom, `layout` compact|wide), `volume` 0–100 (alert chime, synthesized in the page), `offPlatforms` / `offAccounts` / `offTypes` = **exclusion** lists of ids (an account added later is shown).
 `offTypes` holds alert categories (`ALERT_TYPES`: follow, sub, giftsub, tip, raid, redemption, like, share; `alertCategory(type)` maps an event
 type to its category, null = never alerts: announcements, stream on/off).
 - `GET /api/overlays` (read) → `{overlays: {chat, featured, alerts}, saved}` (`saved` = the settings key exists).

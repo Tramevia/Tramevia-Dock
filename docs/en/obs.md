@@ -81,7 +81,10 @@ For the featured message, pick **Featured message** in the dashboard and add its
 
 ### Alerts
 
-Pick **Alerts** in the dashboard and add its address as another Browser source, sized like your scene (for example **Width 1920**, **Height 1080**): the alert appears centred at the **top**, **middle** or **bottom** of the source, as you choose. Each alert stays for the **duration** you set (6 seconds by default); the next ones wait their turn. Under **Alerts shown**, turn off the kinds you don't want on screen. Click **Send a test alert** to see one in the preview and in OBS without waiting for a real follow.
+Pick **Alerts** in the dashboard and add its address as another Browser source, sized like your scene (for example **Width 1920**, **Height 1080**): the alert appears centred at the **top**, **middle** or **bottom** of the source, as you choose. **Shape**: *Card* (sized to its text) or *Banner* (across the whole source). Each alert stays for the **duration** you set (6 seconds by default); the next ones wait their turn. A soft chime plays with every alert: set **Sound volume** to 0 to mute it. Under **Alerts shown**, turn off the kinds you don't want on screen. Click **Send a test alert** to see one in the preview and in OBS without waiting for a real follow.
+
+> [!TIP]
+> To hear the chime in your stream and not only on your PC, tick **Control audio via OBS** in the Browser source properties and make sure the source is not muted in the audio mixer.
 
 Alerts are shown only as they happen: when OBS reloads the source, old alerts are not replayed.
 

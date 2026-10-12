@@ -82,9 +82,12 @@ Pour le message mis en avant, choisis « Message mis en avant » dans le table
 
 ### Alertes
 
-Choisis « Alertes » dans le tableau de bord et ajoute son adresse comme une autre source Navigateur, à la taille de ta scène (par exemple largeur **1920**, hauteur **1080**) : l’alerte apparaît centrée en **haut**, au **milieu** ou en **bas** de la source, à ton choix. Chaque alerte reste le temps de la **durée** réglée (6 secondes par défaut) ; les suivantes attendent leur tour. Dans « Alertes affichées », désactive celles que tu ne veux pas à l’écran. Clique sur « Envoyer une alerte de test » pour en voir une dans l’aperçu et dans OBS sans attendre un vrai follow.
+Choisis « Alertes » dans le tableau de bord et ajoute son adresse comme une autre source Navigateur, à la taille de ta scène (par exemple largeur **1920**, hauteur **1080**) : l’alerte apparaît centrée en **haut**, au **milieu** ou en **bas** de la source, à ton choix. **Forme** : « Carte » (à la taille du texte) ou « Bandeau » (sur toute la largeur de la source). Chaque alerte reste le temps de la **durée** réglée (6 secondes par défaut) ; les suivantes attendent leur tour. Un petit carillon accompagne chaque alerte : mets le **volume du son** à 0 pour le couper. Dans « Alertes affichées », désactive celles que tu ne veux pas à l’écran. Clique sur « Envoyer une alerte de test » pour en voir une dans l’aperçu et dans OBS sans attendre un vrai follow.
 
 Les alertes s’affichent seulement au moment où elles arrivent : quand OBS recharge la source, les anciennes ne repassent pas.
+
+> [!TIP]
+> Pour que le carillon s’entende dans ton stream et pas seulement sur ton PC, coche « Contrôler l’audio via OBS » dans les propriétés de la source Navigateur, et vérifie que la source n’est pas coupée dans le mixeur audio.
 
 Ensuite, plus besoin de recoller l’adresse quand tu changes un réglage. Tu ne la recolles que si l’adresse elle-même change : après avoir régénéré la clé de l’overlay (**Paramètres → Sécurité → Clé de l’overlay**), ou après un changement de port ou de `PUBLIC_URL`.
 
