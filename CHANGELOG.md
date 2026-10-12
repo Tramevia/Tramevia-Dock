@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.3.0 — faster docks, live overlay settings
 
 Switching tabs in a dock (Chat, Community, Stream info, Dashboard) is about twice as fast when Tramevia Dock runs on a server such as Railway. Measured with 200 ms of network delay: 1.3 s → 0.6 s on average, and the chat 1.1 s → 0.46 s.
 
