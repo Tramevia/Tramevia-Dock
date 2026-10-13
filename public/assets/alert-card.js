@@ -138,8 +138,37 @@ function glass(card) {
   if (card.querySelector('.evt-amount')) card.classList.add('glass-money');
 }
 
+// ------------------------------------------------------------------ switch: a soft-UI clay rocker switch
+// (after a 3D product loop). The alert arrives as a small matte clay switch seen from three quarters, standing on the scene:
+// it rises (its --evt wall shows) and the rocker key clicks up on the chime. Hard cut to dark, same shot: the switch is
+// black, its wall turns into a white-hot light panel and --evt light floods out from under it. Cut to the front: the pill
+// runs out to the right into the whole alert, the light running under it, the title lighting up on it; a dotted LED track
+// lights up, then counts down the time left (--alert-ms).
+// The pill is drawn twice: in the 3/4 shots (.switch-clay: stage, shadow, wall layers, face) and from the front, lit
+// (.switch-neon). The 3/4 wall is a stack of pill-shaped layers pushed down toward the floor and tilted with the key
+// (--k: 0 = face, 1 = floor); each layer also carries its shade in clay and its light in the dark.
+const WALLS = 12;
+// the key end lifted toward the camera by c em per em from the pivot, for a layer at height f (1 = face): see overlay.css
+const TILT = (c, f) => `matrix(${(1 - 1.0735 * c * f).toFixed(4)}, ${(1.0735 * c * f).toFixed(4)}, 0, 1, 0, 0)`;
+
+function rocker(card) {
+  const walls = [];
+  for (let j = WALLS; j >= 1; j--) { // bottom layer first: the upper ones paint over it
+    const k = j / WALLS;
+    walls.push(h('i.switch-wall', { style: {
+      '--k': k.toFixed(3), '--sw-shade': (0.04 + 0.18 * k).toFixed(3), '--sw-lit': (0.14 * (1 - k) ** 2).toFixed(3), // clay: lit lip, darker foot
+      '--sw-hot': (0.92 * Math.min(1, 1.8 * Math.sin(Math.PI * k)) ** 0.7).toFixed(3), // dark: white-hot through the middle, --evt at the lip and the foot
+      '--sw-dip': TILT(-0.035, 1 - k), '--sw-lift': TILT(0.13, 1 - k) } }));
+  }
+  card.append(
+    h('i.switch-clay', h('i.switch-stage'), h('i.switch-shadow'), ...walls, h('i.switch-band'), h('i.switch-face', h('i.switch-off'))),
+    h('i.switch-neon', h('i.switch-pool'), h('i.switch-floor'), h('i.switch-tip'), h('i.switch-band'), h('i.switch-face'), h('i.switch-cap')),
+    h('i.switch-track', h('i.switch-led', h('i.switch-led-in'))),
+  );
+}
+
 /** Style → function(card, event) that adds the style's own elements to a new card. Styles made of CSS only (card, text) have none. */
-export const DECOR = { impact, eclipse, plasma, glass };
+export const DECOR = { impact, eclipse, plasma, glass, switch: rocker };
 
 /** A new alert card for event d (not yet in the page). Set --evt on it once it is in the page (it comes from the event's CSS class). */
 export function alertCard(d, opts, style) {
