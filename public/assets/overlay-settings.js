@@ -10,7 +10,7 @@ export const OVERLAY_IDS = ['chat', 'featured', 'alerts'];
 export const BOOLS = ['hideBots', 'hideCommands', 'events', 'badges', 'icons', 'avatars', 'bubble', 'outline', 'credit'];
 export const THEMES = ['transparent', 'dark', 'light'];
 export const POSITIONS = ['top', 'center', 'bottom'];
-export const LAYOUTS = ['compact', 'wide']; // alerts: a card sized to its text, or a banner across the whole source
+export const STYLES = ['card', 'text', 'smoke', 'pop']; // alerts: glass card · big kinetic text · smoke reveal · pastel pop
 /** [min, max] of every number (the overlay page clamps URL values to the same ranges). */
 export const RANGES = { max: [1, 100], fade: [0, 3600], size: [8, 120], featureSeconds: [0, 3600], alertSeconds: [1, 60], volume: [0, 100] };
 const LIST_MAX = 50;
@@ -25,7 +25,7 @@ const CATEGORY = Object.fromEntries(Object.entries(ALERT_TYPES).flatMap(([cat, t
 export const alertCategory = type => CATEGORY[type === 'tiktok_gift' ? 'gift' : type] ?? null;
 
 const SAVED_BASE = {
-  theme: 'dark', max: 20, fade: 0, size: 16, align: 'left', featureSeconds: 15, alertSeconds: 6, position: 'top', layout: 'compact', volume: 60,
+  theme: 'dark', max: 20, fade: 0, size: 16, align: 'left', featureSeconds: 15, alertSeconds: 6, position: 'top', style: 'card', volume: 60,
   hideBots: true, hideCommands: true, events: true, badges: true, icons: true, avatars: false, bubble: false, outline: true, credit: false,
   offPlatforms: [], offAccounts: [], offTypes: [],
 };
@@ -34,7 +34,7 @@ export const DEFAULTS = { chat: { ...SAVED_BASE }, featured: { ...SAVED_BASE }, 
 
 /** What a legacy URL means when a param is missing (the overlay page's behaviour before saved overlays). size null = CSS default. */
 export const LEGACY = {
-  theme: 'transparent', max: 12, fade: 0, size: null, align: 'left', featureSeconds: 0, alertSeconds: 6, position: 'top', layout: 'compact', volume: 60,
+  theme: 'transparent', max: 12, fade: 0, size: null, align: 'left', featureSeconds: 0, alertSeconds: 6, position: 'top', style: 'card', volume: 60,
   hideBots: false, hideCommands: false, events: true, badges: true, icons: true, avatars: false, bubble: false, outline: false, credit: false,
   offPlatforms: [], offAccounts: [], offTypes: [],
 };
@@ -52,7 +52,7 @@ export function cleanOverlay(input, base = SAVED_BASE) {
   out.theme = THEMES.includes(src.theme) ? src.theme : base.theme;
   out.align = src.align === 'left' || src.align === 'right' ? src.align : base.align;
   out.position = POSITIONS.includes(src.position) ? src.position : base.position;
-  out.layout = LAYOUTS.includes(src.layout) ? src.layout : base.layout;
+  out.style = STYLES.includes(src.style) ? src.style : base.style;
   for (const [k, range] of Object.entries(RANGES)) {
     const n = typeof src[k] === 'number' ? src[k] : typeof src[k] === 'string' && src[k].trim() !== '' ? Number(src[k]) : NaN;
     out[k] = Number.isFinite(n) ? clamp(Math.round(n), range) : base[k];
@@ -81,7 +81,7 @@ export function overlayFromQuery(query, saved) {
   if (THEMES.includes(query.get('theme'))) s.theme = query.get('theme');
   if (query.has('align')) s.align = query.get('align') === 'right' ? 'right' : 'left';
   if (POSITIONS.includes(query.get('position'))) s.position = query.get('position');
-  if (LAYOUTS.includes(query.get('layout'))) s.layout = query.get('layout');
+  if (STYLES.includes(query.get('style'))) s.style = query.get('style');
   const csv = k => (query.get(k) || '').split(',').map(x => x.trim()).filter(Boolean);
   const alerts = id === 'alerts';
   const featured = !alerts && (has('mode') ? query.get('mode') === 'featured' : id === 'featured');

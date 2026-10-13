@@ -3,7 +3,7 @@ import {
   boot, h, api, t, addI18n, lang, setLang, applyTheme, openAuth, copy, copyField, toast, busy,
   confirmDialog, fmt, icon, platformIcon, store, withKey, accessKey, query, $, $$,
 } from '/assets/core.js';
-import { OVERLAY_IDS, ALERT_TYPES, DEFAULTS as OV_DEFAULTS, cleanOverlay } from '/assets/overlay-settings.js';
+import { OVERLAY_IDS, ALERT_TYPES, STYLES, DEFAULTS as OV_DEFAULTS, cleanOverlay } from '/assets/overlay-settings.js';
 
 addI18n({
   fr: {
@@ -156,7 +156,7 @@ addI18n({
     'home.ovl.types': 'Alertes affichées', 'home.ovl.type.follow': 'Follows', 'home.ovl.type.sub': 'Subs et membres', 'home.ovl.type.giftsub': 'Subs offerts',
     'home.ovl.type.tip': 'Bits, KICKs, Super Chats, cadeaux', 'home.ovl.type.raid': 'Raids', 'home.ovl.type.redemption': 'Récompenses de points', 'home.ovl.type.like': 'J’aime TikTok', 'home.ovl.type.share': 'Partages TikTok',
     'home.ovl.test': 'Envoyer une alerte de test', 'home.ovl.tested': 'Alerte de test envoyée : regarde l’aperçu et ta source OBS.',
-    'home.ovl.layout': 'Forme', 'home.ovl.layout.compact': 'Carte', 'home.ovl.layout.wide': 'Grand texte', 'home.ovl.volume': 'Volume du son (0 = muet)',
+    'home.ovl.style': 'Style', 'home.ovl.style.card': 'Carte', 'home.ovl.style.text': 'Grand texte', 'home.ovl.style.smoke': 'Fumée', 'home.ovl.style.pop': 'Pop', 'home.ovl.volume': 'Volume du son (0 = muet)',
     'home.ovl.theme': 'Thème', 'home.ovl.theme.dark': 'Sombre', 'home.ovl.theme.light': 'Clair', 'home.ovl.theme.transparent': 'Transparent',
     'home.ovl.themeHint.transparent': 'Texte seul, posé directement sur ta scène. Active « Bulles » ou « Contour du texte » si ton fond est chargé.',
     'home.ovl.themeHint.dark': 'Chaque message dans une carte sombre, avec la couleur de sa plateforme : lisible sur n’importe quel fond.',
@@ -369,7 +369,7 @@ addI18n({
     'home.ovl.types': 'Alerts shown', 'home.ovl.type.follow': 'Follows', 'home.ovl.type.sub': 'Subs and members', 'home.ovl.type.giftsub': 'Gifted subs',
     'home.ovl.type.tip': 'Bits, KICKs, Super Chats, gifts', 'home.ovl.type.raid': 'Raids', 'home.ovl.type.redemption': 'Channel point rewards', 'home.ovl.type.like': 'TikTok likes', 'home.ovl.type.share': 'TikTok shares',
     'home.ovl.test': 'Send a test alert', 'home.ovl.tested': 'Test alert sent: watch the preview and your OBS source.',
-    'home.ovl.layout': 'Shape', 'home.ovl.layout.compact': 'Card', 'home.ovl.layout.wide': 'Big text', 'home.ovl.volume': 'Sound volume (0 = off)',
+    'home.ovl.style': 'Style', 'home.ovl.style.card': 'Card', 'home.ovl.style.text': 'Big text', 'home.ovl.style.smoke': 'Smoke', 'home.ovl.style.pop': 'Pop', 'home.ovl.volume': 'Sound volume (0 = off)',
     'home.ovl.theme': 'Theme', 'home.ovl.theme.dark': 'Dark', 'home.ovl.theme.light': 'Light', 'home.ovl.theme.transparent': 'Transparent',
     'home.ovl.themeHint.transparent': 'Text only, right on top of your scene. Turn on "Bubbles" or "Text outline" if your background is busy.',
     'home.ovl.themeHint.dark': 'Each message on a dark card with its platform colour: readable on any background.',
@@ -1237,7 +1237,7 @@ function renderOverlayForm() {
     h('div.stack.tight', h('span.label', t('home.ovl.url', { name: t(`home.ovl.mode.${id}`) })), secretField(overlayUrl(id, S.state.publicUrl), 'ov:url'),
       h('p.small.muted', t('home.ovl.how')), h('p.tiny.muted', icon('shield', 12), ' ', t('home.ovl.readonly'))),
     h('div.row.ov-choices', choice('theme', ['transparent', 'dark', 'light'], true),
-      alerts ? [choice('position', ['top', 'center', 'bottom']), choice('layout', ['compact', 'wide'])] : choice('align', ['left', 'right'])),
+      alerts ? [choice('position', ['top', 'center', 'bottom']), choice('style', STYLES)] : choice('align', ['left', 'right'])),
     h('p.small.muted', t(`home.ovl.themeHint.${o.theme}`)),
     h('div.ov-fields',
       alerts ? [num('alertSeconds', 1, 60), num('volume', 0, 100)] : featured ? num('featureSeconds', 0, 300) : [num('max', 1, 100), num('fade', 0, 600)],

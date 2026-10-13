@@ -39,7 +39,7 @@ function apply() {
   if (S.size) root.style.setProperty('--ov-fs', `${S.size}px`); else root.style.removeProperty('--ov-fs');
   for (const [cls, on] of [['ov-right', S.align === 'right'], ['ov-bubble', S.bubble], ['ov-outline', S.outline], ['ov-featured', C.featured], ['ov-alerts', C.alerts]]) root.classList.toggle(cls, on);
   root.dataset.position = C.alerts ? S.position : '';
-  root.dataset.layout = C.alerts ? S.layout : '';
+  root.dataset.style = C.alerts ? S.style : '';
   if (app && S.credit) app.append(credit); else credit.remove();
 }
 if (!C.id) apply(); // legacy: at import time, as before; saved URLs wait for the server settings
@@ -129,6 +129,18 @@ function kinetic(title) {
   }
 }
 
+/** Pop style: a cloud of small pastel shapes that burst out of the icon and float around it (positions and colours in CSS variables). */
+const POP_COLOURS = ['var(--evt)', 'color-mix(in srgb, var(--evt) 45%, #fff)', '#ffd166', '#fff'];
+function confetti(card) {
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2 + (i % 2) * 0.3, d = 2.4 + (i % 3) * 0.9;
+    card.append(h('i.pp', { style: {
+      '--dx': `${(Math.cos(a) * d).toFixed(2)}em`, '--dy': `${(Math.sin(a) * d * 0.8).toFixed(2)}em`, '--s': `${0.35 + (i % 4) * 0.12}em`,
+      '--t': `${(i * 0.04).toFixed(2)}s`, '--r': i % 3 === 0 ? '50%' : i % 3 === 1 ? '0.12em' : '1em', '--pc': POP_COLOURS[i % 4],
+    } }));
+  }
+}
+
 /** Shows the next waiting alert for S.alertSeconds, then the one after. Nothing waiting = screen left empty. */
 function nextAlert() {
   clearTimeout(alertTimer);
@@ -139,6 +151,7 @@ function nextAlert() {
   const evt = renderEvent(d, { ...opts, timestamps: false });
   kinetic(evt.querySelector('.evt-title'));
   const card = h('div.alert-card', { class: `pf-${String(d.platform).replace(/[^a-z]/g, '')}` }, evt);
+  if (S.style === 'pop') confetti(card);
   list.append(card);
   card.style.setProperty('--evt', getComputedStyle(evt).getPropertyValue('--evt')); // the event colour, for the card's own glow and accent
   chime(S.volume);
