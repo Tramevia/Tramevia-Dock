@@ -2,6 +2,7 @@
 import { h, svg } from '/assets/core.js';
 import { renderEvent } from '/assets/chat-render.js';
 import wave from '/assets/alert-wave.js'; // the wave style's particles: a module of their own (generative, ~440 lines)
+import silk from '/assets/alert-silk.js'; // the silk style's sheets: a module of their own (generative, ~200 lines)
 
 /** Break points at a long word's seams (lower to upper case or digit, after _ . -): a name or a reward title wraps there before breaking anywhere. */
 const seams = text => text.split(/(?<=[a-zà-ÿ])(?=[A-ZÀ-Ý0-9])|(?<=[_.-])(?=[^_.-])/).flatMap((p, i) => (i ? [h('wbr'), p] : [p]));
@@ -208,7 +209,8 @@ function prism(card, event) {
 }
 
 /** Style → function(card, event) that adds the style's own elements to a new card. Styles made of CSS only (card, text) have none. */
-export const DECOR = { impact, eclipse, plasma, glass, switch: rocker, wave: (card, event) => wave(card, event, { h, svg }), prism };
+export const DECOR = { impact, eclipse, plasma, glass, switch: rocker, wave: (card, event) => wave(card, event, { h, svg }), prism,
+  silk: (card, event) => silk(card, event, { h, svg }) };
 
 /** A new alert card for event d (not yet in the page). Set --evt on it once it is in the page (it comes from the event's CSS class). */
 export function alertCard(d, opts, style) {

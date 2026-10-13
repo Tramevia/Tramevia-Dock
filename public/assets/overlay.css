@@ -2088,6 +2088,206 @@ html, body { height: 100%; overflow: hidden; }
 @keyframes prism-dim { to { opacity: 0; filter: blur(0.12em); } }
 @keyframes prism-hide { to { opacity: 0; } }
 
+/* ---- silk (ref D): a sphere woven of line-hatched silk ribbons (cold at the top, the event colour at the bottom, flame
+   tongues lifting off the top) holds the icon; a silk swash runs under the title. Ribbons whip in on spirals and weave the
+   orb, the flames flick up, then a broad ribbon sweeps across the card and the title appears behind it. At rest the orb
+   keeps folding (its layers sway against each other: the moiré drifts), the flames flicker, the swash breathes. Leaves by
+   unravelling: the swash whips back into the orb wiping the text, the orb's sheets spin apart and fade.
+   decorate.js builds the ribbons (one SVG per layer: threads + hems) and plays their `d` during the entry (WAAPI); this
+   file lays them out and runs everything else. Lengths shared by the card and the title are in --sk-fc (the text size). */
+:root[data-style="silk"] .alert-card {
+  --sk-fc: min(var(--chat-fs, 28px), 7vw); /* the text size as an absolute length */
+  --sk-d: calc(9 * var(--sk-fc));          /* the sphere's diameter: the hero */
+  --sk-gap: calc(0.8 * var(--sk-fc));      /* orb to text */
+  /* the silk, top to bottom: deep blue tips (fading out at the flames' ends), ice, a cold mix, the event colour */
+  --sk-tip: #3a5cff; --sk-ice: #3fe0ff;
+  --sk-mid: color-mix(in oklab, var(--evt) 55%, var(--sk-ice));
+  --sk-low: var(--evt);
+  --sk-pool: rgb(2 4 10 / 88%);            /* the dark behind the text */
+  --sk-glow: color-mix(in srgb, var(--evt) 20%, transparent); /* light from the base of the sphere */
+  --sk-core: rgb(2 4 10 / 90%);            /* the small dark core behind the glyph */
+  --sk-ink: #f3f6ff; --sk-name: color-mix(in srgb, var(--evt) 38%, #fff); --sk-sub: #c2cbe0;
+  --sk-shade: 0 0.05em 0.3em rgb(0 0 0 / 60%);
+  isolation: isolate; margin-block: 1.4em; max-width: min(100%, 31em);
+}
+:root[data-style="silk"][data-position="top"] .alert-card { margin-top: 3.8em; } /* room for the wisps */
+/* a pool of dark behind the text: the text block grown a little and blurred into a soft smudge (a static blur, painted once),
+   so the words read on any scene without a card shape; it spreads from the orb with the sweep */
+:root[data-style="silk"] .alert-card .evt-body { position: relative; }
+:root[data-style="silk"] .alert-card .evt-body::before {
+  content: ""; position: absolute; z-index: -1; inset: -0.5em -0.7em -0.4em -0.9em; pointer-events: none; transform-origin: 0 50%;
+  border-radius: 1.6em; background: var(--sk-pool); filter: blur(0.75em);
+  animation: silk-pool 0.8s cubic-bezier(0.33, 1, 0.68, 1) 0.52s backwards; /* the sweep's timing: it opens behind the ribbon's head */
+}
+:root[data-style="silk"] .alert-card .evt { align-items: center; gap: var(--sk-gap); padding: 0.2em 0.8em 0.2em 0; color: var(--sk-ink); }
+
+/* ---- the orb: the icon box itself; its layers overflow it (the flames rise above) */
+:root[data-style="silk"] .alert-card .evt-icon { position: relative; width: var(--sk-d); height: var(--sk-d); border-radius: 50%; background: none; color: #fff; }
+:root[data-style="silk"] .alert-card .evt-icon > :not(.silk-orb) { /* the glyph, on the dark core */
+  position: relative; z-index: 2; animation: silk-glyph 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.2) 0.36s backwards;
+}
+:root[data-style="silk"] .alert-card .evt-icon > svg { width: 1.3em; height: 1.3em; filter: drop-shadow(0 0 0.25em color-mix(in srgb, var(--evt) 60%, transparent)); }
+:root[data-style="silk"] .alert-card .evt-icon > img { width: 1.9em; height: 1.9em; border-radius: 50%; }
+:root[data-style="silk"] .alert-card .evt-icon::before { /* a faint glow from the base of the sphere (no dark: the silk floats on the scene); it swells when the orb closes */
+  content: ""; position: absolute; inset: -12%; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side at 50% 62%, var(--sk-glow), color-mix(in srgb, var(--sk-glow) 50%, transparent) 55%, transparent);
+  animation: silk-glow 1s ease-out 0.2s backwards;
+}
+:root[data-style="silk"] .silk-orb { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+:root[data-style="silk"] .silk-core { /* a small soft dark core behind the glyph, over the sheets: the sphere itself stays open */
+  position: absolute; left: 50%; top: 50%; width: 3.2em; height: 3.2em; margin: -1.6em; border-radius: 50%;
+  background: radial-gradient(closest-side, var(--sk-core), color-mix(in srgb, var(--sk-core) 72%, transparent) 45%, transparent);
+  animation: silk-core 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) 0.32s backwards;
+}
+/* a layer: the orb's box grown to the SVG's view box (-170 -200 340 360 around a radius of 100); the orb's centre is at
+   50% 55.56% of it, the top of the sphere at 50% 27.78% */
+:root[data-style="silk"] .silk-layer { position: absolute; left: -35%; top: -50%; width: 170%; height: 180%; transform-origin: 50% 55.56%; will-change: transform; }
+:root[data-style="silk"] .silk-layer > svg { display: block; width: 100%; height: 100%; overflow: visible; transform-origin: 50% 55.56%; }
+:root[data-style="silk"] :is(.silk-r, .silk-h) { fill: none; stroke-linejoin: round; }
+:root[data-style="silk"] .silk-r { stroke-width: 0.55; opacity: 0.8; } /* threads: very fine, spaced: you see through a sheet */
+:root[data-style="silk"] .silk-h { stroke-width: 0.7; opacity: 0.5; } /* hems: soft edges (the bright folds come from the threads bunching) */
+:root[data-style="silk"] .silk-back { opacity: 0.45; }
+:root[data-style="silk"] .silk-front { opacity: 0.72; }
+:root[data-style="silk"] .silk-flame { opacity: 0.62; }
+:root[data-style="silk"] .silk-flame .silk-r { stroke-width: 0.5; } /* smoke: long fine strands along each wisp */
+:root[data-style="silk"] .silk-o0 { stop-color: var(--sk-tip); stop-opacity: 0; }
+:root[data-style="silk"] .silk-o1 { stop-color: var(--sk-tip); }
+:root[data-style="silk"] .silk-o2 { stop-color: var(--sk-ice); }
+:root[data-style="silk"] .silk-o3 { stop-color: var(--sk-mid); }
+:root[data-style="silk"] .silk-o4 { stop-color: var(--sk-low); }
+:root[data-style="silk"] .silk-w0 { stop-color: var(--evt); stop-opacity: 0; }
+:root[data-style="silk"] .silk-w1 { stop-color: var(--evt); }
+:root[data-style="silk"] .silk-w2 { stop-color: var(--sk-mid); }
+:root[data-style="silk"] .silk-w3 { stop-color: var(--sk-ice); }
+:root[data-style="silk"] .silk-w4 { stop-color: var(--sk-tip); stop-opacity: 0.5; }
+
+/* entry: each layer spins in a little while its ribbons slide along their own circles (decorate.js) */
+:root[data-style="silk"] .silk-layer > svg { animation: silk-spin 1.16s cubic-bezier(0.2, 0.7, 0.25, 1) backwards; }
+:root[data-style="silk"] .silk-back > svg { --sk-spin: -25deg; }
+:root[data-style="silk"] .silk-front > svg { --sk-spin: 30deg; }
+:root[data-style="silk"] .silk-rim > svg { --sk-spin: -35deg; }
+:root[data-style="silk"] .silk-flame > svg { transform-origin: 50% 27.78%; animation-name: silk-flick; } /* from the top of the sphere: the flames flick up as the orb closes */
+/* rest: the layers sway against each other (the sheets seem to fold, the moiré drifts), the flames flicker from their base */
+:root[data-style="silk"] .silk-back { animation: silk-sway 9s ease-in-out -3s infinite alternate; --sk-a: rotate(-9deg) scale(1, 0.96); --sk-b: rotate(9deg) scale(0.88, 1); }
+:root[data-style="silk"] .silk-front { animation: silk-sway 7s ease-in-out -5s infinite alternate; --sk-a: rotate(11deg) scale(0.9, 1); --sk-b: rotate(-10deg) scale(1, 0.94); }
+:root[data-style="silk"] .silk-rim { animation: silk-sway 8s ease-in-out -2s infinite alternate; --sk-a: rotate(-3deg); --sk-b: rotate(3deg) scale(1.01); }
+:root[data-style="silk"] .silk-swash { animation: silk-breathe 4.6s ease-in-out -1s infinite alternate; }
+:root[data-style="silk"] .silk-flame { transform-origin: 50% 27.78%; animation: silk-flicker 2.6s ease-in-out infinite; }
+
+/* ---- text: the title appears behind the sweeping ribbon, word by word, left to right */
+:root[data-style="silk"] .alert-card .evt-body { gap: 0.12em; text-shadow: var(--sk-shade); }
+:root[data-style="silk"] .alert-card .evt-title {
+  position: relative; z-index: 0; margin-bottom: calc(1.3 * var(--sk-fc)); font-weight: 650; line-height: 1.2;
+  font-size: clamp(0.8em, min((100vw - 12.6em) / (0.62 * var(--longest-part, 1)), 26em / var(--longest-part, 1)), 1.25em);
+}
+:root[data-style="silk"] .alert-card .evt-title .w { animation: silk-word 0.42s cubic-bezier(0.25, 0.7, 0.3, 1) calc(0.56s + var(--i) * 0.06s) backwards; }
+:root[data-style="silk"] .alert-card .evt-user { font-weight: 800; color: var(--sk-name); }
+:root[data-style="silk"] .alert-card .evt-text { font-size: 0.95em; color: var(--sk-ink); animation: silk-rise 0.5s ease-out 0.95s backwards; }
+:root[data-style="silk"] .alert-card .evt-meta { font-size: 0.8em; color: var(--sk-sub); animation: silk-rise 0.5s ease-out 1.05s backwards; }
+:root[data-style="silk"] .alert-card .evt-amount { /* a silk tag hanging under the orb (it leaves the text its whole column): hatched like the ribbons, a bright hem */
+  position: absolute; z-index: 3; left: calc(var(--sk-d) / 2); top: calc(50% + var(--sk-d) / 2 - 0.2em); transform: translate(-50%, -50%);
+  padding: 0.18em 0.6em; border-radius: 0.3em; font-size: 1.1em; color: var(--sk-ink);
+  background: repeating-linear-gradient(-62deg, color-mix(in srgb, var(--evt) 42%, transparent) 0 1px, transparent 1px 3.5px), color-mix(in srgb, var(--evt) 18%, rgb(2 4 10 / 78%));
+  box-shadow: inset 0 0 0 0.05em color-mix(in srgb, var(--evt) 75%, #fff), 0 0 0.6em color-mix(in srgb, var(--evt) 35%, transparent);
+  animation: silk-rise 0.5s ease-out 1.1s backwards;
+}
+/* the swash: a silk ribbon under the title, from inside the orb to past the title's end (stretched to it) */
+:root[data-style="silk"] .silk-swash {
+  position: absolute; z-index: -1; left: calc(-1 * (var(--sk-gap) + var(--sk-d) * 0.3)); bottom: calc(-1.55 * var(--sk-fc));
+  width: calc(100% + var(--sk-gap) + var(--sk-d) * 0.3 + 0.6em); height: calc(1.8 * var(--sk-fc)); overflow: visible; pointer-events: none;
+}
+:root[data-style="silk"] .silk-swash :is(.silk-r, .silk-h) { vector-effect: non-scaling-stroke; }
+:root[data-style="silk"] .silk-swash .silk-r { stroke-width: 0.7px; }
+:root[data-style="silk"] .silk-swash .silk-h { stroke-width: 1px; }
+
+/* ---- exit (450 ms): the swash whips back into the orb and wipes the text out behind it, then the orb unravels: its sheets
+   spin apart and widen as they fade, the flames shoot up and burn out, the core closes. The layers' exits run on their SVGs,
+   so they add to the idle sway of the layers (no jump) */
+:root[data-style="silk"] .alert-card.gone { animation: silk-out 0.45s linear forwards; }
+:root[data-style="silk"] .alert-card.gone .silk-swash { transform-origin: 0 50%; animation: silk-breathe 4.6s ease-in-out -1s infinite alternate, silk-swash-out 0.28s cubic-bezier(0.55, 0, 0.8, 0.45) forwards; }
+:root[data-style="silk"] .alert-card.gone .evt-body { animation: silk-wipe-out 0.28s cubic-bezier(0.55, 0, 0.8, 0.45) forwards; }
+:root[data-style="silk"] .alert-card.gone .evt-amount { animation: silk-vanish 0.18s ease-in forwards; }
+:root[data-style="silk"] .alert-card.gone .silk-layer > svg { animation: silk-unravel 0.32s cubic-bezier(0.45, 0, 0.75, 0.5) 0.1s forwards; }
+:root[data-style="silk"] .alert-card.gone .silk-back > svg { --sk-out: rotate(-80deg) scale(2); }
+:root[data-style="silk"] .alert-card.gone .silk-front > svg { --sk-out: rotate(110deg) scale(1.9); animation-delay: 0.06s; }
+:root[data-style="silk"] .alert-card.gone .silk-rim > svg { --sk-out: rotate(-140deg) scale(1.7); animation-delay: 0.12s; }
+:root[data-style="silk"] .alert-card.gone .silk-flame > svg { --sk-out: translateY(-24%) scale(0.85, 2.2); animation-duration: 0.26s; animation-delay: 0.04s; }
+:root[data-style="silk"] .alert-card.gone .silk-core { animation: silk-vanish 0.25s ease-in 0.15s forwards; }
+:root[data-style="silk"] .alert-card.gone .evt-icon::before { animation: silk-glow-out 0.4s ease-in forwards; }
+:root[data-style="silk"] .alert-card.gone .evt-icon > :not(.silk-orb) { animation: silk-vanish 0.2s ease-in 0.1s forwards; }
+:root[data-style="silk"] .alert-card.gone .evt-body::before { animation: silk-pool-out 0.4s ease-in forwards; }
+
+/* ---- themes. dark (default): the silk glows on a pool of dark. light: ink silk on a white pool. transparent: the pool is a
+   light contact shadow under the words (for bright scenes), the orb keeps its dark halo, the text a stronger shadow */
+:root[data-style="silk"][data-overlay="transparent"] .alert-card {
+  --sk-pool: rgb(0 0 0 / 34%); --sk-sub: #e1e6f2;
+  --sk-shade: 0 0.05em 0.1em rgb(0 0 0 / 90%), 0 0 0.3em rgb(0 0 0 / 75%), 0 0 0.8em rgb(0 0 0 / 45%);
+}
+:root[data-style="silk"][data-overlay="light"] .alert-card {
+  --sk-tip: #2236c8; --sk-ice: #0b7fb3; --sk-mid: color-mix(in oklab, var(--evt) 60%, #0b6f9a);
+  --sk-low: color-mix(in srgb, var(--evt) 80%, #000);
+  --sk-pool: rgb(255 255 255 / 94%); --sk-core: rgb(255 255 255 / 96%); --sk-glow: rgb(255 255 255 / 72%);
+  --sk-ink: #161827; --sk-name: color-mix(in srgb, var(--evt) 78%, #000); --sk-sub: #4b5270; --sk-shade: none;
+}
+:root[data-style="silk"][data-overlay="light"] .alert-card .evt-icon { color: color-mix(in srgb, var(--evt) 80%, #000); }
+:root[data-style="silk"][data-overlay="light"] .alert-card .evt-icon > svg { filter: none; }
+:root[data-style="silk"][data-overlay="light"] .alert-card .evt-amount {
+  background: repeating-linear-gradient(-62deg, color-mix(in srgb, var(--evt) 35%, transparent) 0 1px, transparent 1px 3.5px), rgb(255 255 255 / 94%);
+  box-shadow: inset 0 0 0 0.05em color-mix(in srgb, var(--evt) 80%, #000), 0 0.15em 0.5em rgb(20 22 40 / 18%);
+}
+/* Chromium < 111 (OBS 28-30) has no color-mix(): plain colours instead (no cold mix in the silk, the name in the event colour) */
+@supports not (color: color-mix(in srgb, red, red)) {
+  :root[data-style="silk"] .alert-card { --sk-mid: var(--sk-ice); --sk-name: var(--evt); }
+  :root[data-style="silk"][data-overlay="light"] .alert-card { --sk-mid: #0b6f9a; --sk-low: var(--evt); --sk-name: var(--evt); }
+  :root[data-style="silk"] .alert-card { --sk-glow: transparent; }
+  :root[data-style="silk"][data-overlay="light"] .alert-card { --sk-glow: rgb(255 255 255 / 80%); }
+  :root[data-style="silk"] .silk-core { background: radial-gradient(closest-side, var(--sk-core), var(--sk-core) 30%, transparent); }
+  :root[data-style="silk"] .alert-card .evt-amount { background: repeating-linear-gradient(-62deg, var(--evt) 0 1px, transparent 1px 3.5px), rgb(2 4 10 / 85%); box-shadow: inset 0 0 0 0.05em var(--evt); }
+  :root[data-style="silk"][data-overlay="light"] .alert-card .evt-amount { background: rgb(255 255 255 / 94%); box-shadow: inset 0 0 0 0.05em var(--evt); }
+  :root[data-style="silk"][data-overlay="light"] .alert-card .evt-icon { color: var(--evt); }
+}
+
+/* ---- narrow source: the orb above, the text centred under it */
+@media (max-width: 560px) {
+  :root[data-style="silk"] .alert-card { --sk-d: calc(6.5 * var(--sk-fc)); margin-top: 2.8em; }
+  :root[data-style="silk"] .alert-card .evt { flex-direction: column; gap: calc(0.35 * var(--sk-fc)); padding: 0 0.5em; text-align: center; }
+  :root[data-style="silk"] .alert-card .evt-body { align-items: center; }
+  :root[data-style="silk"] .alert-card .evt-meta { justify-content: center; }
+  :root[data-style="silk"] .alert-card .evt-title { font-size: clamp(0.62em, (100vw - 3em) / (0.62 * var(--longest-part, 1)), 1.15em); }
+  :root[data-style="silk"] .alert-card .evt-amount { position: relative; left: auto; top: auto; transform: none; margin-top: 0.2em; }
+  :root[data-style="silk"] .silk-swash { left: -0.6em; width: calc(100% + 1.2em); }
+}
+
+@keyframes silk-pool { from { opacity: 0; transform: scale(0.08, 0.7); } 30% { opacity: 1; } }
+@keyframes silk-spin { from { transform: rotate(var(--sk-spin)) scale(1.12); } }
+@keyframes silk-flick {
+  0% { transform: rotate(20deg) scale(1.1); }
+  45% { transform: rotate(3deg) scale(1, 0.85); }
+  62% { transform: rotate(-3deg) scale(1.05, 1.38); }
+  80% { transform: rotate(1deg) scale(0.99, 0.93); }
+  100% { transform: none; }
+}
+@keyframes silk-sway { from { transform: var(--sk-a); } to { transform: var(--sk-b); } }
+@keyframes silk-breathe { from { transform: scaleY(1); } to { transform: scaleY(0.82); } }
+@keyframes silk-flicker {
+  0%, 100% { transform: scale(1, 1) skewX(0deg); }
+  28% { transform: scale(0.99, 1.05) skewX(-2deg); }
+  52% { transform: scale(1.01, 0.97) skewX(1.2deg); }
+  76% { transform: scale(0.995, 1.03) skewX(-0.8deg); }
+}
+@keyframes silk-core { from { opacity: 0; transform: scale(0.4); } }
+@keyframes silk-glow { 0% { opacity: 0; transform: scale(0.5); } 40% { opacity: 1; transform: scale(1.12); } }
+@keyframes silk-glyph { from { opacity: 0; transform: scale(0.4); filter: blur(0.15em); } }
+@keyframes silk-word { from { opacity: 0; clip-path: inset(-20% 100% -20% 0); transform: translateX(-0.25em); filter: blur(0.08em); } }
+@keyframes silk-rise { from { opacity: 0; transform: translateY(0.4em); } }
+@keyframes silk-out { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes silk-swash-out { 70% { opacity: 1; } to { opacity: 0; transform: scaleX(0.04); } }
+@keyframes silk-wipe-out { from { clip-path: inset(-1em -1em -1em -1em); } to { clip-path: inset(-1em 100% -1em -1em); opacity: 0.4; } }
+@keyframes silk-unravel { to { opacity: 0; transform: var(--sk-out); } }
+@keyframes silk-glow-out { 30% { opacity: 1; transform: scale(1.1); } to { opacity: 0; transform: scale(0.8); } }
+@keyframes silk-vanish { to { opacity: 0; transform: scale(0.6); } }
+@keyframes silk-pool-out { to { opacity: 0; transform: scale(0.4, 0.8); } }
+
 /* Viewers (id=viewers): the total live viewer count in a sphere of glowing particles (viewer-badge.js). Root: .ov-viewers,
    data-align = center (number inside the orb) | right (orb, then the number) | left (number, then the orb), data-overlay = theme.
    At rest only the dot layers move: a slow sway (rotate) and two drifting stray layers (transform + opacity).
