@@ -153,7 +153,7 @@ function rocker(card) {
       '--sw-dip': TILT(-0.035, 1 - k), '--sw-lift': TILT(0.13, 1 - k), '--sw-load': TILT(0.15, 1 - k) } }));
   }
   card.append(
-    h('i.switch-clay', h('i.switch-stage'), h('i.switch-shadow'), ...walls, h('i.switch-band'), h('i.switch-face', h('i.switch-off'))),
+    h('i.switch-clay', h('i.switch-stage'), h('i.switch-shadow'), ...walls, h('i.switch-band'), h('i.switch-face', h('i.switch-off'), h('i.switch-on'))),
     h('i.switch-neon', h('i.switch-pool'), h('i.switch-floor'), h('i.switch-tip'), h('i.switch-band'), h('i.switch-face'), h('i.switch-cap')),
     h('i.switch-track', h('i.switch-led', h('i.switch-led-in'))),
   );

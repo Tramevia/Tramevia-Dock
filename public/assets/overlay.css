@@ -1111,7 +1111,7 @@ html, body { height: 100%; overflow: hidden; }
    between a light clay scene and a dark one where neon light seeps from under the pill, a dotted LED track).
    0-364 ms: a small clay switch (the key with the icon, the OFF half) seen from three quarters, standing alone on the scene,
    rises (its --evt wall shows); the key dips, then clicks up on the chime's 4th note. 364: hard cut to dark, same shot:
-   the switch is black, its wall a white-hot light panel, --evt light seeps out from under it, the icon lights up.
+   the switch is black, its label flips from OFF to ON (lit), its wall a white-hot light panel, --evt light seeps out from under it.
    620: cut to the front: the pill runs out to the right into the whole alert with the light running under it, the title
    lights up on it word by word; the LED dots under it light up, then count down the time left (--alert-ms).
    Outro, when the count reaches zero (--sw-out, before .gone): the pill runs back into the switch, cut to 3/4, the key
@@ -1124,7 +1124,8 @@ html, body { height: 100%; overflow: hidden; }
   --sw-key: 3.4em;    /* the rocker key: the left end of the pill, the icon sits on it */
   --sw-c: 8em;        /* the switch before it runs out: the key and the OFF half */
   --sw-r: 2.3em;      /* corner radius: a full pill up to 4.6em tall */
-  --sw-t: 0.7em;      /* front view: the wall under the face at the right end (the key end is lifted: skew) */
+  --sw-t: 0.8em;      /* front view: the wall under the face, the same thickness end to end (the key lift only shows in the 3/4 shots) */
+  --sw-trk: 2em;      /* the LED track's inset from both ends of the pill: centred under it */
   --sw-under: 2.15em; /* room under the face: the wall, the light under it, the LED track */
   --sw-cut: 364ms;    /* the click and the hard cut to dark: the chime's 4th note */
   --sw-turn: 620ms;   /* the cut to the front view */
@@ -1163,10 +1164,10 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="switch"] .alert-card :is(.switch-stage, .switch-floor, .switch-shadow, .switch-wall, .switch-band, .switch-face, .switch-pool, .switch-cap, .switch-tip) { position: absolute; pointer-events: none; }
 /* the face and its wall layers share one box (the card minus the room under it) and one pivot (the switch's right end) */
 :root[data-style="switch"] .alert-card :is(.switch-face, .switch-wall, .switch-cap) { inset: 0 0 var(--sw-under) 0; border-radius: var(--sw-r); transform-origin: calc(var(--sw-c) - var(--sw-r)) 50%; }
-/* front view: the wall under the face is a copy of the face pushed down by --sw-t, skewed: thicker under the lifted key */
-:root[data-style="switch"] .alert-card .switch-band { inset: 0 0 calc(var(--sw-under) - var(--sw-t)) 0; border-radius: var(--sw-r); transform-origin: calc(100% - var(--sw-r)) 0; transform: skewY(-1.05deg); }
+/* front view: the wall under the face is a copy of the face pushed down by --sw-t (no skew: the pill is symmetric at rest) */
+:root[data-style="switch"] .alert-card .switch-band { inset: 0 0 calc(var(--sw-under) - var(--sw-t)) 0; border-radius: var(--sw-r); }
 :root[data-style="switch"] .alert-card .switch-pool { left: -5em; right: -5em; top: -2.8em; bottom: -4.6em; }
-:root[data-style="switch"] .alert-card :is(.switch-clay, .switch-neon, .switch-off) { --sw-in: none; } /* --sw-in inherits: elements without their own say so */
+:root[data-style="switch"] .alert-card :is(.switch-clay, .switch-neon) { --sw-in: none; } /* --sw-in inherits: elements without their own say so */
 
 /* ---- the 3/4 shots: clay (0-364), then dark (364-620); again in the outro: dark (32-58 %), then clay */
 :root[data-style="switch"] .switch-clay { opacity: 0; animation: switch-1 var(--sw-turn) linear, switch-show-at-cut var(--sw-outT) linear var(--sw-out) forwards; }
@@ -1192,7 +1193,7 @@ html, body { height: 100%; overflow: hidden; }
   --sw-odk: switch-dk-wall var(--sw-o-dark) linear var(--sw-o-cut); animation: var(--sw-in), var(--sw-odk), var(--sw-in2);
 }
 :root[data-style="switch"] .switch-clay .switch-face {
-  background: linear-gradient(90deg, rgb(50 50 62 / 38%) 0, rgb(50 50 62 / 48%) calc(var(--sw-key) - 0.3em), rgb(50 50 62 / 14%) var(--sw-key), transparent calc(var(--sw-key) + 0.5em)), /* the key: tilted, darker toward the crease */
+  background: linear-gradient(90deg, rgb(50 50 62 / 42%) 0, rgb(50 50 62 / 42%) var(--sw-key), transparent var(--sw-key)), /* the key: a flat darker cell, cut clean at the crease */
     linear-gradient(160deg, #ececef 0%, #dadade 45%, #c9c9ce 100%);
   box-shadow: inset 0 0.1em 0.06em rgb(255 255 255 / 95%), inset 0 0.22em 0.3em rgb(255 255 255 / 30%), inset 0 -0.07em 0.1em rgb(60 60 75 / 25%); /* the lit top edge */
   --sw-in: switch-tilt var(--sw-turn) linear, switch-dk-face var(--sw-dark) linear var(--sw-cut),
@@ -1209,15 +1210,22 @@ html, body { height: 100%; overflow: hidden; }
   background: linear-gradient(90deg, rgb(40 40 52 / 22%), rgb(40 40 52 / 30%));
   animation: switch-shade var(--sw-turn) linear, switch-unshade var(--sw-outT) linear var(--sw-out) forwards;
 }
-:root[data-style="switch"] .switch-off::before { content: "OFF"; } /* in CSS: an alert left on screen after a style change shows nothing */
-:root[data-style="switch"] .switch-off {
-  position: absolute; left: calc(var(--sw-key) + (var(--sw-c) - var(--sw-key)) / 2); top: 50%; transform: translate(-50%, -50%);
+/* the state label on the switch's right half (in CSS: an alert left on screen after a style change shows nothing): OFF
+   until the click, ON (lit) from the click, through the dark beats, until the outro's click OFF, then OFF again */
+:root[data-style="switch"] .switch-off::before { content: "OFF"; }
+:root[data-style="switch"] .switch-on::before { content: "ON"; }
+:root[data-style="switch"] :is(.switch-off, .switch-on) {
+  position: absolute; left: calc(var(--sw-key) + (var(--sw-c) - var(--sw-key)) / 2); top: 50%; transform: translate(-50%, -50%); opacity: 0;
   font-weight: 800; font-size: 1.1em; letter-spacing: 0.02em; color: #fff; text-shadow: 0 0.03em 0.08em rgb(60 60 75 / 30%);
-  --sw-odk: switch-dk-off var(--sw-o-dark) linear var(--sw-o-cut); animation: switch-dk-off var(--sw-dark) linear var(--sw-cut), var(--sw-odk), var(--sw-in2);
+}
+:root[data-style="switch"] .alert-card .switch-off { --sw-in: switch-1 var(--sw-cut) linear, switch-1 var(--sw-o-rest) linear var(--sw-o-click) forwards; animation: var(--sw-in); }
+:root[data-style="switch"] .alert-card .switch-on { /* lit white in the dark beats (--sw-odk: the light theme's outro prints it on clay instead) */
+  --sw-in: switch-1 var(--sw-dark) linear var(--sw-cut), switch-1 var(--sw-o-dark) linear var(--sw-o-cut);
+  --sw-odk: switch-lit-on var(--sw-o-dark) linear var(--sw-o-cut); animation: var(--sw-in), switch-lit-on var(--sw-dark) linear var(--sw-cut), var(--sw-odk);
 }
 :root[data-style="switch"] .switch-clay .switch-band { opacity: 0; /* the light theme at rest: a matte --evt wall, its soft shadow hugging it */
-  background: linear-gradient(to top, rgb(0 0 0 / 30%), rgb(0 0 0 / 0%) 0.45em), linear-gradient(90deg, rgb(255 255 255 / 25%), rgb(0 0 0 / 15%)), var(--evt);
-  box-shadow: 0.2em 0.45em 1em -0.1em rgb(30 30 45 / 42%), 0 0.07em 0.12em rgb(30 30 45 / 50%);
+  background: linear-gradient(to top, rgb(0 0 0 / 30%), rgb(0 0 0 / 0%) 0.45em), linear-gradient(rgb(255 255 255 / 12%), rgb(255 255 255 / 12%)), var(--evt);
+  box-shadow: 0 0.45em 1em -0.1em rgb(30 30 45 / 42%), 0 0.07em 0.12em rgb(30 30 45 / 50%);
 }
 
 /* ---- the front view, lit (620 → the outro's cut) */
@@ -1234,7 +1242,6 @@ html, body { height: 100%; overflow: hidden; }
 }
 :root[data-style="switch"] .switch-pool::before { box-shadow: 0 0.15em 0.45em 0.1em rgb(6 6 8 / 55%), 0 0.35em 1.1em 0.3em rgb(6 6 8 / 72%); }
 :root[data-style="switch"] .switch-pool::after {
-  transform-origin: calc(100% - var(--sw-r)) 0; transform: skewY(-1.05deg);
   box-shadow: 0 0.08em 0.16em rgb(255 255 255 / 90%), 0 0.3em 0.55em var(--evt), 0 0.75em 1.7em var(--evt);
 }
 /* the light on the ground: a wide --evt bloom (::before, it breathes at rest) and the light right under the wall (::after),
@@ -1253,12 +1260,12 @@ html, body { height: 100%; overflow: hidden; }
   background: radial-gradient(closest-side, rgb(255 255 255 / 55%), rgb(255 255 255 / 0%)) left 6em bottom calc(4.6em + var(--sw-under) - var(--sw-t) - 0.65em) / calc(100% - 12em) 1.2em no-repeat,
     radial-gradient(closest-side, var(--evt) 0 22%, transparent) left 4.4em bottom calc(4.6em + var(--sw-under) - var(--sw-t) - 1.9em) / calc(100% - 8.8em) 2.6em no-repeat;
 }
-/* the light at the front: the ends of the pill glow hardest. Its box ends 1.8em past the pill, so the same transform moves it */
+/* the light at the running front (it fades once the pill has run out: at rest both ends glow the same). Its box ends 1.8em
+   past the pill, so the same transform moves it */
 :root[data-style="switch"] .switch-tip {
-  left: 0; right: -1.8em; top: 22%; bottom: calc(var(--sw-under) - 1.9em); opacity: 0.85;
+  left: 0; right: -1.8em; top: 22%; bottom: calc(var(--sw-under) - 1.9em); opacity: 0;
   background: radial-gradient(closest-side, var(--evt), transparent) right 0 top 0 / 4.6em 100% no-repeat;
-  --sw-in: switch-tip 0.44s var(--sw-ease) var(--sw-run) backwards, switch-breathe 3.4s ease-in-out 2.4s infinite alternate,
-    switch-untip var(--sw-o-run) var(--sw-ease-in) var(--sw-out) forwards; animation: var(--sw-in);
+  --sw-in: switch-tip 0.9s var(--sw-ease) var(--sw-run) backwards, switch-untip var(--sw-o-run) var(--sw-ease-in) var(--sw-out) forwards; animation: var(--sw-in);
 }
 :root[data-style="switch"] .switch-neon :is(.switch-band, .switch-face) { --sw-in: switch-run 0.44s var(--sw-ease) var(--sw-run) backwards, switch-unrun var(--sw-o-run) var(--sw-ease-in) var(--sw-out) forwards; animation: var(--sw-in); }
 :root[data-style="switch"] .switch-neon .switch-band { background: #151519; }
@@ -1268,8 +1275,7 @@ html, body { height: 100%; overflow: hidden; }
     linear-gradient(to top, var(--evt) 0, var(--evt) 1.05em, #151519 1.4em);
 }
 :root[data-style="switch"] .switch-neon .switch-face {
-  background: radial-gradient(4em 2.6em at 0.8em 0.5em, rgb(255 255 255 / 6%), rgb(255 255 255 / 0%) 70%), /* sheen on the key's raised end */
-    linear-gradient(90deg, rgb(0 0 0 / 25%) 0, rgb(0 0 0 / 48%) calc(var(--sw-key) - 0.3em), rgb(0 0 0 / 12%) var(--sw-key), transparent calc(var(--sw-key) + 0.5em)),
+  background: linear-gradient(90deg, rgb(0 0 0 / 40%) 0, rgb(0 0 0 / 40%) var(--sw-key), transparent var(--sw-key)), /* the key: a flat darker cell, cut clean at the crease */
     linear-gradient(180deg, #2b2b31 0%, #17171b 40%, #0d0d10 100%);
   box-shadow: inset 0 0.05em 0.02em rgb(255 255 255 / 10%);
 }
@@ -1281,7 +1287,7 @@ html, body { height: 100%; overflow: hidden; }
   content: ""; position: absolute; inset: 0; border-radius: inherit; opacity: 0.9;
   -webkit-mask: linear-gradient(rgb(0 0 0 / 28%), #000 75%); mask: linear-gradient(rgb(0 0 0 / 28%), #000 75%);
 }
-:root[data-style="switch"] .switch-cap { --sw-in: switch-cap 0.44s var(--sw-ease) var(--sw-run) backwards, switch-uncap var(--sw-o-run) var(--sw-ease-in) var(--sw-out) forwards; animation: var(--sw-in); }
+:root[data-style="switch"] .switch-cap { opacity: 0; --sw-in: switch-cap 0.9s var(--sw-ease) var(--sw-run) backwards, switch-uncap var(--sw-o-run) var(--sw-ease-in) var(--sw-out) forwards; animation: var(--sw-in); } /* fades once the face's own rim is whole: no double rim at the right end */
 :root[data-style="switch"] .switch-cap::before {
   content: ""; position: absolute; inset: 0; border-radius: inherit; opacity: 0.9;
   -webkit-mask: linear-gradient(90deg, transparent calc(100% - var(--sw-r) - 0.6em), #000 calc(100% - var(--sw-r) + 0.2em)); mask: linear-gradient(90deg, transparent calc(100% - var(--sw-r) - 0.6em), #000 calc(100% - var(--sw-r) + 0.2em));
@@ -1290,7 +1296,7 @@ html, body { height: 100%; overflow: hidden; }
 /* ---- the LED track: unlit dots on the ground; the lit ones are a window stepping over them (transforms only). 28 dots
    light up (0.15-1.15 s), then go out one by one from the far end; the last one goes out when the outro starts. */
 :root[data-style="switch"] .alert-card .switch-track {
-  inset: auto calc(var(--sw-r) - 0.3em) 0.72em calc(var(--sw-key) / 2 - 0.3em); height: 0.44em;
+  inset: auto var(--sw-trk) 0.72em var(--sw-trk); height: 0.44em;
   --sw-front: linear-gradient(90deg, #000 calc(50% - 0.8em), transparent 50%);
   background: radial-gradient(circle closest-side, rgb(255 255 255 / 20%) 0 50%, rgb(255 255 255 / 0%) 75%) 0 0 / calc(100% / 28) 100% repeat-x;
   --sw-in: switch-run-track 0.44s var(--sw-ease) var(--sw-run) backwards, switch-sink var(--sw-turn) linear, switch-dimples var(--sw-cut) linear,
@@ -1329,8 +1335,8 @@ html, body { height: 100%; overflow: hidden; }
    stays in clay (the light was already off): the clay pill runs back, cut to the clay 3/4 shot, the key clicks off. */
 :root[data-style="switch"][data-overlay="light"] .switch-clay { opacity: 1; animation: switch-0 var(--sw-hold) linear var(--sw-turn); }
 :root[data-style="switch"][data-overlay="light"] .switch-neon { opacity: 0; animation: switch-1 var(--sw-hold) linear var(--sw-turn); }
-:root[data-style="switch"][data-overlay="light"] :is(.switch-stage, .switch-shadow, .switch-wall, .switch-off) { opacity: 0; --sw-in2: switch-1 var(--sw-turn) linear, switch-show-at-cut var(--sw-outT) linear var(--sw-out) forwards; }
-:root[data-style="switch"][data-overlay="light"] :is(.switch-stage, .switch-shadow, .switch-wall, .switch-off, .switch-clay .switch-face, .switch-clay .switch-face::before) { --sw-odk: none; } /* no dark beat in the outro */
+:root[data-style="switch"][data-overlay="light"] :is(.switch-stage, .switch-shadow, .switch-wall) { opacity: 0; --sw-in2: switch-1 var(--sw-turn) linear, switch-show-at-cut var(--sw-outT) linear var(--sw-out) forwards; }
+:root[data-style="switch"][data-overlay="light"] :is(.switch-stage, .switch-shadow, .switch-wall, .switch-on, .switch-clay .switch-face, .switch-clay .switch-face::before) { --sw-odk: none; } /* no dark beat in the outro: ON printed on clay */
 :root[data-style="switch"][data-overlay="light"] .switch-clay .switch-band {
   opacity: 1; --sw-in: switch-0 var(--sw-turn) linear, switch-unrun var(--sw-o-run) var(--sw-ease-in) var(--sw-out) forwards, switch-hide-at-cut var(--sw-outT) linear var(--sw-out) forwards; animation: var(--sw-in);
 }
@@ -1401,7 +1407,7 @@ html, body { height: 100%; overflow: hidden; }
   background: linear-gradient(90deg, rgb(0 0 0 / 35%) 0, rgb(0 0 0 / 45%) calc(var(--sw-key) - 0.3em), transparent var(--sw-key)), linear-gradient(165deg, #26262b, #121215 60%, #0b0b0d);
   box-shadow: inset 0 0 0 0.07em var(--evt), inset 0 0.06em 0.04em rgb(255 255 255 / 10%); } }
 @keyframes switch-dk-crease { from, to { background: linear-gradient(90deg, rgb(0 0 0 / 60%), rgb(255 255 255 / 7%)); } }
-@keyframes switch-dk-off { from, to { color: #74747c; text-shadow: none; } }
+@keyframes switch-lit-on { from, to { color: #fff; text-shadow: 0 0 0.35em rgb(255 255 255 / 75%), 0 0 0.9em var(--evt); } }
 /* the camera: three quarters on the switch (the face lies on the ground, its long axis rising to the right), pushing in.
    scaleY(0.55) rotate(-45deg): a point at height z above the ground shows z * 0.835 higher; in the face's frame that is
    z * (-1.0735, 1.0735), which is how far the walls and the ground are pushed (0.85em of wall: -0.9125em, 0.9125em).
@@ -1469,10 +1475,14 @@ html, body { height: 100%; overflow: hidden; }
 @keyframes switch-unrun { from { clip-path: inset(0 0 0 0 round var(--sw-r)); } to { clip-path: var(--sw-compact); } }
 @keyframes switch-open { from { transform: scaleX(0.42); } }
 @keyframes switch-unopen { to { transform: scaleX(0.42); } }
-@keyframes switch-cap { from { transform: translateX(calc(var(--sw-c) - 100%)); } }
-@keyframes switch-uncap { to { transform: translateX(calc(var(--sw-c) - 100%)); } }
-@keyframes switch-tip { from { transform: translateX(calc(var(--sw-c) - 100% + 1.8em)); } }
-@keyframes switch-untip { to { transform: translateX(calc(var(--sw-c) - 100% + 1.8em)); } }
+@keyframes switch-cap { 0% { transform: translateX(calc(var(--sw-c) - 100%)); opacity: 1; } 49% { transform: translateX(0); opacity: 1; animation-timing-function: ease-in-out; } 100% { transform: translateX(0); opacity: 0; } }
+@keyframes switch-uncap { 0% { transform: translateX(0); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateX(calc(var(--sw-c) - 100%)); opacity: 1; } }
+@keyframes switch-tip { /* runs with the front (0.44 s), then fades */
+  0% { transform: translateX(calc(var(--sw-c) - 100% + 1.8em)); opacity: 0.85; }
+  49% { transform: translateX(0); opacity: 0.85; animation-timing-function: ease-in-out; }
+  100% { transform: translateX(0); opacity: 0; }
+}
+@keyframes switch-untip { 0% { transform: translateX(0); opacity: 0; } 30% { opacity: 0.85; } 100% { transform: translateX(calc(var(--sw-c) - 100% + 1.8em)); opacity: 0.85; } }
 /* the halo and the glow run out with the pill under a mask whose edge (fading over 3em behind it) is the clip front:
    200 % wide, its middle at calc(100% + x) puts the front at x. The pool overhangs the card by 5em: the front goes from the
    switch (5em + --sw-c) to the pill end (-5em) in step with the clip (same 0.44 s, same ease), then opens past the end. */
@@ -1485,14 +1495,14 @@ html, body { height: 100%; overflow: hidden; }
   from { -webkit-mask: var(--sw-front) -5em 0 / 200% 100% no-repeat; mask: var(--sw-front) -5em 0 / 200% 100% no-repeat; }
   to { -webkit-mask: var(--sw-front) calc(100% + 5em + var(--sw-c)) 0 / 200% 100% no-repeat; mask: var(--sw-front) calc(100% + 5em + var(--sw-c)) 0 / 200% 100% no-repeat; }
 }
-/* the track starts under the key (key / 2 - 0.3em): the front is --sw-c minus that, and the right end is past the track */
+/* the track starts --sw-trk inside the pill: the front is --sw-c minus that, and the right end is --sw-trk past the track */
 @keyframes switch-run-track {
-  from { -webkit-mask: var(--sw-front) calc(100% + var(--sw-c) - var(--sw-key) / 2 + 0.3em) 0 / 200% 100% no-repeat; mask: var(--sw-front) calc(100% + var(--sw-c) - var(--sw-key) / 2 + 0.3em) 0 / 200% 100% no-repeat; }
-  to { -webkit-mask: var(--sw-front) calc(var(--sw-r) - 0.3em) 0 / 200% 100% no-repeat; mask: var(--sw-front) calc(var(--sw-r) - 0.3em) 0 / 200% 100% no-repeat; }
+  from { -webkit-mask: var(--sw-front) calc(100% + var(--sw-c) - var(--sw-trk)) 0 / 200% 100% no-repeat; mask: var(--sw-front) calc(100% + var(--sw-c) - var(--sw-trk)) 0 / 200% 100% no-repeat; }
+  to { -webkit-mask: var(--sw-front) var(--sw-trk) 0 / 200% 100% no-repeat; mask: var(--sw-front) var(--sw-trk) 0 / 200% 100% no-repeat; }
 }
 @keyframes switch-untrack {
-  from { -webkit-mask: var(--sw-front) calc(var(--sw-r) - 0.3em) 0 / 200% 100% no-repeat; mask: var(--sw-front) calc(var(--sw-r) - 0.3em) 0 / 200% 100% no-repeat; }
-  to { -webkit-mask: var(--sw-front) calc(100% + var(--sw-c) - var(--sw-key) / 2 + 0.3em) 0 / 200% 100% no-repeat; mask: var(--sw-front) calc(100% + var(--sw-c) - var(--sw-key) / 2 + 0.3em) 0 / 200% 100% no-repeat; }
+  from { -webkit-mask: var(--sw-front) var(--sw-trk) 0 / 200% 100% no-repeat; mask: var(--sw-front) var(--sw-trk) 0 / 200% 100% no-repeat; }
+  to { -webkit-mask: var(--sw-front) calc(100% + var(--sw-c) - var(--sw-trk)) 0 / 200% 100% no-repeat; mask: var(--sw-front) calc(100% + var(--sw-c) - var(--sw-trk)) 0 / 200% 100% no-repeat; }
 }
 @keyframes switch-glyph { from { color: #fff; filter: drop-shadow(0 0 0.5em #fff) drop-shadow(0 0 0.3em var(--evt)); } }
 @keyframes switch-word { from { opacity: 0; color: #fff; } 30% { opacity: 1; color: #fff; } } /* opacity + colour only: an animated text-shadow relayouts every frame */
