@@ -143,7 +143,14 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="card"] .alert-card .evt-icon { width: 2.2em; height: 2.2em; font-size: 1em; border-radius: 0.6em; background: var(--evt); color: #fff; box-shadow: 0 0.4em 1em color-mix(in srgb, var(--evt) 50%, transparent); }
 :root[data-style="card"] .alert-card .evt-icon svg { width: 1.25em; height: 1.25em; }
 :root[data-style="card"] .alert-card .evt-icon img { border-radius: 0.6em; }
-:root[data-style="card"] .alert-card .evt-title { font-size: 1.15em; font-weight: 650; line-height: 1.25; }
+/* The title shrinks (down to 0.8em) so its longest word fits one line of the text column: 24em / n in a wide source (the card
+   is 24em at most, the column about 15em next to the amount pill, a bold character about 0.62em), 80vw / n in a narrow one. */
+:root[data-style="card"] .alert-card .evt-title { font-size: clamp(0.8em, min(80vw / var(--longest-part, 1), 24em / var(--longest-part, 1)), 1.15em); font-weight: 650; line-height: 1.25; }
+@media (max-width: 560px) { /* narrow source: the amount pill goes under the text instead of squeezing it */
+  :root[data-style="card"] .alert-card .evt { flex-wrap: wrap; }
+  :root[data-style="card"] .alert-card .evt-body { flex: 1 1 60%; }
+  :root[data-style="card"] .alert-card .evt-amount { margin-left: 2.9em; }
+}
 
 /* ---- text: no frame, large kinetic words right on the scene, the icon floating on a small tilted white card */
 :root[data-style="text"] .alert-card { width: 100%; max-width: none; animation: alert-fade 0.5s ease-out both; }
@@ -157,7 +164,9 @@ html, body { height: 100%; overflow: hidden; }
 }
 :root[data-style="text"] .alert-card .evt-icon svg { width: 1.4em; height: 1.4em; }
 :root[data-style="text"] .alert-card .evt-body { flex: 0 1 auto; align-items: center; text-align: center; }
-:root[data-style="text"] .alert-card .evt-title { font-size: 1.35em; font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; text-shadow: 0 0.08em 0.5em rgb(0 0 0 / 55%); }
+/* The title shrinks (down to 0.85em) so its longest word fits one line: 31em / n in a wide source, 97vw / n in a narrow one. */
+:root[data-style="text"] .alert-card .evt-title { font-size: clamp(0.85em, min(97vw / var(--longest-part, 1), 31em / var(--longest-part, 1)), 1.35em); font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; text-shadow: 0 0.08em 0.5em rgb(0 0 0 / 55%); }
+@media (max-width: 560px) { :root[data-style="text"] .alert-card .evt { flex-wrap: wrap; } } /* narrow source: the amount pill goes under the text */
 :root[data-style="text"] .alert-card .evt-title .w { animation-name: alert-word-blur; }
 :root[data-style="text"] .alert-card .evt-text { font-size: 0.95em; text-shadow: 0 0.08em 0.4em rgb(0 0 0 / 55%); }
 :root[data-style="text"] .alert-card .evt-meta { justify-content: center; text-shadow: 0 0.08em 0.4em rgb(0 0 0 / 55%); }
@@ -709,7 +718,7 @@ html, body { height: 100%; overflow: hidden; }
    decorate.js) would not fit a line: n characters (~0.6em each) fit in 116vw / n, the line being ~72 % of the source. It stops
    at 75 % (~21 characters at 400 px), so it stays above the meta line: a longer word wraps at its seams */
 :root[data-style="eclipse"] .alert-card .evt-title {
-  font-size: clamp(min(0.8625em, 5.55vw), 116vw / var(--ecl-n, 1), min(1.15em, 7.4vw)); font-weight: 550; line-height: 1.25; letter-spacing: 0.01em; color: var(--ecl-text);
+  font-size: clamp(min(0.8625em, 5.55vw), 116vw / var(--longest, 1), min(1.15em, 7.4vw)); font-weight: 550; line-height: 1.25; letter-spacing: 0.01em; color: var(--ecl-text);
   text-shadow: 0 0 0.6em color-mix(in srgb, var(--ecl-glow) 55%, transparent);
 }
 /* a word longer than a whole line (a reward title) breaks inside rather than crossing the walls; decorate.js gives long words

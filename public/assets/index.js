@@ -1229,6 +1229,7 @@ function renderOverlayForm() {
 
   const src = overlayUrl(id);
   if (el.ovFrame.getAttribute('src') !== src) el.ovFrame.src = src;
+  el.overlay.classList.toggle('ov-scene', alerts); // alerts are made for a source the size of the scene: a wide 16:9 preview
   el.ovFrame.style.setProperty('color-scheme', o.theme === 'light' ? 'light' : 'dark'); // must match the overlay page or the iframe turns opaque
   keepFocus(() => el.ovForm.replaceChildren(...[ // replaceChildren() would print a skipped (false/null) item as text
     h('div.field', h('span.label', t('home.ovl.mode')),

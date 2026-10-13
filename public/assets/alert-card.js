@@ -106,8 +106,6 @@ function eclipse(card) {
     h('i.ecl-bead'),
   );
   card.querySelector('.evt-icon')?.append(h('i.ecl-orbit'));
-  // in a narrow source the title shrinks to fit its longest word (--ecl-n characters, see .evt-title); words wrap at their seams first (kinetic)
-  card.style.setProperty('--ecl-n', Math.max(1, ...card.querySelector('.evt-title').textContent.split(/\s+/).map(s => [...s].length)));
 }
 
 /** Style → function(card, event) that adds the style's own elements to a new card. Styles made of CSS only (card, text) have none. */
@@ -116,8 +114,14 @@ export const DECOR = { impact, eclipse };
 /** A new alert card for event d (not yet in the page). Set --evt on it once it is in the page (it comes from the event's CSS class). */
 export function alertCard(d, opts, style) {
   const evt = renderEvent(d, { ...opts, timestamps: false });
-  kinetic(evt.querySelector('.evt-title'));
+  const title = evt.querySelector('.evt-title');
+  kinetic(title);
   const card = h('div.alert-card', { class: `pf-${String(d.platform).replace(/[^a-z]/g, '')}` }, evt);
+  // The styles size the title so its longest word fits a line before wrapping inside it: --longest = characters of the longest
+  // word (a 25-character name), --longest-part = of the longest piece between seams (a name wraps at its seams at full size first).
+  const words = title.textContent.split(/\s+/);
+  card.style.setProperty('--longest', Math.max(1, ...words.map(s => [...s].length)));
+  card.style.setProperty('--longest-part', Math.max(1, ...words.flatMap(s => seams(s).filter(p => typeof p === 'string')).map(s => [...s].length)));
   DECOR[style]?.(card, d);
   return card;
 }
