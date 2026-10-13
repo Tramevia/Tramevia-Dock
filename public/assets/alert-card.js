@@ -108,19 +108,17 @@ function eclipse(card) {
   card.querySelector('.evt-icon')?.append(h('i.ecl-orbit'));
 }
 
-// ------------------------------------------------------------------ plasma: a thermal star that swells into a sphere
-// A big thermal star that swells into a sphere, then stretches into the alert. The shape (clip-path, morphed by the CSS) is
-// the fill over the rim; heat bands roll through it; the halo is the big diffuse glow (and the white-hot bloom). The cap is
-// the hot band that breathes under the top edge at rest; the nucleus carries the last heat into the core, which rolls its
-// own small bands behind the icon.
+// ------------------------------------------------------------------ plasma: a thermal orb, the hero above the text
+// Its layers go inside the event icon, which anchors the orb above the text (the glyph stays on top): the halo and the glow
+// around it; the shape frame (swell, a star-shaped glow while it morphs, then a slow liquid rock) with the hot rim under the
+// fill, both clipped to the morphing outline; inside the fill, a tilted layer with the rolling rest bands, a wandering hot
+// spot, the entry's heat bands (on top: they hand over to the rest bands, and come back at the exit) and the shading.
 function plasma(card) {
-  card.append(
+  card.querySelector('.evt-icon')?.prepend(
     h('i.plasma-halo'),
-    h('i.plasma-shape', h('i.plasma-rim'), h('i.plasma-fill', h('i.plasma-heat'))),
-    h('i.plasma-cap'),
-    h('i.plasma-nucleus'),
+    h('i.plasma-glow'),
+    h('i.plasma-shape', h('i.plasma-rim'), h('i.plasma-fill', h('i.plasma-still', h('i.plasma-flow'), h('i.plasma-spot'), h('i.plasma-heat'), h('i.plasma-shade')))),
   );
-  card.querySelector('.evt-icon')?.append(h('i.plasma-core'));
 }
 
 // ------------------------------------------------------------------ glass: frosted glass lit from behind
