@@ -2288,6 +2288,247 @@ html, body { height: 100%; overflow: hidden; }
 @keyframes silk-vanish { to { opacity: 0; transform: scale(0.6); } }
 @keyframes silk-pool-out { to { opacity: 0; transform: scale(0.4, 0.8); } }
 
+/* ---- neon: the user's name in chunky extruded letters on a turning ring, glossy chrome lit by neon (ref F).
+   A ring (an oval for a long name, a drum of two rings when it splits at a seam) of facets built by decorate.js, each
+   facet = its text three times: the face (heavy chrome: a light map + gloss, clipped to the glyphs fattened by a
+   transparent stroke), the wall (a stack of text-shadows stepping back along the extrusion, lit near the face, deep
+   violet at the back; offsets from decorate.js) and the back face carrying the bloom. Three lights, as glows on the scene:
+   cold cyan from the lower left, the key (--evt) under the name, the red / orange back light. No backdrop: the text below
+   reads through its own neon and a dark halo hugging its lines. */
+:root[data-style="neon"] .alert-card {
+  --neon-cold: #19e3ff; --neon-ice: #5ac8ff; --neon-key: color-mix(in srgb, var(--evt) 94%, #fff);
+  --neon-vio: #7a4dff; --neon-pink: #ff4fc8; --neon-warm: #ff8a3a; --neon-hot: #ff3434;
+  --neon-side: #2a0a70; /* the sides in shade */
+  --neon-back: rgb(255 70 30 / 95%); --neon-back2: rgb(230 20 40); /* the back light */
+  --neon-ink: #f4f2ff; --neon-sub: #d6d1f0;
+  --neon-halo: rgb(8 4 22 / 85%); --neon-halo2: rgb(8 4 22 / 55%); /* the dark halo hugging the flat text */
+  /* the lights around the ring, unrolled: x = facing angle, -180 deg (back) .. 0 (the camera) .. +180 deg */
+  --neon-map: linear-gradient(90deg, var(--neon-hot), var(--neon-vio) 16%, var(--neon-cold) 33%, var(--neon-ice) 42%, var(--neon-key) 50%,
+    var(--neon-pink) 59%, var(--neon-warm) 70%, var(--neon-hot) 86%, var(--neon-hot));
+  /* glossy chrome on the face (the 1.25em line box: caps from 17 % to 82 %): a top highlight, a cyan reflection low down */
+  --neon-gloss: linear-gradient(180deg, rgb(255 255 255 / 15%) 16%, rgb(255 255 255 / 80%) 18.5%, rgb(255 255 255 / 25%) 27%, rgb(255 255 255 / 10%) 50%,
+    rgb(220 252 255 / 6%) 62%, rgb(220 252 255 / 70%) 80%, rgb(255 255 255 / 15%) 83%);
+  --neon-sheen: linear-gradient(160deg, rgb(255 130 205 / 50%) 18%, rgb(255 130 205 / 0%) 44%, rgb(40 0 110 / 14%) 60%, rgb(40 225 255 / 55%) 84%);
+  --neon-glint: linear-gradient(100deg, rgb(255 255 255 / 0%) 35%, rgb(255 255 255 / 85%) 50%, rgb(255 255 255 / 0%) 65%);
+  --neon-fs: min(2.6em, min(100vw - 2.4em, 18em) / var(--neon-wd), 8.5em / var(--neon-h)); /* the ring's font size */
+  display: flex; flex-direction: column; align-items: center; isolation: isolate;
+}
+
+/* ---- the ring: the stage (perspective, the lights behind), the tilt (camera), the sway (idle), the whip (exit), the spin
+   (one per row). One animated property per element and phase, so every transform / opacity animation stays composited. */
+:root[data-style="neon"] .alert-card .neon-stage {
+  order: -1; position: relative; display: block; flex: none; isolation: isolate; pointer-events: none; text-shadow: none;
+  font-size: var(--neon-fs);
+  width: calc(var(--neon-wd) * 1em); height: calc(var(--neon-h) * 1em);
+  perspective: calc(var(--neon-p) * 1em); perspective-origin: 50% calc(var(--neon-cy) * 1em);
+}
+:root[data-style="neon"] .alert-card::after { /* the back light: red / orange, behind the upper right of the ring (on the stage's box) */
+  content: ""; position: absolute; z-index: -1; pointer-events: none; opacity: 0.85;
+  left: calc(50% - var(--neon-wd) * var(--neon-fs) * 0.28); width: calc(var(--neon-wd) * var(--neon-fs) * 0.96);
+  top: calc(var(--neon-h) * var(--neon-fs) * -0.48); height: calc(var(--neon-h) * var(--neon-fs) * 1.42);
+  background: radial-gradient(closest-side, var(--neon-back), color-mix(in srgb, var(--neon-back2) 55%, transparent) 45%, transparent);
+}
+:root[data-style="neon"] .alert-card::before { /* the key light under the name (--evt) and the cold fill at the lower left, on the
+   stage's box widened by 20 % each side (outside the stage: its strike filter would darken them) */
+  content: ""; position: absolute; z-index: -1; pointer-events: none;
+  left: calc(50% - var(--neon-wd) * var(--neon-fs) * 0.7); width: calc(var(--neon-wd) * var(--neon-fs) * 1.4);
+  top: calc(var(--neon-h) * var(--neon-fs) * 0.1); height: calc(var(--neon-h) * var(--neon-fs) * 1.3);
+  background: radial-gradient(closest-side at 50% 55%, color-mix(in srgb, var(--evt) 50%, transparent), transparent),
+    radial-gradient(closest-side at 24% 62%, rgb(30 215 255 / 60%), rgb(30 210 255 / 0%));
+}
+:root[data-style="neon"] .alert-card .neon-tilt {
+  position: absolute; left: 50%; top: calc(var(--neon-cy) * 1em); transform-style: preserve-3d;
+  transform: rotateZ(-10deg) rotateX(-28deg); /* = TILT / ROLL in decorate.js */
+}
+:root[data-style="neon"] .alert-card :is(.neon-sway, .neon-whip, .neon-spin) { position: absolute; transform-style: preserve-3d; }
+:root[data-style="neon"] .alert-card .neon-f { /* the front of the wall, just behind the face and as heavy: saturated neon
+   (it edges the face and fills its counters); its shadows step back to mid-depth (--eu / --ev: one step, from
+   decorate.js), into shade. Static: the light sweep animates the face only (::before), a leaf */
+  position: absolute; left: 0; top: 0; width: calc(var(--w) * 1em); height: 1.25em; margin: -0.625em 0 0 calc(var(--w) * -0.5em);
+  font: 900 1em/1.25 Impact, "Bahnschrift Condensed", "Arial Narrow", sans-serif; font-synthesis: none; letter-spacing: 0.06em; text-indent: 0.06em; /* TRACK in decorate.js, centred */
+  white-space: pre; text-align: center; transform-style: preserve-3d;
+  transform: translate3d(calc(var(--px) * 1em), calc(var(--ry, 0) * 1em), calc(var(--pz) * 1em)) rotateY(calc(var(--a) * 1deg)) scaleY(var(--neon-sy)); /* from decorate.js */
+  color: var(--g); -webkit-text-stroke: 0.035em var(--g);
+  text-shadow: calc(var(--eu) * 1em) calc(var(--ev) * 1em) color-mix(in srgb, var(--g) 86%, var(--neon-side)),
+    calc(var(--eu) * 2em) calc(var(--ev) * 2em) color-mix(in srgb, var(--g) 74%, var(--neon-side)),
+    calc(var(--eu) * 3em) calc(var(--ev) * 3em) color-mix(in srgb, var(--g) 62%, var(--neon-side)),
+    calc(var(--eu) * 4em) calc(var(--ev) * 4em) color-mix(in srgb, var(--g) 50%, var(--neon-side)),
+    calc(var(--eu) * 5em) calc(var(--ev) * 5em) color-mix(in srgb, var(--g) 40%, var(--neon-side));
+}
+:root[data-style="neon"] .alert-card .neon-f::before, :root[data-style="neon"] .alert-card .neon-f::after { content: attr(data-t); position: absolute; inset: 0; }
+:root[data-style="neon"] .alert-card .neon-f::before { /* the face: heavy chrome, the light map and gloss clipped to the glyphs
+   fattened by a transparent stroke */
+  transform: translateZ(0.06em); color: transparent; text-shadow: none;
+  background: var(--neon-glint) -10em 0 / 3em 100% no-repeat, var(--neon-gloss), var(--neon-sheen),
+    var(--neon-map) calc(var(--x) * -1em) 0 / calc(var(--neon-c) * 1em) 100% repeat-x;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-stroke: 0.035em transparent;
+}
+:root[data-style="neon"] .alert-card .neon-f::after { /* the back face (DEPTH in decorate.js): the far half of the wall steps
+   forward from it, then its bloom */
+  --neon-b: color-mix(in srgb, var(--g) 82%, #fff);
+  transform: translateZ(-0.30em); color: var(--neon-b); -webkit-text-stroke: 0.035em var(--neon-b);
+  --neon-bloom: 0 0 0.05em color-mix(in srgb, var(--g) 40%, #fff), 0 0 0.2em var(--g), 0 0 0.6em var(--g), 0 0 1.2em color-mix(in srgb, var(--g) 60%, transparent);
+  text-shadow: calc(var(--eu) * -1em) calc(var(--ev) * -1em) color-mix(in srgb, var(--g) 22%, var(--neon-side)),
+    calc(var(--eu) * -2em) calc(var(--ev) * -2em) color-mix(in srgb, var(--g) 26%, var(--neon-side)),
+    calc(var(--eu) * -3em) calc(var(--ev) * -3em) color-mix(in srgb, var(--g) 30%, var(--neon-side)),
+    calc(var(--eu) * -4em) calc(var(--ev) * -4em) color-mix(in srgb, var(--g) 34%, var(--neon-side)),
+    calc(var(--eu) * -5em) calc(var(--ev) * -5em) color-mix(in srgb, var(--g) 38%, var(--neon-side)), var(--neon-bloom);
+}
+/* an emoji keeps its colours: the glyph itself in front, extruded by its silhouette (the walls) */
+:root[data-style="neon"] .alert-card .neon-pic { color: #fff; -webkit-text-stroke: 0; }
+:root[data-style="neon"] .alert-card .neon-pic::before { display: none; }
+
+/* ---- the flat text under the ring: white light, the event colour as its glow */
+:root[data-style="neon"] .alert-card .evt {
+  flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.2em 0.55em; margin-top: 0.15em; text-align: center; color: var(--neon-ink);
+  text-shadow: 0 0.04em 0.12em var(--neon-halo), 0 0 0.5em var(--neon-halo2), 0 0 1em var(--neon-halo2);
+}
+:root[data-style="neon"] .alert-card .evt-user { display: none; }
+:root[data-style="neon"] .alert-card.neon-anon .evt-title { display: none; } /* no name: the title itself is on the ring */
+:root[data-style="neon"] .alert-card .evt-icon {
+  width: 1.6em; height: 1.6em; background: none; color: color-mix(in srgb, var(--evt) 50%, #fff);
+  filter: drop-shadow(0 0 0.06em var(--evt)) drop-shadow(0 0 0.25em var(--evt)) drop-shadow(0 0.05em 0.25em var(--neon-halo));
+}
+:root[data-style="neon"] .alert-card .evt-icon svg { width: 1.3em; height: 1.3em; }
+:root[data-style="neon"] .alert-card .evt-body { flex: 0 1 auto; align-items: center; }
+:root[data-style="neon"] .alert-card .evt-title { /* a neon sign: white core, a halo in the event colour */
+  font-size: 1.05em; font-weight: 700; line-height: 1.25;
+  text-shadow: 0 0 0.06em rgb(255 255 255 / 55%), 0 0 0.25em var(--evt), 0 0.04em 0.12em var(--neon-halo), 0 0 0.6em var(--neon-halo2), 0 0 1.1em color-mix(in srgb, var(--evt) 45%, var(--neon-halo2));
+}
+:root[data-style="neon"] .alert-card .evt-meta { justify-content: center; color: var(--neon-sub); font-size: 0.75em; }
+:root[data-style="neon"] .alert-card .evt-amount { color: #fff; background: rgb(8 4 22 / 45%); border: 0.07em solid color-mix(in srgb, var(--evt) 60%, #fff); box-shadow: 0 0 0.4em var(--evt), inset 0 0 0.3em var(--evt); }
+
+/* ---- entry (ms; the chime's notes at 0 / 110 / 224 / 364). The ring drops in from high above, spinning fast (1.5 turns;
+   a drum's second row turns the other way); the camera swings down to the rest view while the spin brakes, overshoots and
+   locks with the name facing the camera (1500). The lights sweep over the letters as they pass: each face's light map moves
+   in step with the spin (same keyframes, same curves). The back light flares on the 4th note. A glint runs across the
+   ring when it locks; the tubes of the flat text strike one after the other. */
+:root[data-style="neon"] .alert-card .neon-stage { animation: neon-fade 250ms ease-out backwards, neon-strike 520ms linear backwards; }
+:root[data-style="neon"] .alert-card::after { animation: neon-flare 1000ms backwards, neon-breathe 5s ease-in-out 1000ms infinite; } /* opacity, then transform: one property each */
+:root[data-style="neon"] .alert-card::before { animation: neon-fade 600ms ease-out 364ms backwards; } /* on with the strike */
+:root[data-style="neon"] .alert-card .neon-tilt { animation: neon-tilt 1300ms backwards; }
+:root[data-style="neon"] .alert-card .neon-sway { animation: neon-sway 8s ease-in-out 1300ms infinite; }
+:root[data-style="neon"] .alert-card .neon-spin { animation: neon-spin 1500ms backwards; }
+:root[data-style="neon"] .alert-card .neon-spin.neon-r2 { animation-name: neon-spin-r2; }
+:root[data-style="neon"] .alert-card .neon-f::before { animation: neon-light 1200ms cubic-bezier(0.18, 0.5, 0.3, 1) backwards, neon-glint 700ms ease-in-out 1450ms backwards; }
+:root[data-style="neon"] .alert-card .neon-r2 .neon-f::before { animation-name: neon-light-r2, neon-glint; }
+:root[data-style="neon"] .alert-card .evt-icon { animation: neon-ignite 700ms linear 850ms backwards; }
+:root[data-style="neon"] .alert-card .evt-title .w { animation: neon-ignite 700ms linear calc(950ms + var(--i) * 70ms) backwards; }
+:root[data-style="neon"] .alert-card .evt-text { animation: neon-ignite 700ms linear 1150ms backwards; }
+:root[data-style="neon"] .alert-card .evt-meta { animation: neon-ignite 700ms linear 1250ms backwards; }
+:root[data-style="neon"] .alert-card .evt-amount { animation: neon-ignite 700ms linear 1200ms backwards; }
+
+@keyframes neon-fade { from { opacity: 0; } }
+@keyframes neon-flare { /* swells, peaks on the 4th note, settles */
+  0% { opacity: 0; animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1); }
+  38% { opacity: 1; animation-timing-function: ease-in-out; }
+  100% { opacity: 0.85; }
+}
+@keyframes neon-breathe { /* the back light swells and drifts behind the ring */
+  0%, 100% { transform: none; }
+  50% { transform: translate(-4%, 3%) scale(1.08); }
+}
+@keyframes neon-tilt {
+  0% { transform: rotateZ(0deg) rotateX(-62deg) scale3d(0.45, 0.45, 0.45); animation-timing-function: cubic-bezier(0.3, 0.1, 0.25, 1); }
+  70% { transform: rotateZ(-11deg) rotateX(-25deg) scale3d(1.04, 1.04, 1.04); animation-timing-function: ease-in-out; }
+  100% { transform: rotateZ(-10deg) rotateX(-28deg) scale3d(1, 1, 1); }
+}
+@keyframes neon-sway { /* the ring idles: a slow turn either way, the camera breathes */
+  0%, 100% { transform: rotateY(0deg); }
+  25% { transform: rotateX(2deg) rotateY(5deg); }
+  75% { transform: rotateX(-1deg) rotateY(-5deg); }
+}
+@keyframes neon-spin {
+  0% { transform: rotateY(540deg); animation-timing-function: cubic-bezier(0.18, 0.5, 0.3, 1); }
+  80% { transform: rotateY(-8deg); animation-timing-function: ease-in-out; }
+  100% { transform: rotateY(0deg); }
+}
+@keyframes neon-spin-r2 {
+  0% { transform: rotateY(-540deg); animation-timing-function: cubic-bezier(0.18, 0.5, 0.3, 1); }
+  80% { transform: rotateY(8deg); animation-timing-function: ease-in-out; }
+  100% { transform: rotateY(0deg); }
+}
+/* the light map follows the spin (a turn of the ring = one period of the map, --neon-c) on the same curve, to the rest view at
+   1200 ms where the spin is at its 8 deg overshoot: those last degrees are not followed */
+@keyframes neon-light { from { background-position: -10em 0, 0 0, 0 0, calc((var(--x) + var(--neon-c) * 1.5) * -1em) 0; } }
+@keyframes neon-light-r2 { from { background-position: -10em 0, 0 0, 0 0, calc((var(--x) - var(--neon-c) * 1.5) * -1em) 0; } }
+@keyframes neon-glint { /* a white glint crosses the ring's front half, left to right (in light-map units: -90 .. +90 deg) */
+  from { background-position: calc((var(--neon-c) * 0.2 - var(--x)) * 1em) 0, 0 0, 0 0, calc(var(--x) * -1em) 0; }
+  to { background-position: calc((var(--neon-c) * 0.8 - var(--x)) * 1em) 0, 0 0, 0 0, calc(var(--x) * -1em) 0; }
+}
+/* the strike (364 ms, the chime's 4th note): the letters are dark silhouettes against the rising back light, then the
+   tubes light up with one flicker (one dip only: no strobing) */
+@keyframes neon-strike { /* the ring is off (a dark silhouette), strikes at 364 ms, flickers once, stays on */
+  0%, 70% { filter: brightness(0.14) saturate(0.4); }
+  70.1%, 80% { filter: brightness(1.25) saturate(1); }
+  80.1%, 87% { filter: brightness(0.3) saturate(0.6); }
+  87.1%, 100% { filter: brightness(1) saturate(1); }
+}
+@keyframes neon-ignite { /* a neon tube striking: off, on, one dip, on */
+  0% { opacity: 0; } 30% { opacity: 1; } 42% { opacity: 0.3; } 58%, 100% { opacity: 1; }
+}
+
+/* ---- exit (450 ms): the entry backwards and faster. The ring whips round the other way, accelerating, while the camera
+   cranes up and it falls away into the dark; the back light collapses, the tubes of the flat text go out (one dip), the
+   room closes. Its own elements (whip, card, text): a running entry is never replaced, so a short alert leaves from where
+   it is. */
+:root[data-style="neon"] .alert-card.gone { animation: neon-out 450ms linear forwards; }
+:root[data-style="neon"] .alert-card.gone .neon-whip { animation: neon-whip 450ms cubic-bezier(0.55, 0, 0.85, 0.4) forwards; }
+:root[data-style="neon"] .alert-card.gone .evt { animation: neon-off 300ms linear forwards; }
+@keyframes neon-out { 0%, 50% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes neon-whip { to { transform: rotateX(-34deg) rotateY(-240deg) scale3d(0.42, 0.42, 0.42); } }
+@keyframes neon-off { 0% { opacity: 1; } 20% { opacity: 0.25; } 38% { opacity: 0.85; } 100% { opacity: 0; } }
+
+/* ---- themes. dark (default): a firm dark halo hugs the flat text. transparent: a lighter one (a contact shadow and a
+   soft haze), the scene shows more. light: daylight: ink text on a white halo, the ring keeps its colours on deep violet
+   walls, its bloom and the back light turn to soft tinted halos. */
+:root[data-style="neon"][data-overlay="transparent"] .alert-card { --neon-halo: rgb(8 4 22 / 75%); --neon-halo2: rgb(8 4 22 / 32%); }
+:root[data-style="neon"][data-overlay="light"] .alert-card {
+  --neon-side: #2c0f78; --neon-back: rgb(255 110 80 / 55%); --neon-back2: rgb(255 80 120);
+  --neon-ink: #1b1530; --neon-sub: #3d3658; --neon-halo: rgb(255 255 255 / 92%); --neon-halo2: rgb(255 255 255 / 32%);
+}
+:root[data-style="neon"][data-overlay="light"] .alert-card .neon-f::after {
+  --neon-b: color-mix(in srgb, var(--g) 55%, var(--neon-side));
+  --neon-bloom: 0 0 0.25em color-mix(in srgb, var(--g) 60%, transparent), 0 0 0.8em color-mix(in srgb, var(--g) 30%, transparent);
+}
+:root[data-style="neon"][data-overlay="light"] .alert-card .evt-title {
+  text-shadow: 0 0 0.12em var(--neon-halo), 0 0 0.5em var(--neon-halo2), 0 0 1em color-mix(in srgb, var(--evt) 35%, transparent);
+}
+:root[data-style="neon"][data-overlay="light"] .alert-card .evt-icon {
+  color: color-mix(in srgb, var(--evt) 75%, #000); filter: drop-shadow(0 0 0.15em var(--neon-halo)) drop-shadow(0 0 0.3em color-mix(in srgb, var(--evt) 50%, transparent));
+}
+:root[data-style="neon"][data-overlay="light"] .alert-card .evt-amount { color: #1b1530; background: rgb(255 255 255 / 70%); box-shadow: 0 0 0.4em color-mix(in srgb, var(--evt) 60%, transparent); }
+
+/* ---- positions: top / bottom cards are pinned to their edge, so a taller card leaving does not move the new one */
+:root[data-style="neon"][data-position="top"] .alert-card { align-self: start; }
+:root[data-style="neon"][data-position="bottom"] .alert-card { align-self: end; }
+
+/* ---- Chromium < 111 (OBS 28-30, CEF 103) has no color-mix(): every facet takes its nearest neon (--gp, from decorate.js)
+   instead of the blend, the key light is the raw event colour, the walls step through fixed violets */
+@supports not (color: color-mix(in srgb, red, red)) {
+  :root[data-style="neon"] .alert-card { --neon-key: var(--evt); }
+  :root[data-style="neon"] .alert-card::after { background: radial-gradient(closest-side, var(--neon-back), transparent); }
+  :root[data-style="neon"] .alert-card::before { background: radial-gradient(closest-side at 24% 62%, rgb(30 215 255 / 55%), rgb(30 210 255 / 0%)); }
+  :root[data-style="neon"] .alert-card .neon-f {
+    color: var(--gp); -webkit-text-stroke-color: var(--gp);
+    text-shadow: calc(var(--eu) * 1em) calc(var(--ev) * 1em) var(--gp), calc(var(--eu) * 2em) calc(var(--ev) * 2em) #6a2ac0,
+      calc(var(--eu) * 3em) calc(var(--ev) * 3em) #5420a8, calc(var(--eu) * 4em) calc(var(--ev) * 4em) #42168e, calc(var(--eu) * 5em) calc(var(--ev) * 5em) #34107c;
+  }
+  :root[data-style="neon"] .alert-card .neon-f::after {
+    --neon-b: var(--gp);
+    text-shadow: calc(var(--eu) * -1em) calc(var(--ev) * -1em) #2a0a70, calc(var(--eu) * -2em) calc(var(--ev) * -2em) #2c0c74,
+      calc(var(--eu) * -3em) calc(var(--ev) * -3em) #2e0e78, calc(var(--eu) * -4em) calc(var(--ev) * -4em) #30107c,
+      calc(var(--eu) * -5em) calc(var(--ev) * -5em) #321280, 0 0 0.2em var(--gp), 0 0 0.6em var(--gp);
+  }
+  :root[data-style="neon"][data-overlay="light"] .alert-card .neon-f::after { --neon-b: var(--neon-side); }
+  :root[data-style="neon"] .alert-card .evt-icon { color: #fff; }
+  :root[data-style="neon"] .alert-card .evt-title { text-shadow: 0 0 0.25em var(--evt), 0 0.04em 0.12em var(--neon-halo), 0 0 0.6em var(--neon-halo2); }
+  :root[data-style="neon"] .alert-card .evt-amount { border-color: var(--evt); }
+  :root[data-style="neon"][data-overlay="light"] .alert-card .evt-icon { color: var(--evt); }
+  :root[data-style="neon"][data-overlay="light"] .alert-card .evt-title { text-shadow: 0 0 0.12em var(--neon-halo), 0 0 0.5em var(--neon-halo2); }
+}
+
 /* Viewers (id=viewers): the total live viewer count in a sphere of glowing particles (viewer-badge.js). Root: .ov-viewers,
    data-align = center (number inside the orb) | right (orb, then the number) | left (number, then the orb), data-overlay = theme.
    At rest only the dot layers move: a slow sway (rotate) and two drifting stray layers (transform + opacity).
