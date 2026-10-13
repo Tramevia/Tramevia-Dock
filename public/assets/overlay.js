@@ -121,16 +121,21 @@ function chime(volume) {
   chimeEl.play().catch(() => {}); // blocked autoplay (a browser tab before any click), no audio device: the alert still shows
 }
 
+let current = null; // the event on screen (alerts mode)
+function showAlert(d) {
+  const card = alertCard(d, opts, S.style);
+  list.append(card);
+  card.style.setProperty('--evt', getComputedStyle(card.querySelector('.evt')).getPropertyValue('--evt')); // the event colour, for the card's own glow and accent
+}
+
 /** Shows the next waiting alert for S.alertSeconds, then the one after. Nothing waiting = screen left empty. */
 function nextAlert() {
   clearTimeout(alertTimer);
   alertTimer = 0;
   for (const old of list.children) remove(old);
-  const d = alerts.shift();
-  if (!d) return;
-  const card = alertCard(d, opts, S.style);
-  list.append(card);
-  card.style.setProperty('--evt', getComputedStyle(card.querySelector('.evt')).getPropertyValue('--evt')); // the event colour, for the card's own glow and accent
+  current = alerts.shift() || null;
+  if (!current) return;
+  showAlert(current);
   chime(S.volume);
   alertTimer = setTimeout(nextAlert, S.alertSeconds * 1000);
 }
@@ -145,13 +150,17 @@ function enqueueAlert(d) {
 /** Saved URLs: settings from the server (+ URL overrides), re-rendered in place. */
 function reconfigure(overlays, rebuild) {
   if (!C.id || !overlays) return;
+  const style = S.style;
   saved = overlays;
   C = overlayFromQuery(query, saved);
   apply();
   if (!rebuild) return;
   clearTimeout(featureTimer);
-  if (C.alerts) alerts = alerts.filter(alertWanted); // the card on screen stays; its duration applies from the next one
-  else if (C.featured) showFeatured(feature, true); else renderChat(true);
+  if (C.alerts) {
+    alerts = alerts.filter(alertWanted); // the card on screen stays; its duration applies from the next one
+    // A style has its own elements and animations: the alert on screen is rebuilt in the new style (the builder's preview shows it at once).
+    if (S.style !== style && current && alertTimer) { list.replaceChildren(); showAlert(current); }
+  } else if (C.featured) showFeatured(feature, true); else renderChat(true);
 }
 
 const isMatch = (d, x) => x.account === d.accountId && (d.messageId ? x.id === d.messageId : d.userId ? x.user === String(d.userId) : true);

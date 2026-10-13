@@ -78,8 +78,11 @@ html, body { height: 100%; overflow: hidden; }
 
 /* Alerts (id=alerts): one event at a time, centred, at the top / middle / bottom of the source (root: .ov-alerts,
    data-style, data-position, data-overlay = theme). The base below is neutral; each style draws everything under its own data-style:
-   card = glass card floating in 3D, kinetic words, marker on the name, sparks, reflection
-   text = big kinetic words right on the scene, no frame, the icon on a small tilted white card
+   card    = glass card floating in 3D, kinetic words, marker on the name, sparks, reflection
+   text    = big kinetic words right on the scene, no frame, the icon on a small tilted white card
+   impact  = a product shot: the alert falls in as a can label cut in three spinning slices that slam together, spray, whip pan out
+   eclipse = light only: two beams converge on a ring, a dark corridor opens between two curved walls of light, closes like an eyelid
+   The last two add their own elements in alert-card.js (DECOR).
    Everything is in em (the text size setting), capped by the source width, so a narrow source never breaks words. */
 .ov-alerts #app.ov { align-items: center; justify-content: flex-start; padding: 0.8em 1em; font-size: min(var(--chat-fs), 7vw); }
 .ov-alerts[data-position="center"] #app.ov { justify-content: center; }
@@ -182,3 +185,661 @@ html, body { height: 100%; overflow: hidden; }
   60% { opacity: 1; transform: translate(1.4em, -1.1em) rotate(20deg) scale(1); }
   100% { opacity: 0; transform: translate(3.2em, -0.4em) rotate(70deg) scale(0.5); }
 }
+
+/* ---- impact: a product shot (after a canned-drink ad). The alert arrives as a can label cut in three slices between its
+   lines of text (the name, the title, the rest): thick bars printed on both sides, the cut ends bare plate. They hang
+   apart, each one turning on its own, and stop one after the other, aligned in a three-quarter view: the alert reads in
+   pieces across the gaps. Then they slam together onto the floor (impact frame = 480 ms) while the stack whips round to
+   face the camera: squash, camera shake, light and spray burst out of the seams, a studio light crosses the label. Static
+   hold. Leaves with a whip pan. Slices, spray and measured widths come from decorate (impact). Lengths that the slices
+   share with the card are in text sizes (--im-fc), so they mean the same at any font size. */
+:root[data-style="impact"] .alert-card {
+  --im-fc: min(var(--chat-fs, 28px), 7vw); /* the text size (#app font-size) as an absolute length */
+  --im-lwn: 3.3; --im-sgn: 1.3; --im-prn: 1.1; /* colour block (top edge), block-to-text gap with the stripe, right padding */
+  --im-lw: calc(var(--im-lwn) * var(--im-fc)); --im-sg: calc(var(--im-sgn) * var(--im-fc)); --im-pr: calc(var(--im-prn) * var(--im-fc));
+  --im-t: calc(0.9 * var(--im-fc)); /* slab thickness */
+  --im-name: 1.3; --im-floor: 0.8; /* largest and smallest name */
+  --im-ink: #f5f6f9; --im-sub: rgb(236 238 244 / 86%); --im-glow: rgb(0 0 0 / 45%);
+  --im-plate: linear-gradient(180deg, #3b3d47 0%, #1d1e25 12%, #121318 50%, #0b0c0f 84%, #1d1e26 100%);
+  --im-shade: linear-gradient(180deg, rgb(255 255 255 / 0%) 6%, rgb(255 255 255 / 11%) 14%, rgb(255 255 255 / 0%) 24% 70%, rgb(0 0 0 / 22%));
+  --im-cap: linear-gradient(180deg, #474a55, #2a2c33 45%, #1c1d22); /* the cut edge of the plate */
+  isolation: isolate; transform-origin: 50% 100%;
+  animation: impact-fall 1000ms;
+}
+:root[data-style="impact"][data-overlay="light"] .alert-card { /* brushed aluminium */
+  --im-ink: #15161b; --im-sub: #3d424f; --im-glow: transparent;
+  --im-plate: linear-gradient(180deg, #fdfdfe 0%, #eff0f3 22%, #e0e3e8 72%, #eef0f3 100%);
+  --im-shade: linear-gradient(180deg, rgb(255 255 255 / 0%) 6%, rgb(255 255 255 / 50%) 14%, rgb(255 255 255 / 0%) 24% 70%, rgb(0 0 0 / 8%));
+  --im-cap: linear-gradient(180deg, #d9dce2, #b9bdc6 50%, #a3a8b2);
+}
+:root[data-style="impact"][data-overlay="transparent"] .alert-card { /* smoked */
+  --im-glow: rgb(0 0 0 / 60%);
+  --im-plate: linear-gradient(180deg, rgb(58 60 72 / 84%) 0%, rgb(16 17 22 / 76%) 14%, rgb(10 11 14 / 70%) 82%, rgb(30 31 40 / 78%) 100%);
+  --im-cap: linear-gradient(180deg, rgb(70 72 84 / 90%), rgb(30 31 38 / 88%));
+}
+/* Declared on the card's children, not the card: the card is restyled on every frame of its exit (the blur), and these
+   long var() chains would be resolved again each time (3.5x the exit's style work); its children resolve them once. */
+:root[data-style="impact"] .alert-card > * {
+  /* The name's size, from its measured width (decorate): one line in the text column when it fits at the floor size or more;
+     else the floor size, wrapping where its parts meet; below the floor only if one part cannot fit a line. The column is
+     taken at the card's widest, less the price sticker when the sticker shares the row (it wraps under below 8.6 em). */
+  --im-r0: calc(min(100vw - 2 * var(--im-fc), 24 * var(--im-fc)) - (var(--im-lwn) + var(--im-sgn) + var(--im-prn)) * var(--im-fc));
+  --im-m: calc(var(--im-money, 0) * var(--im-fc));
+  --im-room: calc(var(--im-r0) - clamp(0px, (var(--im-r0) - var(--im-m) - 8.6 * var(--im-fc)) * 1000, var(--im-m)));
+  --im-nfs: clamp(max(0.45 * var(--im-fc), min(var(--im-floor) * var(--im-fc), var(--im-room) / (var(--im-wp, 5) * 1.02))),
+    var(--im-room) / (var(--im-w, 7) * 1.02), var(--im-name) * var(--im-fc));
+  /* The seams, between lines of text whatever the card's height: under the name (its descenders end above, the title's
+     accents start below) and one title line lower (between the title's first two lines; a name on two lines puts its
+     second line on the middle slice and the title under this cut). */
+  --im-cut1: calc(0.66 * var(--im-fc) + 1.18 * var(--im-nfs));
+  --im-cut2: calc(var(--im-cut1) + 1.25 * min(0.95 * var(--im-fc), var(--im-nfs)));
+}
+
+/* The card itself: a can label (plate, colour block cut on a diagonal, a parallel stripe), hidden until the slices lock. */
+:root[data-style="impact"] .alert-card .evt {
+  z-index: 1; overflow: hidden; flex-wrap: wrap; align-items: center; gap: 0.45em 0.8em; min-height: 3.4em; border-radius: 0.55em;
+  padding: 0.6em var(--im-pr) 0.6em calc(var(--im-lw) + var(--im-sg));
+  background: var(--im-shade), var(--im-plate); color: var(--im-ink);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 22%), inset 0 -0.08em 0 var(--evt), 0 1.2em 2em -0.8em rgb(0 0 0 / 65%);
+  animation: impact-hide 480ms step-end, impact-settle 520ms 480ms;
+}
+:root[data-style="impact"][data-overlay="light"] .alert-card .evt {
+  box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px rgb(0 0 0 / 6%), inset 0 -0.08em 0 var(--evt), 0 1.2em 2em -0.8em rgb(20 22 40 / 40%);
+}
+:root[data-style="impact"] .alert-card .evt-icon { /* the label area, full height: block, stripe, the glyph on the block in dark ink */
+  position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--im-lw) + var(--im-sg)); height: auto; /* no z-index: the band passes over the block */
+  padding-right: calc(var(--im-sg) + 0.45em); background: none; border-radius: 0; color: #0b0c10;
+}
+:root[data-style="impact"] .alert-card .evt-icon::before, :root[data-style="impact"] .alert-card .evt-icon::after {
+  content: ""; position: absolute; z-index: -1; top: 0; bottom: 0; left: 0; width: var(--im-lw);
+  background: linear-gradient(180deg, rgb(255 255 255 / 22%), rgb(255 255 255 / 0%) 30% 68%, rgb(0 0 0 / 20%)), var(--evt);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 0.9em) 100%, 0 100%);
+}
+:root[data-style="impact"] .alert-card .evt-icon::after {
+  left: calc(var(--im-lw) - 0.55em); width: 1.17em; clip-path: polygon(0.9em 0, 100% 0, 0.27em 100%, 0 100%);
+  background: linear-gradient(rgb(255 255 255 / 45%) 0 0), linear-gradient(180deg, rgb(255 255 255 / 22%), rgb(255 255 255 / 0%) 30% 68%, rgb(0 0 0 / 20%)), var(--evt);
+}
+:root[data-style="impact"] .alert-card .evt-icon > * { animation: impact-icon 600ms cubic-bezier(0.2, 0.9, 0.25, 1.3) 480ms backwards; }
+:root[data-style="impact"] .alert-card .evt-icon svg { width: 1.45em; height: 1.45em; }
+:root[data-style="impact"] .alert-card .evt-icon img { width: min(2.1em, var(--im-lw) - 0.6em); height: auto; aspect-ratio: 1; border-radius: 0.4em; }
+:root[data-style="impact"] .alert-card .evt-body { /* the price sticker drops under the text when the text would get less than 9em */
+  position: relative; z-index: 1; flex: 1 1 9em; gap: 0.05em; text-shadow: 0 0.04em 0.14em var(--im-glow); /* keeps letters on the light band */
+}
+:root[data-style="impact"][data-overlay="transparent"] .alert-card .evt-body { text-shadow: 0 0.05em 0.25em var(--im-glow); }
+/* The rest of the title and the message never outsize the name. */
+:root[data-style="impact"] .alert-card .evt-title { font-size: min(0.95em, var(--im-nfs)); font-weight: 600; line-height: 1.25; color: var(--im-sub); }
+:root[data-style="impact"] .alert-card .evt-user { /* lands with the slices: no entry of its own */
+  display: block; margin-bottom: 0.06em; font-size: var(--im-nfs); font-weight: 800; line-height: 1.12; color: var(--im-ink);
+}
+:root[data-style="impact"] .alert-card.impact-money { --im-money: calc(var(--im-amt) * 1.1 + 2.3); } /* the sticker shares the row */
+:root[data-style="impact"] .alert-card .evt-title .w:not(.evt-user) { overflow-wrap: anywhere; } /* a word longer than a line (a reward name) wraps inside */
+:root[data-style="impact"] .alert-card .evt-text {
+  padding: 0.12em 0 0; font-size: min(0.9em, var(--im-nfs)); line-height: 1.3; color: var(--im-ink);
+  animation: impact-rise 480ms cubic-bezier(0.2, 0.8, 0.2, 1) 600ms backwards;
+}
+:root[data-style="impact"] .alert-card .cheer { color: var(--im-ink); } /* a cheer's bits: tier colours are too pale on the light and smoked plates; the cheermote keeps it */
+:root[data-style="impact"] .alert-card .evt-meta {
+  margin-top: 0.28em; font-size: 0.6em; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--im-sub);
+  animation: impact-rise 480ms cubic-bezier(0.2, 0.8, 0.2, 1) 660ms backwards;
+}
+:root[data-style="impact"] .alert-card .impact-to { /* a gift's recipient: a name, so its own case; it wraps where its parts meet, else it shrinks */
+  text-transform: none; letter-spacing: 0.02em; font-size: min(1em, var(--im-room) / (var(--im-mp, 1) * 1.08));
+}
+:root[data-style="impact"] .alert-card .evt-amount { /* price sticker: dark ink reads on every Super Chat colour; a long amount shrinks to the column */
+  position: relative; z-index: 1; max-width: 100%; padding: 0.22em 0.6em; border-radius: 0.3em;
+  font-size: min(1.1em, (min(100vw - 2 * var(--im-fc), 24 * var(--im-fc)) - (var(--im-lwn) + var(--im-sgn) + var(--im-prn)) * var(--im-fc)) / (var(--im-amt, 4) + 1.4));
+  background: var(--evt); color: #0b0c10; transform: skewX(-8deg); box-shadow: 0 0.15em 0.4em rgb(0 0 0 / 30%);
+  animation: impact-tag 420ms cubic-bezier(0.2, 1.2, 0.3, 1.25) 500ms backwards;
+}
+
+/* Studio light: a specular band slides across the label (under the text) once it locks, a faint glint later. */
+:root[data-style="impact"] .alert-card .evt::before, :root[data-style="impact"] .alert-card .evt::after {
+  content: ""; position: absolute; top: -20%; bottom: -20%; left: 0; width: 34%; pointer-events: none;
+  background: linear-gradient(90deg, transparent 0 22%, rgb(255 255 255 / 14%) 36%, rgb(255 255 255 / 50%) 46%, rgb(255 255 255 / 90%) 50%,
+    rgb(255 255 255 / 50%) 54%, rgb(255 255 255 / 14%) 64%, transparent 78%);
+  transform: translateX(-130%) skewX(-20deg);
+  animation: impact-sweep 650ms cubic-bezier(0.25, 0.55, 0.3, 1) 480ms backwards;
+}
+:root[data-style="impact"] .alert-card .evt::after { opacity: 0.3; animation: impact-sweep 1000ms ease-in-out 3400ms; } /* its own layer: one transform animation each */
+:root[data-style="impact"][data-overlay="light"] .alert-card .evt::before, :root[data-style="impact"][data-overlay="light"] .alert-card .evt::after { /* white on white is invisible: a gloss with dark edges */
+  background: linear-gradient(90deg, transparent 0 22%, rgb(20 22 40 / 16%) 38%, rgb(255 255 255 / 0%) 46%, #fff 50%,
+    rgb(255 255 255 / 0%) 54%, rgb(20 22 40 / 16%) 62%, transparent 78%);
+}
+
+/* The slab, only until the impact: three slices of the card. A tier (the whole card's box) carries a slice's offset, gap,
+   tilt and the stack's turn; the slice inside it (also the card's box) spins: a 3D bar of the card's band between two
+   cuts, with two printed faces and two cut ends. Every face prints the whole title (name, then the other words), cut to
+   its band. Motion blur on the slam only: a filter animation is not composited (it restyles every frame). */
+:root[data-style="impact"] .alert-card .impact-slab {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none; perspective: calc(30 * var(--im-fc)); opacity: 0;
+  animation: impact-slab 480ms linear, impact-snap 80ms linear 400ms;
+}
+:root[data-style="impact"] .alert-card .impact-slab::before { /* light leaking through the gaps */
+  content: ""; position: absolute; left: -6%; right: -6%; top: -60%; bottom: -5%;
+  background: radial-gradient(closest-side, rgb(255 255 255 / 40%), rgb(255 255 255 / 0%) 35%), radial-gradient(closest-side, var(--evt), rgb(0 0 0 / 0%));
+  animation: impact-leak 480ms linear;
+}
+:root[data-style="impact"] .alert-card .impact-tier { /* its band: from --im-c0 to --im-c1 */
+  --im-dy: calc((var(--im-k) - var(--im-up, 2)) * var(--im-gap, 0.42em)); /* the gaps open upward (downward at the top of the source) */
+  position: absolute; inset: 0; transform-style: preserve-3d; transform-origin: 50% calc((var(--im-c0) + var(--im-c1)) / 2);
+  animation: impact-tier 480ms both;
+}
+/* Each slice turns at its own speed, decelerating, a little past its mark and back, like reels stopping: the bottom one at
+   280 ms, the middle one at 330, the top one at 380. Alternate directions, 140 to 200 deg: a slice is mostly seen as a
+   wide printed panel (both faces are printed) and passes edge-on once, fast. */
+:root[data-style="impact"] .alert-card .impact-tier:nth-child(1) { --im-c0: 0px; --im-c1: var(--im-cut1); --im-sd: 380ms; --im-a: -200deg; --im-o: 9deg; --im-dx: 0.6em; --im-tz: -2.5deg; }
+:root[data-style="impact"] .alert-card .impact-tier:nth-child(2) { --im-c0: var(--im-cut1); --im-c1: var(--im-cut2); --im-sd: 330ms; --im-a: 170deg; --im-o: -9deg; --im-dx: -0.5em; --im-tz: 2deg; }
+:root[data-style="impact"] .alert-card .impact-tier:nth-child(3) { --im-c0: var(--im-cut2); --im-c1: 100%; --im-sd: 280ms; --im-a: -140deg; --im-o: 8deg; --im-dx: 0.3em; --im-tz: -1.5deg; }
+:root[data-style="impact"] .alert-card .impact-slice { /* turns around the card's vertical axis, half a thickness behind the card: the front face lands on it */
+  position: absolute; inset: 0; transform-style: preserve-3d;
+  animation: impact-spin var(--im-sd) both;
+}
+:root[data-style="impact"] .alert-card .impact-slice::before, :root[data-style="impact"] .alert-card .impact-slice::after { /* the cut ends: plate, not label */
+  content: ""; position: absolute; top: var(--im-c0); bottom: calc(100% - var(--im-c1)); left: calc(var(--im-t) / -2); width: var(--im-t);
+  -webkit-backface-visibility: hidden; backface-visibility: hidden; background: var(--im-cap); transform: rotateY(-90deg);
+}
+:root[data-style="impact"] .alert-card .impact-slice::after { left: calc(100% - var(--im-t) / 2); transform: rotateY(90deg); }
+/* A face is the whole card face (plate, label, title in place) cut to the slice's band, layered as the card is: the plate
+   is the face's own background, the label lies on it, the text on top. So the lock frame matches in every theme. */
+:root[data-style="impact"] .alert-card .impact-face {
+  position: absolute; inset: 0; box-sizing: border-box;
+  padding: calc(0.6 * var(--im-fc)) max(0px, 100% - var(--im-lw) - var(--im-sg) - var(--im-room)) 0 calc(var(--im-lw) + var(--im-sg));
+  border-radius: calc(0.55 * var(--im-fc)); -webkit-backface-visibility: hidden; backface-visibility: hidden;
+  clip-path: inset(var(--im-c0) 0 calc(100% - var(--im-c1)) 0);
+  background: var(--im-shade), var(--im-plate); box-shadow: inset 0 1px 0 rgb(255 255 255 / 22%), inset 0 calc(-0.08 * var(--im-fc)) 0 var(--evt);
+  font-size: var(--im-nfs); font-style: normal; font-weight: 800; line-height: 1.12; color: var(--im-ink); overflow-wrap: anywhere;
+  --im-ts: 0 calc(0.04 * var(--im-fc)) calc(0.14 * var(--im-fc)) var(--im-glow); text-shadow: var(--im-ts);
+  transform: translateZ(calc(var(--im-t) / 2));
+}
+:root[data-style="impact"][data-overlay="light"] .alert-card .impact-face {
+  box-shadow: inset 0 1px 0 #fff, inset 0 0 0 1px rgb(0 0 0 / 6%), inset 0 calc(-0.08 * var(--im-fc)) 0 var(--evt);
+}
+:root[data-style="impact"][data-overlay="transparent"] .alert-card .impact-face { --im-ts: 0 calc(0.05 * var(--im-fc)) calc(0.25 * var(--im-fc)) var(--im-glow); }
+:root[data-style="impact"] .alert-card .impact-back { transform: translateZ(calc(var(--im-t) / -2)) rotateY(180deg); }
+/* The label, with the card's own geometry at any height: the block (cut 0.9em over the card) and the stripe in one polygon
+   (joined along the top edge). The stripe's tint lies right of the stripe's left edge: a corner gradient in a 0.9em-wide
+   box has its diagonal on that edge whatever the height (48 %, not 50: the edge pixels are tinted, the hard stop falls in
+   the gap, which the polygon cuts away), plus a plain tint further right. */
+:root[data-style="impact"] .alert-card .impact-face::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit;
+  background: linear-gradient(to bottom right, rgb(255 255 255 / 0%) 48%, rgb(255 255 255 / 45%) 0) calc(var(--im-lw) - 0.55 * var(--im-fc)) 0 / calc(0.9 * var(--im-fc)) 100% no-repeat,
+    linear-gradient(rgb(255 255 255 / 45%) 0 0) calc(var(--im-lw) + 0.35 * var(--im-fc)) 0 / 100% 100% no-repeat,
+    linear-gradient(180deg, rgb(255 255 255 / 22%), rgb(255 255 255 / 0%) 30% 68%, rgb(0 0 0 / 20%)), var(--evt);
+  clip-path: polygon(0 0, calc(var(--im-lw) + 0.62 * var(--im-fc)) 0, calc(var(--im-lw) - 0.28 * var(--im-fc)) 100%, calc(var(--im-lw) - 0.55 * var(--im-fc)) 100%,
+    calc(var(--im-lw) + 0.35 * var(--im-fc)) 0, var(--im-lw) 0, calc(var(--im-lw) - 0.9 * var(--im-fc)) 100%, 0 100%);
+}
+:root[data-style="impact"] .alert-card .impact-face::after { /* the rest of the title, under the name, as the card sets it */
+  content: attr(data-title); display: block; margin-top: calc(0.06 * var(--im-nfs));
+  font-size: min(0.95 * var(--im-fc), var(--im-nfs)); font-weight: 600; line-height: 1.25; color: var(--im-sub); text-shadow: var(--im-ts);
+}
+
+/* Light squeezed out of the two seams as the slices lock: streaks shooting out of both ends (behind the card). */
+:root[data-style="impact"] .alert-card .impact-flash {
+  position: absolute; z-index: 0; left: -32%; right: -32%; top: 0; bottom: 0; pointer-events: none; opacity: 0;
+  background: linear-gradient(90deg, rgb(255 255 255 / 0%), #fff 30% 70%, rgb(255 255 255 / 0%)) 0 calc(var(--im-cut1) - 0.08em) / 100% 0.16em no-repeat,
+    linear-gradient(90deg, rgb(255 255 255 / 0%), #fff 30% 70%, rgb(255 255 255 / 0%)) 0 calc(var(--im-cut2) - 0.08em) / 100% 0.16em no-repeat,
+    radial-gradient(closest-side, var(--evt), transparent) 0 calc(var(--im-cut1) - 0.45em) / 100% 0.9em no-repeat,
+    radial-gradient(closest-side, var(--evt), transparent) 0 calc(var(--im-cut2) - 0.45em) / 100% 0.9em no-repeat;
+  animation: impact-flash 280ms cubic-bezier(0.1, 0.7, 0.3, 1) 480ms; /* no fill: hidden until the lock */
+}
+
+/* Floor shadow: grows as the slab comes down to it, stays on the floor. */
+:root[data-style="impact"] .alert-card::after {
+  content: ""; position: absolute; z-index: -1; left: 6%; right: 6%; top: calc(100% + 0.1em); height: 1.1em; pointer-events: none;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 45%), rgb(0 0 0 / 0%)); animation: impact-shadow 1000ms;
+}
+
+/* Splash squeezed out by the lock: 10 jets leave both ends of the two seams, sideways, up and down. A jet is a glossy lead
+   drop trailing a cone of finer, softer spray, juice and clear water (box-shadows: three patterns, every other jet
+   mirrored). The jet is thrown out against the air (fast, then braked) while gravity pulls its drops down, so they fly in
+   arcs. Every third jet is all clear water. All start behind the card: none crosses the text. */
+:root[data-style="impact"] .alert-card .impact-fx { position: absolute; inset: 0; pointer-events: none; }
+:root[data-style="impact"] .alert-card .impact-drop { /* the throw */
+  position: absolute; left: var(--im-x); top: var(--im-y); opacity: 0; color: var(--evt);
+  animation: impact-throw var(--im-dur) cubic-bezier(0.08, 0.75, 0.25, 1) calc(480ms + var(--im-dl)) both;
+}
+:root[data-style="impact"] .alert-card .impact-drop:nth-child(3n + 2) { color: rgb(255 255 255 / 75%); }
+/* The drops, along the jet, in units of the lead drop (font-size). No var() in the shadows: cheap to restyle each frame.
+   Fill both (here and on the throw): the end state stays, so no transform goes back to none (a relayout). */
+:root[data-style="impact"] .alert-card .impact-drop::before {
+  content: ""; position: absolute; width: 1.3em; height: 1em; margin: -0.5em 0 0 -0.65em; border-radius: 50%; font-size: var(--im-s);
+  background: radial-gradient(circle at 62% 34%, rgb(255 255 255 / 90%) 0 14%, rgb(255 255 255 / 0%) 34%), currentColor;
+  box-shadow: inset 0 -0.12em 0.18em rgb(0 0 0 / 28%), -1.4em 0.3em 0.06em -0.16em, -2.2em -0.55em 0.1em -0.26em rgb(255 255 255 / 55%),
+    -2.9em 0.85em 0.06em -0.28em, -3.6em -0.15em 0.12em -0.34em rgb(255 255 255 / 55%), -4.3em 1.3em 0.06em -0.36em,
+    -4.9em -1.05em 0.14em -0.32em rgb(255 255 255 / 55%), -5.7em 0.45em 0.06em -0.4em, -2.6em 1.55em 0.08em -0.38em, -3.9em -1.7em 0.1em -0.4em,
+    -6.6em 0.95em 0.18em -0.42em rgb(255 255 255 / 55%);
+  animation: impact-drip var(--im-dur) calc(480ms + var(--im-dl)) both;
+}
+:root[data-style="impact"] .alert-card .impact-drop:nth-child(3n + 2)::before {
+  box-shadow: inset 0 -0.12em 0.18em rgb(0 0 0 / 28%), -1.1em -0.35em 0.06em -0.2em rgb(255 255 255 / 55%), -1.9em 0.6em 0.06em -0.22em,
+    -2.7em -0.95em 0.12em -0.3em, -3.2em 0.25em 0.06em -0.3em rgb(255 255 255 / 55%), -4em -0.5em 0.06em -0.36em,
+    -4.6em 1.1em 0.14em -0.34em rgb(255 255 255 / 55%), -5.4em -1.4em 0.08em -0.4em, -6.1em 0.7em 0.06em -0.4em, -3.5em 1.75em 0.16em -0.38em rgb(255 255 255 / 55%);
+}
+:root[data-style="impact"] .alert-card .impact-drop:nth-child(3n)::before {
+  box-shadow: inset 0 -0.12em 0.18em rgb(0 0 0 / 28%), -1.5em 0.1em 0.05em -0.14em, -2em 1em 0.1em -0.3em rgb(255 255 255 / 55%),
+    -2.6em -0.6em 0.06em -0.24em, -3.4em 0.55em 0.12em -0.32em rgb(255 255 255 / 55%), -4.1em -1.25em 0.06em -0.34em, -4.8em 0.2em 0.06em -0.38em,
+    -5.3em 1.6em 0.16em -0.36em rgb(255 255 255 / 55%), -6em -0.75em 0.08em -0.4em, -2.9em -1.9em 0.14em -0.4em rgb(255 255 255 / 55%);
+}
+/* The burst: a fan of fine spray out of each end of each seam (fx: upper left, lower right; burst: lower left, upper right;
+   the right ones mirrored), around a soft white core that pops on the impact frame. Thrown in the first 100 ms as
+   streaks, then braking, sinking and fading. Mostly clear water (1 drop in 5 in the event colour), a haze near the
+   seam, heavier drops further out. Generated (fix3/fan.mjs), no var() in the shadows. */
+:root[data-style="impact"] .alert-card .impact-burst { position: absolute; inset: 0; pointer-events: none; }
+:root[data-style="impact"] .alert-card :is(.impact-fx, .impact-burst)::before, :root[data-style="impact"] .alert-card :is(.impact-fx, .impact-burst)::after {
+  --im-m: 1; content: ""; position: absolute; left: 0; top: var(--im-cut1); width: 0.14em; height: 0.14em; margin: -0.07em; border-radius: 50%; opacity: 0;
+  background: rgb(255 255 255 / 90%); color: var(--evt);
+  animation: impact-burst 820ms 480ms forwards; /* not backwards: hidden (opacity 0) until the impact frame, where it starts opaque */
+}
+:root[data-style="impact"] .alert-card .impact-fx::before, :root[data-style="impact"] .alert-card .impact-fx::after {
+  box-shadow: 0 0 0.9em 0.45em rgb(255 255 255 / 60%), -3.01em 3.53em 0 0.04em rgb(255 255 255 / 92%), -3em 1.49em 0 0.03em, -3.49em 0.91em 0 0.04em rgb(255 255 255 / 92%), -3.11em -0.32em 0 0.02em rgb(255 255 255 / 92%), -0.58em -0.38em 0.08em -0.02em rgb(255 255 255 / 60%), -2.92em -1.17em 0 0.01em rgb(255 255 255 / 92%), -1.59em -0.56em 0 0.01em, -0.34em -0.22em 0.08em -0.02em rgb(255 255 255 / 60%), -2.06em -2.04em 0 0.02em rgb(255 255 255 / 92%), -4.96em -0.79em 0 0.06em rgb(255 255 255 / 92%), -1.06em 0.20em 0.08em rgb(255 255 255 / 60%), -0.47em 0.12em 0.08em -0.02em, -0.92em 0.08em 0.08em rgb(255 255 255 / 60%), -3.43em -0.43em 0 0.04em rgb(255 255 255 / 92%), -0.57em 0.53em 0.08em -0.01em rgb(255 255 255 / 60%), -1.48em -0.07em 0.08em -0.01em rgb(255 255 255 / 60%), -0.22em -0.21em 0.08em -0.02em, -2.87em 0.68em 0 0.03em rgb(255 255 255 / 92%), -0.52em -0.03em 0.08em -0.02em rgb(255 255 255 / 60%), -1.12em 0.39em 0.08em -0.01em rgb(255 255 255 / 60%), -2.01em 0.51em 0 0.01em rgb(255 255 255 / 92%), -4.41em 1.98em 0 0.05em, -2.04em -1.60em 0 0.02em rgb(255 255 255 / 92%), -1.93em -0.11em 0 0.01em rgb(255 255 255 / 92%), -0.85em -0.90em 0.08em rgb(255 255 255 / 60%), -2.20em 0.91em 0 0.01em rgb(255 255 255 / 92%), -1.28em 0.33em 0.08em, -0.29em -0.24em 0.08em -0.01em rgb(255 255 255 / 60%), -0.99em 0.85em 0.08em -0.02em rgb(255 255 255 / 60%), -4.12em 3.54em 0 0.05em rgb(255 255 255 / 92%), -0.45em -0.12em 0.08em -0.02em rgb(255 255 255 / 60%), -0.45em -0.08em 0.08em -0.01em, -3.42em -2.92em 0 0.06em rgb(255 255 255 / 92%), -2.51em -2.34em 0 0.02em rgb(255 255 255 / 92%), -0.46em 0.51em 0.08em -0.03em rgb(255 255 255 / 60%), -1.56em 1.82em 0 0.01em rgb(255 255 255 / 92%), -1.62em -0.76em 0 0.01em, -4.24em 1.86em 0 0.04em rgb(255 255 255 / 92%), -4.77em 0.87em 0 0.03em rgb(255 255 255 / 92%), -0.30em -0em 0.08em -0.01em rgb(255 255 255 / 60%);
+}
+:root[data-style="impact"] .alert-card .impact-burst::before, :root[data-style="impact"] .alert-card .impact-burst::after {
+  box-shadow: 0 0 0.9em 0.45em rgb(255 255 255 / 60%), -0.18em 0.21em 0.08em -0.02em rgb(255 255 255 / 60%), -0.77em -0.09em 0.08em -0.03em, -1.86em 1.57em 0 0.02em rgb(255 255 255 / 92%), -4.22em -0.11em 0 0.05em rgb(255 255 255 / 92%), -3em 2.25em 0 0.02em rgb(255 255 255 / 92%), -1.30em 0.73em 0.08em -0.01em rgb(255 255 255 / 60%), -1.69em -1.11em 0 0.01em, -1.79em -1.07em 0 rgb(255 255 255 / 92%), -0.42em 0.01em 0.08em -0.03em rgb(255 255 255 / 60%), -1.51em 1.50em 0 rgb(255 255 255 / 92%), -1.32em -1.38em 0 -0.01em rgb(255 255 255 / 92%), -3.77em 3.06em 0 0.05em, -1.35em -0.15em 0.08em rgb(255 255 255 / 60%), -3.07em 0.41em 0 0.02em rgb(255 255 255 / 92%), -1.01em -0.24em 0.08em rgb(255 255 255 / 60%), -1.93em -0.64em 0 rgb(255 255 255 / 92%), -0.29em 0.11em 0.08em -0.02em, -0.95em -1.23em 0 -0.01em rgb(255 255 255 / 92%), -3.91em 1.52em 0 0.03em rgb(255 255 255 / 92%), -4.79em -1.35em 0 0.04em rgb(255 255 255 / 92%), -2.06em -1.29em 0 0.02em rgb(255 255 255 / 92%), -3.07em 0.76em 0 0.02em, -0.28em 0.20em 0.08em -0.01em rgb(255 255 255 / 60%), -1.83em -0.69em 0 0.01em rgb(255 255 255 / 92%), -0.30em 0.05em 0.08em -0.03em rgb(255 255 255 / 60%), -2.61em -0.92em 0 0.01em rgb(255 255 255 / 92%), -3.35em -0.18em 0 0.01em, -0.86em -0.73em 0.08em rgb(255 255 255 / 60%), -1.04em -1.24em 0 0.01em rgb(255 255 255 / 92%), -5.33em -1.89em 0 0.06em rgb(255 255 255 / 92%), -0.31em 0.06em 0.08em -0.03em rgb(255 255 255 / 60%), -2.02em -1.26em 0 0.01em, -1.17em 0.01em 0.08em -0.02em rgb(255 255 255 / 60%), -1.17em -0.14em 0.08em rgb(255 255 255 / 60%), -0.38em -0.08em 0.08em -0.02em rgb(255 255 255 / 60%), -1.32em 0.86em 0 0.01em rgb(255 255 255 / 92%), -1.60em 0.53em 0 0.01em, -3.17em 1.58em 0 0.03em rgb(255 255 255 / 92%), -1.19em 0.22em 0.08em rgb(255 255 255 / 60%), -1.09em -0.96em 0.08em 0.01em rgb(255 255 255 / 60%);
+}
+:root[data-style="impact"] .alert-card .impact-fx::after { --im-m: -1; left: 100%; top: var(--im-cut2); }
+:root[data-style="impact"] .alert-card .impact-burst::before { top: var(--im-cut2); }
+:root[data-style="impact"] .alert-card .impact-burst::after { --im-m: -1; left: 100%; }
+
+/* Whip pan out, in front of the next alert (it arrives in the same cell at the same moment): the pan wipes the old card
+   off the new one's slices. Its own layer; the blur is a separate animation, so the motion itself stays composited. */
+:root[data-style="impact"] .alert-card.gone {
+  z-index: 1; transform-origin: 0 50%; will-change: transform, filter; animation: impact-out 450ms forwards, impact-out-blur 450ms forwards;
+}
+
+/* Source edges: top and bottom cards pin to their edge, so a taller card leaving does not make the new one jump (base fix
+   candidate: the same two rules without the style). At the top there is only 0.8em above the card: the slab barely
+   falls, its gaps open downward, the top slice does not tilt, and the vanishing point sits on the slab's top edge, so a
+   turning slice grows downward only. */
+:root[data-style="impact"][data-position="top"] .alert-card { align-self: start; --im-fall: -0.25em; --im-up: 0; }
+:root[data-style="impact"][data-position="bottom"] .alert-card { align-self: end; }
+:root[data-style="impact"][data-position="top"] .alert-card .impact-slab { perspective-origin: 50% 0; }
+:root[data-style="impact"][data-position="top"] .alert-card .impact-tier:nth-child(1) { --im-tz: 0deg; }
+:root[data-style="impact"][data-position="top"] .alert-card .impact-slab::before { top: -10%; bottom: -60%; }
+
+@media (max-width: 560px) { /* narrow source: slimmer label, smaller name; the amount always goes under the text */
+  :root[data-style="impact"] .alert-card { --im-lwn: 2.3; --im-sgn: 1; --im-prn: 0.8; --im-name: 1.05; --im-floor: 0.78; }
+  :root[data-style="impact"] .alert-card.impact-money { --im-money: 0; }
+  :root[data-style="impact"] .alert-card .evt-body { flex-basis: 100%; }
+  :root[data-style="impact"] .alert-card .evt-amount { margin: 0 0 0.1em 0.1em; }
+}
+
+@keyframes impact-fall { /* drifts in and hangs while the slices turn, then slams onto the floor at 480 ms: squash from the
+   bottom, a decaying camera shake, one rebound */
+  0% { transform: translate(0, var(--im-fall, -2.6em)) scale(0.95); animation-timing-function: cubic-bezier(0.2, 0.6, 0.35, 1); }
+  33% { transform: translate(0, calc(var(--im-fall, -2.6em) * 0.42)) scale(0.97); animation-timing-function: cubic-bezier(0.6, 0, 0.95, 0.55); }
+  48% { transform: translate(0, 0) scale(1); animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); }
+  51.6% { transform: translate(0.15em, 0.05em) scale(1.05, 0.9); animation-timing-function: ease-in-out; }
+  55.6% { transform: translate(-0.13em, -0.02em) scale(1.01, 0.98); animation-timing-function: ease-in-out; }
+  59.6% { transform: translate(0.08em, -0.12em) scale(0.99, 1.02); animation-timing-function: ease-in-out; }
+  64.4% { transform: translate(-0.04em, -0.16em) scale(0.995, 1.01); animation-timing-function: cubic-bezier(0.5, 0, 0.6, 1); }
+  72.4% { transform: translate(0.015em, -0.03em) scale(1); animation-timing-function: ease-in-out; }
+  82% { transform: translate(0, 0.02em) scale(1.005, 0.995); animation-timing-function: ease-out; }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes impact-shadow { /* the same timing as the fall, so it stays on the floor */
+  0% { opacity: 0.1; transform: translateY(calc(var(--im-fall, -2.6em) * -1)) scale(0.3, 0.5); animation-timing-function: cubic-bezier(0.2, 0.6, 0.35, 1); }
+  33% { opacity: 0.4; transform: translateY(calc(var(--im-fall, -2.6em) * -0.42)) scale(0.62, 0.72); animation-timing-function: cubic-bezier(0.6, 0, 0.95, 0.55); }
+  48% { opacity: 1; transform: translateY(0) scale(1.08, 1); animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); }
+  59.6% { opacity: 0.85; transform: translateY(0.12em) scale(0.96, 0.9); }
+  64.4% { opacity: 0.8; transform: translateY(0.16em) scale(0.94, 0.88); }
+  72.4% { opacity: 1; transform: translateY(0.03em) scale(1); }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes impact-slab { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 1; } } /* visible until the impact */
+@keyframes impact-snap { 0% { filter: blur(0); } 70% { filter: blur(0.1em); } 100% { filter: blur(0.04em); } }
+@keyframes impact-leak { 0% { opacity: 0; } 15% { opacity: 0.55; } 70% { opacity: 0.7; } 100% { opacity: 0.25; } }
+@keyframes impact-tier { /* apart, offset and tilted, drifting into line while the slices turn (the gaps narrow a little): at 400 ms
+   they are aligned in a three-quarter view; then they close up and the stack whips round to face the camera, accelerating,
+   and meets at 466 ms (the card's settle carries the turn on) */
+  0% { transform: translate(var(--im-dx), var(--im-dy)) rotateZ(var(--im-tz)) rotateY(var(--im-ry, -32deg)); animation-timing-function: cubic-bezier(0.3, 0.4, 0.4, 1); }
+  83% { transform: translate(0, calc(var(--im-dy) * 0.78)) rotateZ(0deg) rotateY(calc(var(--im-ry, -32deg) * 0.88)); animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.45); }
+  97%, 100% { transform: translate(0, 0) rotateZ(0deg) rotateY(0deg); }
+}
+@keyframes impact-spin { /* decelerating, a little past the front, back */
+  0% { transform: translateZ(calc(var(--im-t) / -2)) rotateY(var(--im-a)); animation-timing-function: cubic-bezier(0.3, 0.35, 0.45, 1); }
+  80% { transform: translateZ(calc(var(--im-t) / -2)) rotateY(var(--im-o)); animation-timing-function: ease-in-out; }
+  100% { transform: translateZ(calc(var(--im-t) / -2)) rotateY(0deg); }
+}
+@keyframes impact-flash { 0% { opacity: 1; transform: scaleX(0.85); } 25% { opacity: 0.9; } 100% { opacity: 0; transform: scaleX(1.3); } }
+@keyframes impact-hide { from { opacity: 0; } to { opacity: 1; } } /* step-end: hidden until the impact (a real change, so it runs on the compositor) */
+@keyframes impact-settle { /* the lock rings through the label: a firm overshoot and settle */
+  0% { transform: perspective(32em) rotateY(0deg); animation-timing-function: cubic-bezier(0.1, 0.6, 0.3, 1); }
+  20% { transform: perspective(32em) rotateY(8deg); animation-timing-function: ease-in-out; }
+  48% { transform: perspective(32em) rotateY(-3deg); animation-timing-function: ease-in-out; }
+  74% { transform: perspective(32em) rotateY(1deg); animation-timing-function: ease-in-out; }
+  100% { transform: perspective(32em) rotateY(0deg); }
+}
+@keyframes impact-icon { from { opacity: 0; transform: scale(0.3) rotate(-30deg); } 60% { opacity: 1; transform: scale(1.18) rotate(6deg); } }
+@keyframes impact-rise { from { opacity: 0; transform: translateY(0.5em); } }
+@keyframes impact-tag { from { opacity: 0; transform: skewX(-8deg) scale(0.4) rotate(-12deg); } }
+@keyframes impact-sweep { from { transform: translateX(-130%) skewX(-20deg); } to { transform: translateX(330%) skewX(-20deg); } }
+@keyframes impact-throw { /* out along the jet, braked by the air (the animation's ease-out) */
+  0% { opacity: 0; transform: translate(0, 0); }
+  3% { opacity: 1; }
+  55% { opacity: 1; animation-timing-function: linear; }
+  100% { opacity: 0; transform: translate(var(--im-tx), var(--im-ty)); }
+}
+@keyframes impact-drip { /* a streak that rounds off into drops; gravity, faster and faster (screen space: before the rotation; in units
+   of the drop, so the bigger drops fall further) */
+  0% { transform: translateY(0) rotate(var(--im-r)) scale(0.35, calc(var(--im-f) * 0.35)); animation-timing-function: cubic-bezier(0.1, 0.7, 0.3, 1); }
+  14% { transform: translateY(0.2em) rotate(var(--im-r)) scale(1.5, calc(var(--im-f) * 0.8)); animation-timing-function: linear; }
+  40% { transform: translateY(1.05em) rotate(var(--im-r)) scale(1.12, calc(var(--im-f) * 0.95)); animation-timing-function: linear; }
+  70% { transform: translateY(4.1em) rotate(var(--im-r)) scale(1, var(--im-f)); animation-timing-function: linear; }
+  100% { transform: translateY(9.2em) rotate(var(--im-r)) scale(0.85, calc(var(--im-f) * 0.85)); }
+}
+@keyframes impact-burst { /* out as streaks in 100 ms (wide before tall), then braking, sinking under gravity, fading */
+  0% { opacity: 1; transform: translateY(0) scale(calc(var(--im-m) * 0.2), 0.1); animation-timing-function: cubic-bezier(0.1, 0.8, 0.3, 1); }
+  12% { opacity: 1; transform: translateY(0.05em) scale(calc(var(--im-m) * 0.95), 0.7); animation-timing-function: cubic-bezier(0.25, 0.5, 0.5, 1); }
+  45% { opacity: 0.85; transform: translateY(0.6em) scale(calc(var(--im-m) * 1.15), 1); animation-timing-function: cubic-bezier(0.4, 0, 0.8, 0.6); }
+  100% { opacity: 0; transform: translateY(2.4em) scale(calc(var(--im-m) * 1.3), 1.15); }
+}
+@keyframes impact-out { /* a whip pan to the right from the first frame: anchored on its trailing (left) edge, so it smears
+   forward and only ever moves right, leaning into the move; fading from 126 ms, gone at 330 ms. Transform and opacity only. */
+  0% { transform: translateX(0) scaleX(1) skewX(0deg); opacity: 1; animation-timing-function: cubic-bezier(0.35, 0.05, 0.75, 0.45); }
+  28% { transform: translateX(12%) scaleX(1.45) skewX(-9deg); opacity: 1; animation-timing-function: cubic-bezier(0.4, 0.14, 0.8, 0.6); }
+  73%, 100% { transform: translateX(135%) scaleX(2.4) skewX(-16deg); opacity: 0; }
+}
+@keyframes impact-out-blur { /* the pan's blur alone (main thread), on the same curve */
+  0% { filter: blur(0); animation-timing-function: cubic-bezier(0.35, 0.05, 0.75, 0.45); }
+  28% { filter: blur(0.12em); animation-timing-function: cubic-bezier(0.4, 0.14, 0.8, 0.6); }
+  73%, 100% { filter: blur(0.5em); }
+}
+
+/* ---- eclipse: light is the only material. A star lights up, two folded beams of light converge on it and flash into a small
+   ring (the icon); a dark corridor then opens from the ring between two curved walls of light that pinch around the text and
+   curve away above and below (the throat of a tunnel), closed by thin arcs of light; the walls' glow keeps growing, a bead flares
+   under the text and opens into the eclipse rim, a crescent orbits the ring. Thin luminous lines, soft bloom, slow-in/slow-out.
+   Extra elements come from decorate.js (beams, two frames holding the glow / sheen and corridor / walls SVGs, rim + limb, bead,
+   orbit). An alert can leave before its entry is over (alertSeconds can be 1), so no exit replaces a running entry animation:
+   the tunnel's exit runs on its frames, and a small element's exit is appended to its entry list (--ecl-in). */
+:root[data-style="eclipse"] .alert-card {
+  --ecl-pt: 0.45em;  /* .evt padding-top */
+  --ecl-gap: 0.45em; /* .evt gap (ring to text) */
+  --ecl-ring: 2.3em; /* the ring (icon) */
+  --ecl-cy: calc(var(--ecl-pt) + var(--ecl-ring) / 2); /* ring centre, from the card top */
+  /* how far the tunnel box runs on above and below the card: 8.14 % of the card height + 1.047em, i.e. 7 % of the box + 0.9em
+     (see .ecl-tunnel). 1.6em for a follow card; it grows with the card so the arcs stay around the text instead of coming down
+     10 % of the card height into a tall card (a message) */
+  --ecl-over: calc(8.14% + 1.047em);
+  /* tunnel overhang per side: 15 % of the card puts the walls' throat on the card edges. In a tight source it shrinks, down to
+     the room left (so it never crosses the source edge); the throat then moves inside the card by 11.5 % - 0.77 x the overhang,
+     and the text padding (.evt) grows by as much, plus 0.35em of air */
+  --ecl-wx: min(max(8%, min(15%, (100vw - 100%) / 2 - 0.2em)), (100vw - 100%) / 2);
+  --ecl-open: eclipse-open 1.2s cubic-bezier(0.16, 0.8, 0.2, 1) 0.375s backwards;
+  --ecl-core: #f2f6ff;
+  --ecl-glow: color-mix(in srgb, var(--evt) 78%, #86a8ff);
+  --ecl-pool: rgb(7 10 26 / 90%);
+  --ecl-disc: #0a1028;
+  --ecl-text: #f4f7ff;
+  --ecl-sub: #b9c6e4;
+  isolation: isolate; min-width: min(100%, 14em);
+  margin-block: 0.8em; /* + the page's 0.8em padding: room for the walls' overhang at position top / bottom */
+}
+:root[data-style="eclipse"] .alert-card .evt {
+  z-index: 1; flex-direction: column; align-items: center; gap: var(--ecl-gap); text-align: center; color: var(--ecl-text);
+  padding: var(--ecl-pt) max(min(1.4em, 7vw), 11.5% - 0.77 * var(--ecl-wx) + 0.35em) 1.1em;
+}
+/* ring: a small hollow circle of light around the icon. z-index 1: always its own layer, above the text it swallows at the exit */
+:root[data-style="eclipse"] .alert-card .evt-icon {
+  position: relative; z-index: 1; width: var(--ecl-ring); height: var(--ecl-ring); border-radius: 50%; color: var(--ecl-core); background: var(--ecl-disc);
+  border: 0.075em solid var(--ecl-core);
+  box-shadow: 0 0 0.25em var(--ecl-glow), 0 0 1em color-mix(in srgb, var(--ecl-glow) 45%, transparent), inset 0 0 0.4em color-mix(in srgb, var(--ecl-glow) 60%, transparent);
+  animation: eclipse-ring 0.75s backwards;
+}
+:root[data-style="eclipse"] .alert-card .evt-icon > :not(.ecl-orbit) { animation: eclipse-glyph 0.45s ease-out 0.425s backwards; }
+:root[data-style="eclipse"] .alert-card .evt-icon svg { width: 1.1em; height: 1.1em; }
+:root[data-style="eclipse"] .alert-card .evt-icon img { width: 70%; height: 70%; border-radius: 50%; }
+/* one thin ping ring leaves the ring at the contact */
+:root[data-style="eclipse"] .alert-card .evt-icon::before {
+  content: ""; position: absolute; inset: -0.075em; border-radius: 50%; border: 0.05em solid var(--ecl-core); pointer-events: none;
+  animation: eclipse-ping 0.9s cubic-bezier(0.1, 0.6, 0.2, 1) 0.375s both;
+}
+/* horizon through the ring, behind its disc (z-index -1 in .evt, whatever the ring does): it draws out of the ring, fading in,
+   with a glow that shortens as it slows; at the exit it retracts into the ring */
+:root[data-style="eclipse"] .alert-card .evt::after {
+  content: ""; position: absolute; z-index: -1; left: 50%; top: var(--ecl-cy); width: 10em; height: 0.5em; margin: -0.25em -5em; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--ecl-glow) 30%, var(--ecl-core) 45% 55%, var(--ecl-glow) 70%, transparent) 50% / 100% 0.06em no-repeat,
+    linear-gradient(transparent, color-mix(in srgb, var(--ecl-glow) 22%, transparent), transparent);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 30% 70%, transparent); mask: linear-gradient(90deg, transparent, #000 30% 70%, transparent);
+  opacity: 0.55; --ecl-in: eclipse-horizon 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.375s backwards; animation: var(--ecl-in);
+}
+/* the star, then the flash with an anamorphic streak when the beams touch the ring (375 ms: the chime's 4th note). It sits
+   above the text (z-index 3), but is gone by 0.9 s, before the words are fully in. */
+:root[data-style="eclipse"] .alert-card .evt::before {
+  content: ""; position: absolute; z-index: 3; left: 50%; top: var(--ecl-cy); width: 10em; height: 10em; margin: -5em; pointer-events: none;
+  background: radial-gradient(circle, #fff 0 2%, color-mix(in srgb, var(--ecl-glow) 80%, transparent) 5%, color-mix(in srgb, var(--ecl-glow) 18%, transparent) 14%, transparent 36%),
+    linear-gradient(transparent 49.6%, var(--ecl-core) 50%, transparent 50.4%);
+  -webkit-mask: radial-gradient(closest-side, #000, transparent); mask: radial-gradient(closest-side, #000, transparent);
+  animation: eclipse-flash 0.9s both;
+}
+/* beams: a bright line on the crease of a folded plane of light, one from each side, slightly tilted, pivoting on the ring.
+   They hand their light to the ring at the contact (83.3 %, 375 ms) and go out as the corridor opens from it. */
+:root[data-style="eclipse"] .alert-card .ecl-beam { position: absolute; z-index: -2; top: var(--ecl-cy); width: min(15em, 45vw); height: 0; pointer-events: none; }
+:root[data-style="eclipse"] .alert-card .ecl-bl { right: calc(50% + var(--ecl-ring) / 2); transform-origin: calc(100% + var(--ecl-ring) / 2) 0; animation: eclipse-beam-l 0.45s both; }
+:root[data-style="eclipse"] .alert-card .ecl-br { left: calc(50% + var(--ecl-ring) / 2); transform-origin: calc(var(--ecl-ring) / -2) 0; animation: eclipse-beam-r 0.45s both; }
+:root[data-style="eclipse"] .alert-card .ecl-beam::before { /* the folded plane: a bright facet above the crease, a dimmer one below */
+  content: ""; position: absolute; left: 0; right: 0; top: -1.3em; height: 4.6em; transform-origin: 50% 1.3em;
+  background: linear-gradient(color-mix(in srgb, var(--ecl-glow) 10%, transparent), color-mix(in srgb, var(--ecl-glow) 62%, transparent) 1.3em, color-mix(in srgb, var(--ecl-glow) 26%, transparent) 1.3em, transparent);
+  clip-path: polygon(0 0, 100% 1.3em, 0 100%);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 55%); mask: linear-gradient(90deg, transparent, #000 55%);
+  animation: eclipse-plane 0.45s both;
+}
+:root[data-style="eclipse"] .alert-card .ecl-br::before { clip-path: polygon(100% 0, 0 1.3em, 100% 100%); -webkit-mask: linear-gradient(-90deg, transparent, #000 55%); mask: linear-gradient(-90deg, transparent, #000 55%); }
+:root[data-style="eclipse"] .alert-card .ecl-beam::after { /* the line */
+  content: ""; position: absolute; left: 0; right: 0; top: -0.045em; height: 0.09em; border-radius: 1em;
+  background: linear-gradient(90deg, transparent, var(--ecl-glow) 45%, var(--ecl-core)); box-shadow: 0 0 0.4em color-mix(in srgb, var(--ecl-glow) 70%, transparent);
+}
+:root[data-style="eclipse"] .alert-card .ecl-br::after { background: linear-gradient(-90deg, transparent, var(--ecl-glow) 45%, var(--ecl-core)); }
+/* glow, sheen, corridor and walls: four SVGs sharing one box (the card, its overhang above and below, the tunnel overhang on the
+   sides), all opening from the ring line (from zero height: nothing shows before the contact, and the corridor is never
+   translucent). Their frames have the card's box and only move at the exit (they are no stacking context before it, so the
+   SVGs' z-index order holds: glow, corridor, sheen, walls; at the exit the sheen goes under the corridor, which it never overlaps) */
+:root[data-style="eclipse"] .alert-card .ecl-frame { position: absolute; inset: 0; pointer-events: none; transform-origin: 50% var(--ecl-cy); }
+:root[data-style="eclipse"] .alert-card .ecl-tunnel {
+  position: absolute; z-index: -1; left: calc(-1 * var(--ecl-wx)); top: calc(-1 * var(--ecl-over));
+  width: calc(100% + 2 * var(--ecl-wx)); height: calc(100% + 2 * var(--ecl-over)); overflow: visible; pointer-events: none;
+  transform-origin: 50% calc(7% + 0.9em + var(--ecl-cy)); /* the ring line: --ecl-over + --ecl-cy, in % of the box itself */
+  animation: var(--ecl-open);
+}
+:root[data-style="eclipse"] .ecl-tunnel path { fill: none; stroke-linecap: round; }
+:root[data-style="eclipse"] .ecl-corridor path { fill: var(--ecl-pool); }
+/* light leads: the walls (core, bloom, arcs, tips) are lit from the first frame of the opening (75 % -> 100 %); their glow and
+   the sheen are the reference's exposure ramp (0 -> 55 % at ~615 ms -> 100 % at 2.4 s). The glow is a wide halo under the
+   corridor, so it only shows outside the walls, softened by a static blur (the compositor re-applies it only while the glow
+   itself animates, 0.375-2.375 s; at rest and at the exit it is painted once). The sheen lights the outside of each wall and falls
+   off outward */
+:root[data-style="eclipse"] .alert-card .ecl-walls {
+  z-index: 0; animation: var(--ecl-open), eclipse-lit 1.5s ease-out 0.375s backwards;
+  /* the tips fade out between the arcs' apex (6 %) and 1.6em past the card (7 % - 0.7em), where the source edge is at position
+     top / bottom */
+  -webkit-mask: linear-gradient(transparent calc(7% - 0.7em), #000 calc(6% - 0.05em) calc(94% + 0.05em), transparent calc(93% + 0.7em));
+  mask: linear-gradient(transparent calc(7% - 0.7em), #000 calc(6% - 0.05em) calc(94% + 0.05em), transparent calc(93% + 0.7em));
+}
+:root[data-style="eclipse"] .alert-card .ecl-sheen {
+  z-index: 0; animation: var(--ecl-open), eclipse-expose 2s ease-out 0.375s backwards;
+  -webkit-mask: linear-gradient(90deg, transparent 2%, #000 11.5% 88.5%, transparent 98%); mask: linear-gradient(90deg, transparent 2%, #000 11.5% 88.5%, transparent 98%);
+}
+:root[data-style="eclipse"] .alert-card .ecl-glow { z-index: -2; filter: blur(0.25em); animation: var(--ecl-open), eclipse-expose 2s ease-out 0.375s backwards; }
+:root[data-style="eclipse"] .ecl-sheen path { fill: var(--ecl-glow); fill-opacity: 0.3; }
+:root[data-style="eclipse"] .ecl-glow .ecl-halo { stroke: var(--ecl-glow); stroke-width: 1em; stroke-opacity: 0.35; }
+:root[data-style="eclipse"] .ecl-glow .ecl-haze { stroke: var(--ecl-glow); stroke-width: 0.5em; stroke-opacity: 0.25; }
+:root[data-style="eclipse"] .ecl-walls .ecl-bloom { stroke: var(--ecl-glow); stroke-width: 0.21em; stroke-opacity: 0.5; }
+:root[data-style="eclipse"] .ecl-walls .ecl-edge { stroke: var(--ecl-core); stroke-width: max(1.5px, 0.065em); }
+:root[data-style="eclipse"] .ecl-walls .ecl-line { stroke: var(--ecl-core); stroke-width: max(1px, 0.045em); stroke-opacity: 0.6; }
+/* the eclipse rim under the text: a bead flares at its apex, then the arc opens outward from it along a fixed curve. The window
+   (.ecl-rim, masked) widens with scaleX while the arc inside (.ecl-limb) gets the inverse scale, so the light runs along the
+   curve instead of stretching: a mask-size opening made of transforms only (keyframes: geometric steps, < 3 % width error). */
+:root[data-style="eclipse"] .alert-card .ecl-rim {
+  position: absolute; z-index: 0; left: 8%; right: 8%; bottom: -0.35em; height: 1.6em; pointer-events: none; opacity: 0.85;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 32% 68%, transparent); mask: linear-gradient(90deg, transparent, #000 32% 68%, transparent);
+  --ecl-in: eclipse-window 0.9s linear 0.875s backwards; animation: var(--ecl-in);
+}
+:root[data-style="eclipse"] .alert-card .ecl-limb {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 1em; border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  border-top: 0.07em solid var(--ecl-core); box-shadow: 0 -0.15em 0.6em -0.25em var(--ecl-glow), inset 0 0.3em 0.5em -0.3em var(--ecl-glow);
+  animation: eclipse-limb 0.9s linear 0.875s backwards;
+}
+:root[data-style="eclipse"] .alert-card .ecl-limb::before { /* the hot spot: where the light grazes the limb it burns thicker */
+  content: ""; position: absolute; inset: -0.07em 0 0; border-radius: inherit; border-top: 0.13em solid var(--ecl-core);
+  -webkit-mask: linear-gradient(90deg, transparent 40%, #000 50%, transparent 60%); mask: linear-gradient(90deg, transparent 40%, #000 50%, transparent 60%);
+}
+:root[data-style="eclipse"] .alert-card .ecl-bead { /* on the rim apex: rim bottom + limb height - half its stroke */
+  position: absolute; z-index: 0; left: 50%; bottom: calc(-0.35em + 1em - 0.035em); width: 0; height: 0; pointer-events: none; opacity: 0.8;
+  --ecl-in: eclipse-bead 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.825s backwards; animation: var(--ecl-in);
+}
+:root[data-style="eclipse"] .alert-card .ecl-bead::before, :root[data-style="eclipse"] .alert-card .ecl-bead::after { content: ""; position: absolute; left: 0; top: 0; }
+:root[data-style="eclipse"] .alert-card .ecl-bead::before {
+  width: 0.8em; height: 0.8em; margin: -0.4em; border-radius: 50%;
+  background: radial-gradient(closest-side, var(--ecl-core) 22%, color-mix(in srgb, var(--ecl-core) 70%, transparent) 40%, color-mix(in srgb, var(--ecl-glow) 30%, transparent) 65%, transparent);
+}
+:root[data-style="eclipse"] .alert-card .ecl-bead::after { /* anamorphic streak */
+  width: 6em; height: 1px; margin: -0.5px -3em; box-shadow: 0 0 0.2em var(--ecl-glow);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ecl-glow) 70%, transparent) 25%, var(--ecl-core) 50%, color-mix(in srgb, var(--ecl-glow) 70%, transparent) 75%, transparent);
+  animation: eclipse-streak 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.875s both;
+}
+/* a crescent of light orbiting the ring (thick middle, needle tips), inside the icon so it follows the ring and its exit:
+   the only idle motion (one small element, transform only) */
+:root[data-style="eclipse"] .alert-card .ecl-orbit {
+  position: absolute; inset: -0.5em; border-radius: 50%; pointer-events: none;
+  box-shadow: inset 0.1em 0.12em 0.03em var(--ecl-core), -0.13em -0.15em 0.45em -0.15em var(--ecl-glow);
+  animation: eclipse-orbit-in 0.8s ease-out 0.925s backwards, eclipse-spin 18s linear 0.925s infinite;
+}
+/* text: white light with a soft bloom; the name in a pastel of the event colour. In a narrow source the title gets a little
+   smaller (7.4vw: only below ~435 px at the default size), and smaller still when its longest word (--ecl-n characters, from
+   decorate.js) would not fit a line: n characters (~0.6em each) fit in 116vw / n, the line being ~72 % of the source. It stops
+   at 75 % (~21 characters at 400 px), so it stays above the meta line: a longer word wraps at its seams */
+:root[data-style="eclipse"] .alert-card .evt-title {
+  font-size: clamp(min(0.8625em, 5.55vw), 116vw / var(--ecl-n, 1), min(1.15em, 7.4vw)); font-weight: 550; line-height: 1.25; letter-spacing: 0.01em; color: var(--ecl-text);
+  text-shadow: 0 0 0.6em color-mix(in srgb, var(--ecl-glow) 55%, transparent);
+}
+/* a word longer than a whole line (a reward title) breaks inside rather than crossing the walls; decorate.js gives long words
+   break points at their seams (lower to upper case or digit, after _ . -), used first */
+:root[data-style="eclipse"] .alert-card .evt-title .w { overflow-wrap: anywhere; animation: eclipse-word 0.75s cubic-bezier(0.2, 0.75, 0.25, 1) calc(0.475s + var(--i) * 0.055s) backwards; }
+:root[data-style="eclipse"] .alert-card .evt-user { font-weight: 800; color: color-mix(in srgb, var(--evt) 45%, #fff); text-shadow: 0 0 0.08em rgb(255 255 255 / 30%), 0 0 0.7em var(--ecl-glow); }
+:root[data-style="eclipse"] .alert-card .evt-text { color: var(--ecl-sub); font-size: 0.9em; animation: eclipse-rise 0.6s ease-out 0.705s backwards; }
+/* the meta line carries names the viewer chose (gift recipient, membership level, gift name): no case change, light tracking */
+:root[data-style="eclipse"] .alert-card .evt-meta { justify-content: center; color: var(--ecl-sub); font-size: 0.72em; letter-spacing: 0.04em; animation: eclipse-rise 0.6s ease-out 0.805s backwards; }
+:root[data-style="eclipse"] .alert-card .evt-amount {
+  color: var(--ecl-core); background: none; border: 0.06em solid var(--ecl-core);
+  box-shadow: 0 0 0.4em color-mix(in srgb, var(--ecl-glow) 60%, transparent), inset 0 0 0.3em color-mix(in srgb, var(--ecl-glow) 40%, transparent);
+  --ecl-in: eclipse-rise 0.6s ease-out 0.855s backwards; animation: var(--ecl-in);
+}
+
+/* light: the same lines in ink on a white corridor; the bead flares in the glow colour around a white core */
+:root[data-style="eclipse"][data-overlay="light"] .alert-card {
+  --ecl-core: color-mix(in srgb, var(--evt) 60%, #101a3c); --ecl-glow: color-mix(in srgb, var(--evt) 70%, #6f8dff);
+  --ecl-pool: rgb(255 255 255 / 95%); --ecl-disc: #fff; --ecl-text: #121a33; --ecl-sub: #4a5679;
+}
+:root[data-style="eclipse"][data-overlay="light"] .alert-card .evt-title { text-shadow: none; }
+:root[data-style="eclipse"][data-overlay="light"] .alert-card .evt-user { color: var(--ecl-core); text-shadow: none; }
+:root[data-style="eclipse"][data-overlay="light"] .alert-card .ecl-bead::before { background: radial-gradient(closest-side, #fff 20%, color-mix(in srgb, var(--ecl-glow) 55%, transparent) 45%, transparent); }
+:root[data-style="eclipse"][data-overlay="light"] .alert-card .ecl-bead::after { background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ecl-glow) 60%, transparent) 25%, var(--ecl-glow) 50%, color-mix(in srgb, var(--ecl-glow) 60%, transparent) 75%, transparent); }
+/* transparent: a lighter corridor, a dark contact shadow under the words for bright scenes */
+:root[data-style="eclipse"][data-overlay="transparent"] .alert-card { --ecl-pool: rgb(6 10 28 / 76%); --ecl-sub: #d3dbf0; }
+:root[data-style="eclipse"][data-overlay="transparent"] .alert-card .evt-title { text-shadow: 0 0.05em 0.15em rgb(0 0 0 / 70%), 0 0 0.6em color-mix(in srgb, var(--ecl-glow) 55%, transparent); }
+:root[data-style="eclipse"][data-overlay="transparent"] .alert-card .evt-user { text-shadow: 0 0.05em 0.15em rgb(0 0 0 / 70%), 0 0 0.08em rgb(255 255 255 / 30%), 0 0 0.7em var(--ecl-glow); }
+/* Chromium < 111 (OBS 28-30) has no color-mix(): the raw event colour keeps the lines' bloom, the star, the bead, the name and
+   the horizon (its glow band, a color-mix, is dropped) */
+@supports not (color: color-mix(in srgb, red, red)) {
+  :root[data-style="eclipse"] .alert-card { --ecl-glow: var(--evt); }
+  :root[data-style="eclipse"][data-overlay="light"] .alert-card { --ecl-core: #101a3c; --ecl-glow: var(--evt); }
+  :root[data-style="eclipse"] .alert-card .evt-user { color: var(--evt); }
+  :root[data-style="eclipse"] .alert-card .evt::after { background: linear-gradient(90deg, transparent, var(--ecl-glow) 30%, var(--ecl-core) 45% 55%, var(--ecl-glow) 70%, transparent) 50% / 100% 0.06em no-repeat; }
+  :root[data-style="eclipse"] .alert-card .evt::before { background: radial-gradient(circle, #fff 0 2%, var(--ecl-glow) 5%, transparent 24%), linear-gradient(transparent 49.6%, var(--ecl-core) 50%, transparent 50.4%); }
+  :root[data-style="eclipse"] .alert-card .ecl-bead::before { background: radial-gradient(closest-side, var(--ecl-core) 22%, var(--ecl-glow) 40%, transparent); }
+  :root[data-style="eclipse"][data-overlay="light"] .alert-card .ecl-bead::before { background: radial-gradient(closest-side, #fff 20%, var(--ecl-glow) 45%, transparent); }
+}
+/* the cards differ in height: pin them to the edge they sit on, so the next alert does not move when the old one is removed.
+   At center their tops sit on one line a little above the middle (a follow card looks centred), so the next alert's star is
+   born where the old ring closes. A card too tall for that line moves itself up (translate: % of its own height, so the
+   other card never moves) to end 1.6em above the bottom, or, taller than the source, to be centred like before */
+:root[data-style="eclipse"]:is([data-position="top"], [data-position="center"]) .ov-list { align-items: start; }
+:root[data-style="eclipse"][data-position="bottom"] .ov-list { align-items: end; }
+:root[data-style="eclipse"][data-position="center"] #app.ov { justify-content: flex-start; padding-top: max(0.8em, 50vh - 4.5em); }
+:root[data-style="eclipse"][data-position="center"] .ov-list > .alert-card { /* top: min(line, max(bottom - 1.6em - H, min(centred, 1.6em))) */
+  transform: translateY(min(0px, max(100vh - 1.6em - 100%, min(50vh - 50%, 1.6em)) - max(1.6em, 50vh - 3.7em)));
+}
+
+/* exit: the glow dims, the walls take a short breath and shut like an eyelid (the corridor stays dark until it is a sliver), the
+   text is drawn up into the ring and disappears under it, the ring (and its crescent) closes to a point with a last glint; the
+   amount, the rim and its bead go out first, the horizon retracts into the ring */
+:root[data-style="eclipse"] .alert-card.gone { animation: eclipse-out 0.45s linear forwards; }
+:root[data-style="eclipse"] .alert-card.gone .ecl-frame { animation: eclipse-shut 0.36s ease-out forwards; }
+:root[data-style="eclipse"] .alert-card.gone .ecl-aura { animation: eclipse-shut 0.36s ease-out forwards, eclipse-vanish 0.2s ease-in forwards; }
+:root[data-style="eclipse"] .alert-card.gone .evt-body { /* its top centre goes to the ring centre while it shrinks into it */
+  transform-origin: 50% 0; animation: eclipse-pull 0.3s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+}
+:root[data-style="eclipse"] .alert-card.gone .evt-amount { animation: var(--ecl-in), eclipse-sink 0.14s ease-out forwards; }
+:root[data-style="eclipse"] .alert-card.gone .evt-icon { animation: eclipse-close 0.45s cubic-bezier(0.6, 0, 0.8, 0.4) forwards; }
+:root[data-style="eclipse"] .alert-card.gone .evt::before { animation: eclipse-glint 0.45s ease-out forwards; }
+:root[data-style="eclipse"] .alert-card.gone .evt::after { animation: var(--ecl-in), eclipse-retract 0.3s cubic-bezier(0.6, 0, 0.8, 0.4) forwards; }
+:root[data-style="eclipse"] .alert-card.gone :is(.ecl-rim, .ecl-bead) { animation: var(--ecl-in), eclipse-vanish 0.2s ease-in forwards; }
+
+@keyframes eclipse-beam-l {
+  0% { opacity: 0; transform: rotate(9deg) translateX(-55%); filter: blur(0.2em); animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+  25% { opacity: 1; }
+  83.3% { opacity: 1; transform: rotate(9deg) translateX(0); filter: none; animation-timing-function: ease-out; }
+  100% { opacity: 0; transform: rotate(9deg) translateX(-6%); filter: none; }
+}
+@keyframes eclipse-beam-r {
+  0% { opacity: 0; transform: rotate(-14deg) translateX(55%); filter: blur(0.2em); animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+  25% { opacity: 1; }
+  83.3% { opacity: 1; transform: rotate(-14deg) translateX(0); filter: none; animation-timing-function: ease-out; }
+  100% { opacity: 0; transform: rotate(-14deg) translateX(6%); filter: none; }
+}
+@keyframes eclipse-plane { /* unfolds from its crease on the way in, folds back after the contact */
+  0% { opacity: 0.5; transform: scaleY(0.4); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+  76% { opacity: 1; transform: none; }
+  83.3% { transform: none; animation-timing-function: ease-in; }
+  100% { transform: scaleY(0.2); }
+}
+@keyframes eclipse-flash { /* the star grows while the beams converge; the burst at 41.7 % is the contact (375 ms) */
+  0% { opacity: 0; transform: scale(0.1); }
+  7% { opacity: 0.8; transform: scale(0.12); }
+  41.7% { opacity: 1; transform: scale(0.4); animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1); }
+  47% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(1.35); }
+}
+@keyframes eclipse-ring {
+  0%, 44% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1); }
+  68% { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes eclipse-glyph { from { opacity: 0; transform: scale(0.5); } }
+@keyframes eclipse-ping { from { opacity: 0.8; transform: scale(1); } to { opacity: 0; transform: scale(2.2); } }
+@keyframes eclipse-horizon { 0% { opacity: 0; transform: scale(0, 2.4); } 25% { opacity: 1; } }
+@keyframes eclipse-open { 0% { transform: scale(0.8, 0); } 55% { transform: scale(0.98, 1.03); } 100% { transform: none; } }
+@keyframes eclipse-lit { from { opacity: 0.75; } }
+@keyframes eclipse-expose { 0% { opacity: 0; } 12% { opacity: 0.55; } 100% { opacity: 1; } }
+@keyframes eclipse-window { /* 0.06 → 1, eased like cubic-bezier(.3, .75, .25, 1) */
+  0% { opacity: 0; transform: scaleX(0.06); } 1% { transform: scaleX(0.084); } 2.4% { transform: scaleX(0.118); } 4.4% { transform: scaleX(0.165); }
+  7% { transform: scaleX(0.231); } 10.7% { transform: scaleX(0.324); } 15.7% { opacity: 1; transform: scaleX(0.454); } 23.4% { transform: scaleX(0.635); }
+  39.5% { transform: scaleX(0.859); } 55.5% { transform: scaleX(0.947); } 71.5% { transform: scaleX(0.984); } 100% { transform: scaleX(1); }
+}
+@keyframes eclipse-limb { /* the inverse of eclipse-window, at the same offsets */
+  0% { transform: scaleX(16.667); } 1% { transform: scaleX(11.89); } 2.4% { transform: scaleX(8.484); } 4.4% { transform: scaleX(6.055); }
+  7% { transform: scaleX(4.321); } 10.7% { transform: scaleX(3.086); } 15.7% { transform: scaleX(2.204); } 23.4% { transform: scaleX(1.574); }
+  39.5% { transform: scaleX(1.164); } 55.5% { transform: scaleX(1.056); } 71.5% { transform: scaleX(1.017); } 100% { transform: scaleX(1); }
+}
+@keyframes eclipse-bead { 0% { opacity: 0; transform: scale(0.1); } 8% { opacity: 1; transform: scale(0.5); } 30% { opacity: 1; transform: scale(1.7); } }
+@keyframes eclipse-streak { 0% { opacity: 0; transform: scaleX(0); } 25% { opacity: 1; transform: scaleX(1); } 100% { opacity: 0.35; transform: scaleX(0.4); } }
+@keyframes eclipse-orbit-in { from { opacity: 0; } }
+@keyframes eclipse-spin { to { transform: rotate(360deg); } }
+@keyframes eclipse-word { from { opacity: 0; transform: translateY(-0.5em) scale(1.06); filter: blur(0.2em) brightness(1.8); } 60% { filter: none; } }
+@keyframes eclipse-rise { from { opacity: 0; transform: translateY(0.4em); } }
+@keyframes eclipse-out { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes eclipse-shut { /* a breath, then the eyelid: opaque all the way, it closes onto the ring line */
+  17% { transform: scale(1.02, 1.07); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0.5); }
+  100% { transform: scale(0.9, 0); }
+}
+@keyframes eclipse-pull { /* up by the ring radius + the gap: the body's top centre lands on the ring centre; it fades on the way */
+  30% { opacity: 1; filter: blur(0); }
+  90% { opacity: 0; }
+  100% { opacity: 0; transform: translateY(calc(var(--ecl-ring) / -2 - var(--ecl-gap))) scale(0.12); filter: blur(0.1em); }
+}
+@keyframes eclipse-sink { to { opacity: 0; transform: translateY(-1em) scale(0.6); } }
+@keyframes eclipse-close { 0% { transform: scale(1); } 35% { transform: scale(1.12); } 100% { opacity: 0.6; transform: scale(0); } }
+@keyframes eclipse-glint { 0%, 50% { opacity: 0; transform: scale(0.15); } 75% { opacity: 0.9; transform: scale(0.32); } 100% { opacity: 0; transform: scale(0.2); } }
+@keyframes eclipse-retract { to { opacity: 0; transform: scaleX(0); } }
+@keyframes eclipse-vanish { to { opacity: 0; } }
