@@ -285,4 +285,7 @@ dialog::backdrop { background: rgb(0 0 0 / 55%); backdrop-filter: blur(2px); }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes shimmer { to { background-position: -200% 0; } }
 @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+/* Not on the overlay page: it is stream output for the viewers, not the streamer's own UI. */
+@media (prefers-reduced-motion: reduce) {
+  body:not([data-page="overlay"]) *, body:not([data-page="overlay"]) *::before, body:not([data-page="overlay"]) *::after { animation: none !important; transition: none !important; }
+}
