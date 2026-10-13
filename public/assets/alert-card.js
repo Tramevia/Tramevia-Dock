@@ -111,19 +111,6 @@ function eclipse(card) {
   card.querySelector('.evt-icon')?.append(h('i.ecl-orbit'));
 }
 
-// ------------------------------------------------------------------ plasma: a thermal orb, the hero above the text
-// Its layers go inside the event icon, which anchors the orb above the text (the glyph stays on top): the halo and the glow
-// around it; the shape frame (swell, a star-shaped glow while it morphs, then a slow liquid rock) with the hot rim under the
-// fill, both clipped to the morphing outline; inside the fill, a tilted layer with the rolling rest bands, a wandering hot
-// spot, the entry's heat bands (on top: they hand over to the rest bands, and come back at the exit) and the shading.
-function plasma(card) {
-  card.querySelector('.evt-icon')?.prepend(
-    h('i.plasma-halo'),
-    h('i.plasma-glow'),
-    h('i.plasma-shape', h('i.plasma-rim'), h('i.plasma-fill', h('i.plasma-still', h('i.plasma-flow'), h('i.plasma-spot'), h('i.plasma-heat'), h('i.plasma-shade')))),
-  );
-}
-
 // ------------------------------------------------------------------ glass: frosted glass lit from behind
 // A frosted-glass capsule with an ice rim morphs into the card while a warm light (--evt) sweeps in from the bottom-right
 // corner, under and through the glass; the warm light wraps the whole rim and the lens (the event icon) pops in the
@@ -212,7 +199,7 @@ function prism(card, event) {
 }
 
 /** Style → function(card, event) that adds the style's own elements to a new card. Styles made of CSS only (card, text) have none. */
-export const DECOR = { impact, eclipse, plasma, glass, switch: rocker, wave: (card, event) => wave(card, event, { h, svg }), prism,
+export const DECOR = { impact, eclipse, glass, switch: rocker, wave: (card, event) => wave(card, event, { h, svg }), prism,
   silk: (card, event) => silk(card, event, { h, svg }), neon: (card, event) => neon(card, event, { h, svg }) };
 
 /** A new alert card for event d (not yet in the page). Set --evt on it once it is in the page (it comes from the event's CSS class). */

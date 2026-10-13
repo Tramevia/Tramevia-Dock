@@ -11,7 +11,7 @@ export const BOOLS = ['hideBots', 'hideCommands', 'events', 'badges', 'icons', '
 export const THEMES = ['transparent', 'dark', 'light'];
 export const POSITIONS = ['top', 'center', 'bottom'];
 export const ALIGNS = ['left', 'center', 'right']; // chat: left | right (anything else = left) · viewers: the number beside or inside the orb
-export const STYLES = ['card', 'text', 'impact', 'eclipse', 'plasma', 'glass', 'switch', 'wave', 'prism', 'silk', 'neon']; // alerts: glass card · big kinetic text · impact (physical, product shot) · eclipse (lines of light) · plasma (thermal star) · glass (frosted glass lit from behind) · switch (a clay rocker switch that lights up) · wave (a breaking wave of white particles) · prism (glass bars like an equalizer) · silk (a sphere of silk sheets) · neon (the name on a ring of neon letters)
+export const STYLES = ['card', 'text', 'impact', 'eclipse', 'glass', 'switch', 'wave', 'prism', 'silk', 'neon']; // alerts: glass card · big kinetic text · impact (physical, product shot) · eclipse (lines of light) · glass (frosted glass lit from behind) · switch (a clay rocker switch that lights up) · wave (a breaking wave of white particles) · prism (glass bars like an equalizer) · silk (a sphere of silk sheets) · neon (the name on a ring of neon letters)
 /** [min, max] of every number (the overlay page clamps URL values to the same ranges). */
 export const RANGES = { max: [1, 100], fade: [0, 3600], size: [8, 120], featureSeconds: [0, 3600], alertSeconds: [1, 60], volume: [0, 100] };
 const LIST_MAX = 50;
