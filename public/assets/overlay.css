@@ -1893,114 +1893,104 @@ html, body { height: 100%; overflow: hidden; }
 }
 :root[data-style="wave"][data-overlay="transparent"] .alert-card .evt-meta { color: #d5d8e0; }
 
-/* ---- prism: a cluster of glossy glass prisms on a black glass slab (after a 3D motion piece of glass bars rising and
-   falling like an equalizer). On the chime a thin line of light opens and the black glass slab unfolds from it; thick glass
-   bars sprout from its edge and shoot up from the centre out while the camera cranes up to look down on them; their
-   reflections hang in the slab, fading down. A slow specular sweep crosses the cluster and the slab, the words converge out
-   of a prismatic split. At rest the cluster breathes like an equalizer, the camera drifts and the sweep comes back. To
-   leave, the bars drop back into the slab, which folds into its line.
-   The bars are real CSS 3D boxes (lit front face = the bar, darker right side = ::before, cap = ::after) in a rig with
-   perspective, dealt into three voices (decorate). Layers, back to front: glow (card ::before), black glass slab, the 3D
-   cluster and its reflections, the sweep, the text, the slab's bright front edge (card ::after). Every length is in em. */
+/* ---- prism: a cluster of glossy glass prisms on a black mirror floor (after a 3D motion piece of glass bars rising and
+   falling like an equalizer while the camera moves around them). No card: the text floats in front of the cluster, above
+   the floor, like the caption of a product shot, with its own faint reflection.
+   Entry: the camera starts at the floor's level, side-on (the bars read as an equalizer in a row), and swings round and
+   cranes up to a three-quarter view while each chime note (0 / 110 / 224 / 364 ms) kicks the bars up another step, the
+   ripple running out from the cluster's centre; rings of light run out on the floor, light runs up inside the tall bars,
+   a specular flash crosses the glass on the last note. Hold: the camera keeps orbiting, a travelling wave runs through the
+   equalizer column by column, a light sweep passes every 3.6 s. Outro (from --alert-ms - 900 ms, before .gone): the words
+   split back into light, the cluster collapses in a wave into the floor's centre, the camera pulls away.
+   Scene graph (decorate): scene (2D: the pull-away) > stage (perspective) > rig (crane) > cam (orbit) > floor + 5 drops
+   (collapse) > 5 columns (wave) > 22 bars (burst, light pulse). One transform animation per element: two on one element
+   (even one still waiting) take it off the compositor. Every length is in em (the text size). */
 :root[data-style="prism"] .alert-card {
-  --pr-w: 1em;       /* bar width and depth: thick square prisms */
-  --pr-sky: 7.6em;   /* room above the slab for the cluster */
-  --pr-yaw: -38deg;  /* each bar turned three-quarters: the lit front face left, the darker side right, the cap on top */
-  --pr-refl: 2.4em;  /* each bar's reflection under the slab's edge */
-  --pr-ink: #f2f5ff; --pr-name: color-mix(in srgb, var(--evt) 38%, #fff); --pr-sub: rgb(205 215 240 / 78%);
-  --pr-shade: 0 0.04em 0.28em rgb(0 0 8 / 80%), 0 0 0.7em rgb(0 0 8 / 55%);
-  isolation: isolate; min-width: min(100%, 17em); max-width: min(100%, 26em); margin-top: var(--pr-sky); margin-bottom: 0.8em;
-}
-:root[data-style="prism"] .alert-card .evt { /* the text layer: the slab under it is .prism-slab */
-  z-index: 3; align-items: center; gap: 0.8em; padding: 0.8em 1.15em 0.8em 0.85em; min-height: 3.4em; box-sizing: border-box; color: var(--pr-ink);
+  --pr-w: 0.82em;     /* bar width and depth: square prisms */
+  --pr-refl: 2.6em;   /* each bar's reflection under the floor */
+  --pr-sky: 9.4em;    /* room above the text for the cluster */
+  --pr-ground: 1.9em; /* the cluster's ground line, above the text */
+  --pr-out-at: max(1800ms, calc(var(--alert-ms, 6000) * 1ms - 900ms)); /* the outro starts before .gone */
+  --pr-ink: #f4f6ff; --pr-name: color-mix(in srgb, var(--evt) 40%, #fff); --pr-sub: rgb(208 218 242 / 82%);
+  --pr-shade: 0 0 0.12em rgb(0 0 14 / 85%), 0 0.05em 0.3em rgb(0 0 12 / 80%), 0 0 0.9em rgb(0 0 12 / 50%); /* hugs the letters: legible on any scene */
+  isolation: isolate; min-width: min(100%, 14em); max-width: min(100%, 26em); margin-top: var(--pr-sky); margin-bottom: 1.4em;
 }
 
-/* ---- the black glass slab: glossy, its inner light bleeding down from the cluster, iridescent ends; the bars' reflections
-   are drawn over it (the cluster's layer is above it), the text above them */
-:root[data-style="prism"] .alert-card .prism-slab {
-  position: absolute; z-index: 0; inset: 0; border-radius: 0.18em; pointer-events: none;
-  background:
-    radial-gradient(28% 55% at 50% 0, color-mix(in srgb, var(--evt) 28%, transparent), transparent),
-    radial-gradient(44% 90% at 50% 0, rgb(40 95 255 / 30%), transparent),
-    linear-gradient(104deg, transparent 16%, rgb(255 255 255 / 5%) 28%, rgb(255 255 255 / 9%) 33%, transparent 44%),
-    linear-gradient(rgb(150 170 230 / 10%), transparent 1em),
-    linear-gradient(rgb(8 10 20 / 95%), rgb(2 3 8 / 97%));
-  box-shadow: inset 0 -0.05em 0 rgb(255 255 255 / 12%), inset 0.045em 0 0 rgb(255 130 205 / 32%), inset -0.045em 0 0 rgb(110 225 255 / 32%),
-    0 0.9em 2em rgb(0 0 0 / 55%);
-  transform-origin: 50% 0; animation: prism-unfold 0.32s cubic-bezier(0.3, 0.7, 0.2, 1) 0.06s backwards;
+/* ---- the text, floating free in front of the cluster like a caption under a product shot: no box, a glow hugging the
+   letters, its reflection on the floor. The event's gem rests on the floor at the cluster's front, the lines centred under it. */
+:root[data-style="prism"] .alert-card .evt {
+  z-index: 3; flex-direction: column; justify-content: center; align-items: center; gap: 0.35em; padding: 0.15em 0.4em; text-align: center; color: var(--pr-ink);
+  -webkit-box-reflect: below 0.05em linear-gradient(transparent 55%, rgb(0 0 0 / 22%));
 }
-:root[data-style="prism"] .alert-card::before, :root[data-style="prism"] .alert-card::after { content: ""; position: absolute; pointer-events: none; }
-:root[data-style="prism"] .alert-card::after { /* the slab's thin bright front edge: the line of light the alert opens from */
-  z-index: 4; left: 0; right: 0; top: -0.05em; height: 0.1em; border-radius: 0.05em;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--evt) 75%, #fff), #fff 14%, #fff 86%, color-mix(in srgb, var(--evt) 75%, #fff));
-  box-shadow: 0 0 0.3em color-mix(in srgb, var(--evt) 80%, transparent), 0 0 1em rgb(60 110 255 / 50%);
-  animation: prism-line 0.22s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+:root[data-style="prism"] .alert-card .evt-body { align-items: center; text-shadow: var(--pr-shade); }
+:root[data-style="prism"] .alert-card .evt-title { font-size: clamp(0.85em, min(60vw / var(--longest-part, 1), 27em / var(--longest-part, 1)), 1.2em); font-weight: 650; line-height: 1.22; }
+:root[data-style="prism"] .alert-card .evt-title .w { /* slides in (composited) while a pink and a cyan ghost converge into it (text-shadow: main thread, kept short) */
+  overflow-wrap: anywhere;
+  animation: prism-word-in 0.5s cubic-bezier(0.25, 0.7, 0.25, 1) calc(0.5s + var(--i) * 0.055s) backwards, prism-split 0.26s ease-out calc(0.5s + var(--i) * 0.055s) backwards,
+    prism-word-out 0.34s ease-in calc(var(--pr-out-at) + 0.12s + var(--i) * 0.022s) forwards;
 }
-:root[data-style="prism"] .alert-card::before { /* the cluster glows blue through the dark, the event colour at its foot */
-  z-index: 0; left: -6%; right: -6%; top: calc(-1 * var(--pr-sky)); height: calc(var(--pr-sky) + 1em);
-  background: radial-gradient(34% 2.2em at 50% calc(100% - 1em), color-mix(in srgb, var(--evt) 45%, transparent), transparent),
-    radial-gradient(40% 3.4em at 50% calc(100% - 1em), rgb(40 90 255 / 45%), rgb(30 60 220 / 15%) 55%, transparent),
-    radial-gradient(34% 60% at 50% 62%, rgb(30 70 255 / 22%), transparent);
-  animation: prism-glow-in 0.9s ease-out 0.2s backwards;
-}
-
-/* ---- the specular sweep: one band of light crossing the cluster and the slab (transform only); the first pass is the
-   entry's light sweep, then it comes back every 3.6 s */
-:root[data-style="prism"] .alert-card .prism-sheen {
-  position: absolute; z-index: 2; left: calc(50% - 8.6em); width: 17.2em; top: calc(-1 * var(--pr-sky)); bottom: 0; overflow: hidden; pointer-events: none;
-  -webkit-mask-image: radial-gradient(7.6em 6.6em at 50% var(--pr-sky), #000 45%, transparent), linear-gradient(transparent calc(var(--pr-sky) - 0.1em), rgb(0 0 0 / 55%) calc(var(--pr-sky) + 0.4em));
-  mask-image: radial-gradient(7.6em 6.6em at 50% var(--pr-sky), #000 45%, transparent), linear-gradient(transparent calc(var(--pr-sky) - 0.1em), rgb(0 0 0 / 55%) calc(var(--pr-sky) + 0.4em));
-}
-:root[data-style="prism"] .alert-card .prism-sheen::before {
-  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 34%; opacity: 0; transform: translateX(-100%);
-  background: linear-gradient(102deg, transparent 16%, rgb(170 205 255 / 14%) 30%, rgb(220 235 255 / 40%) 44%, rgb(255 255 255 / 78%) 50%,
-    rgb(220 235 255 / 40%) 56%, rgb(170 205 255 / 14%) 70%, transparent 84%);
-  animation: prism-sheen 3.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) 0.45s infinite;
-}
-
-/* the icon: a glass block seen end-on, the event colour glowing inside; it turns to face the camera */
-:root[data-style="prism"] .alert-card .evt-icon {
-  width: 2.2em; height: 2.2em; border-radius: 0.2em; color: #fff;
-  background: radial-gradient(90% 80% at 50% 100%, color-mix(in srgb, var(--evt) 75%, transparent), transparent), linear-gradient(#1c2a6e, #070b22);
-  box-shadow: inset 0 0.06em 0 rgb(255 255 255 / 75%), inset 0 0 0 0.04em rgb(160 190 255 / 30%), 0 0 0.9em color-mix(in srgb, var(--evt) 35%, transparent);
-  animation: prism-turn 0.6s cubic-bezier(0.2, 0.8, 0.25, 1.1) 0.3s backwards;
-}
-:root[data-style="prism"] .alert-card .evt-icon svg { width: 1.2em; height: 1.2em; }
-:root[data-style="prism"] .alert-card .evt-icon img { width: 1.6em; height: 1.6em; border-radius: 0.15em; }
-
-/* text: each word converges out of a prismatic split */
-:root[data-style="prism"] .alert-card .evt-body { text-shadow: var(--pr-shade); }
-:root[data-style="prism"] .alert-card .evt-title { font-size: clamp(0.8em, min(58vw / var(--longest-part, 1), 27em / var(--longest-part, 1)), 1.1em); font-weight: 650; line-height: 1.25; }
-:root[data-style="prism"] .alert-card.prism-money .evt-title { font-size: clamp(0.8em, min(58vw / var(--longest-part, 1), 19em / var(--longest-part, 1)), 1.1em); }
-:root[data-style="prism"] .alert-card .evt-title .w { overflow-wrap: anywhere; animation: prism-word 0.55s cubic-bezier(0.25, 0.7, 0.25, 1) calc(0.6s + var(--i) * 0.055s) backwards; }
 :root[data-style="prism"] .alert-card .evt-user { font-weight: 800; color: var(--pr-name); }
-:root[data-style="prism"] .alert-card .evt-text { opacity: 0.9; font-size: 0.9em; animation: prism-rise 0.5s ease-out 0.95s backwards; }
-:root[data-style="prism"] .alert-card .evt-meta { color: var(--pr-sub); font-size: 0.74em; animation: prism-rise 0.5s ease-out 1s backwards; }
+:root[data-style="prism"] .alert-card .evt-text { font-size: 0.9em; font-weight: 600; animation: prism-rise 0.5s ease-out 0.85s backwards, prism-fade 0.3s ease-in calc(var(--pr-out-at) + 0.1s) forwards; }
+:root[data-style="prism"] .alert-card .evt-meta { justify-content: center; color: var(--pr-sub); font-size: 0.74em; animation: prism-rise 0.5s ease-out 0.9s backwards, prism-fade 0.3s ease-in calc(var(--pr-out-at) + 0.1s) forwards; }
+/* the icon: a glass gem (a prism's cap seen from above) resting on the floor, the event colour glowing inside; it spins in */
+:root[data-style="prism"] .alert-card .evt-icon {
+  width: 1.4em; height: 1.4em; margin: -0.7em 0 0.15em; border-radius: 0.2em; color: #fff; transform: rotate(45deg);
+  background: linear-gradient(135deg, rgb(255 255 255 / 80%) 0 6%, rgb(200 220 255 / 30%) 22%, transparent 40%),
+    radial-gradient(80% 80% at 70% 70%, color-mix(in srgb, var(--evt) 80%, transparent), transparent), linear-gradient(135deg, #3a5cf0, #0b1660 75%);
+  box-shadow: inset 0 0 0 0.05em rgb(225 238 255 / 75%), 0 0 0.9em color-mix(in srgb, var(--evt) 55%, transparent), 0 0 0.3em rgb(0 0 12 / 60%);
+  animation: prism-gem 0.6s cubic-bezier(0.2, 0.8, 0.25, 1.15) 0.36s backwards, prism-fade 0.3s ease-in calc(var(--pr-out-at) + 0.08s) forwards;
+}
+:root[data-style="prism"] .alert-card .evt-icon :is(svg, img) { width: 0.9em; height: 0.9em; transform: rotate(-45deg); }
+:root[data-style="prism"] .alert-card .evt-icon img { border-radius: 0.15em; }
 :root[data-style="prism"] .alert-card .evt-amount { /* a small glass bar with the event colour inside */
-  padding: 0.22em 0.7em; border-radius: 0.2em; color: #fff; font-size: 1.05em; font-weight: 800; text-shadow: var(--pr-shade);
-  background: linear-gradient(rgb(255 255 255 / 22%), transparent 45%), linear-gradient(color-mix(in srgb, var(--evt) 70%, #1a2a8a), color-mix(in srgb, var(--evt) 45%, #0a1240));
+  padding: 0.2em 0.65em; border-radius: 0.2em; color: #fff; font-size: 1.05em; font-weight: 800; text-shadow: var(--pr-shade);
+  background: linear-gradient(rgb(255 255 255 / 24%), transparent 45%), linear-gradient(color-mix(in srgb, var(--evt) 72%, #1a2a8a), color-mix(in srgb, var(--evt) 45%, #0a1240));
   box-shadow: inset 0 0.05em 0 rgb(255 255 255 / 70%), 0 0 0.8em color-mix(in srgb, var(--evt) 45%, transparent);
-  animation: prism-turn 0.55s cubic-bezier(0.2, 0.8, 0.25, 1.1) 1.05s backwards;
+  animation: prism-rise 0.5s ease-out 0.95s backwards, prism-fade 0.3s ease-in calc(var(--pr-out-at) + 0.1s) forwards;
 }
 
-/* ---- the 3D cluster, standing on the slab's front edge (the stage's bottom); its reflections go on below */
-:root[data-style="prism"] .alert-card .prism-stage {
-  position: absolute; z-index: 1; left: 0; right: 0; top: calc(-1 * var(--pr-sky) - 1em); height: calc(var(--pr-sky) + 1em); pointer-events: none;
-  perspective: 80em; perspective-origin: 50% 30%;
+/* ---- the scene above the text: its box ends on the cluster's ground line */
+:root[data-style="prism"] .alert-card .prism-scene {
+  position: absolute; z-index: 1; left: 50%; width: 24em; margin-left: -12em; top: calc(-1 * var(--pr-sky)); height: calc(var(--pr-sky) - var(--pr-ground));
+  pointer-events: none; transform-origin: 50% 100%;
+  animation: prism-away 0.9s cubic-bezier(0.55, 0, 0.75, 0.45) var(--pr-out-at) forwards; /* the camera pulls away */
 }
-:root[data-style="prism"] .alert-card :is(.prism-rig, .prism-cam, .prism-voice) { position: absolute; inset: 0; transform-style: preserve-3d; transform-origin: 50% 100% -1.75em; }
-:root[data-style="prism"] .alert-card .prism-rig { transform: rotateX(-22deg); animation: prism-crane 1.5s cubic-bezier(0.3, 0.55, 0.15, 1); }
-:root[data-style="prism"] .alert-card .prism-cam { animation: prism-drift 7s ease-in-out 1.5s infinite alternate; } /* the camera breathes too: pitch only */
-/* the equalizer at rest: three voices, three rhythms (transform only) */
-:root[data-style="prism"] .alert-card .prism-voice { transform-origin: 50% 100%; animation: prism-eq-a 2.3s ease-in-out 1.7s infinite; }
-:root[data-style="prism"] .alert-card .prism-v1 { animation: prism-eq-b 2.9s ease-in-out 1.8s infinite; }
-:root[data-style="prism"] .alert-card .prism-v2 { animation: prism-eq-c 3.6s ease-in-out 1.75s infinite; }
+:root[data-style="prism"] .alert-card .prism-stage { position: absolute; inset: 0; perspective: 44em; perspective-origin: 50% 35%; }
+:root[data-style="prism"] .alert-card :is(.prism-rig, .prism-cam, .prism-drop, .prism-col) { position: absolute; inset: 0; transform-style: preserve-3d; transform-origin: 50% 100% 0; }
+:root[data-style="prism"] .alert-card .prism-rig { /* the camera's pitch and heading; the crane swings it round and up */
+  transform: rotateX(-20deg) rotateY(-45deg) scale3d(1, 1, 1); animation: prism-crane 1.6s cubic-bezier(0.3, 0.4, 0.1, 1) backwards;
+}
+:root[data-style="prism"] .alert-card .prism-cam { animation: prism-orbit 9s ease-in-out -2.25s infinite alternate; } /* never still */
+:root[data-style="prism"] .alert-card .prism-drop { animation: prism-collapse 0.5s linear calc(var(--pr-out-at) + var(--out)) forwards; } /* the outro */
+:root[data-style="prism"] .alert-card .prism-col { animation: prism-wave 4.8s calc(1.5s + var(--ph)) infinite; } /* the travelling wave: it starts column by column after the entry */
+
+/* ---- the floor: black glass, the cluster's blue light bleeding into it, the bars' reflections showing through it; a ring
+   of light runs out on it on the chime's first note, another on its last */
+:root[data-style="prism"] .alert-card .prism-floor {
+  position: absolute; left: calc(50% - 11em); top: calc(100% - 11em); width: 22em; height: 22em; border-radius: 50%;
+  transform: rotateX(90deg); /* about its centre: it lies on the ground, centred under the cluster */
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--evt) 30%, transparent), transparent 30%),
+    radial-gradient(closest-side, rgb(40 90 255 / 42%), rgb(30 60 220 / 10%) 45%, transparent 62%),
+    radial-gradient(closest-side, rgb(2 4 12 / 76%) 30%, rgb(2 4 12 / 54%) 62%, rgb(2 4 12 / 18%) 84%, transparent);
+  animation: prism-show 0.4s ease-out backwards;
+}
+:root[data-style="prism"] .alert-card .prism-floor::before, :root[data-style="prism"] .alert-card .prism-floor::after {
+  content: ""; position: absolute; left: 25%; top: 25%; width: 50%; height: 50%; border-radius: 50%; opacity: 0;
+  background: radial-gradient(closest-side, transparent 93%, rgb(170 210 255 / 70%) 96.5%, transparent);
+  animation: prism-ring 0.9s cubic-bezier(0.2, 0.6, 0.35, 1) backwards; /* note 1 */
+}
+:root[data-style="prism"] .alert-card .prism-floor::after {
+  background: radial-gradient(closest-side, transparent 93%, color-mix(in srgb, var(--evt) 45%, rgb(230 240 255 / 80%)) 96.5%, transparent);
+  animation-delay: 0.364s; /* note 4 */
+}
+
+/* ---- the bars */
 :root[data-style="prism"] .alert-card .prism-bar {
   /* Glossy glass, lit from the front left. The lit front face: silver at the top of a tall bar, luminous blue lower (its
-     base gradient is anchored to the ground, 8em tall, so a short bar is blue to its top), a sharp white specular streak
-     by the near corner with a soft sheen beside it, thin iridescent pink and mint bands, bevelled white edges, a pink and
-     a cyan glint on the edges, refraction blurs. The darker side (::before): deep blue with its light glowing inside,
-     brighter toward the foot. Under the ground each face goes on as its reflection, fading into the black glass.
+     base gradient is anchored to the ground, so a short bar is blue to its top), a sharp white specular streak by the near
+     corner with a soft sheen beside it, thin iridescent pink and mint bands, bevelled white edges, a pink and a cyan
+     glint on the edges, refraction blurs. The darker side (::before): deep blue with its light glowing inside. Under the
+     ground each face goes on as its reflection, seen through the floor's black glass.
      The images hold no var(): only the short position / size lists do, so restyling a bar while it animates stays cheap.
      The event colour reaches them as currentColor (color: var(--evt)); a colour stop before 0 (currentColor -50%) starts
      the fade part-way, which sets its strength without color-mix. --pr-t is the face above the ground. */
@@ -2020,22 +2010,23 @@ html, body { height: 100%; overflow: hidden; }
     radial-gradient(closest-side, rgb(8 16 60 / 40%), transparent),
     linear-gradient(currentColor -50%, transparent 25%),
     linear-gradient(rgb(255 255 255 / 40%), transparent 1.2em),
-    linear-gradient(rgb(60 115 255 / 62%), rgb(40 85 235 / 26%) 30%, rgb(25 55 190 / 8%) 62%, transparent),
+    linear-gradient(rgb(50 100 245 / 50%), rgb(35 75 220 / 20%) 30%, rgb(25 55 190 / 6%) 62%, transparent),
     linear-gradient(rgb(232 236 252 / 93%), rgb(205 214 248 / 91%) 12%, rgb(150 172 244 / 89%) 24%, rgb(96 130 240 / 88%) 36%, rgb(60 100 236 / 88%) 48%,
-      rgb(42 84 232 / 88%) 60%, rgb(36 80 238 / 88%) 74%, rgb(44 96 250 / 89%) 88%, rgb(60 120 255 / 90%));
+      rgb(42 84 232 / 88%) 60%, rgb(32 70 220 / 86%) 72%, rgb(22 50 180 / 80%) 84%, rgb(14 32 130 / 62%) 94%, rgb(10 22 90 / 40%));
   background-position: 100% 0, 0 0, 78% 0, 58% 0, calc(var(--g1) * 0.5) 0, calc(var(--g2) * 0.45) 0, 0 var(--g1), 100% var(--g2), 30% 0.2em, 45% var(--r2), 40% var(--r1),
     0 100%, 78% 100%, 0 100%, 0 calc(100% - var(--pr-refl));
   background-size: 0.05em var(--pr-t), 0.035em var(--pr-t), 0.13em var(--pr-t), 0.32em var(--pr-t), 0.07em var(--pr-t), 0.07em var(--pr-t),
-    0.22em 0.36em, 0.22em 0.36em, 120% 1.2em, 170% 1.1em, 150% 0.8em, 100% var(--pr-refl), 0.13em var(--pr-refl), 100% var(--pr-refl), 100% max(7em, var(--h));
+    0.22em 0.36em, 0.22em 0.36em, 120% 1.2em, 170% 1.1em, 150% 0.8em, 100% var(--pr-refl), 0.13em var(--pr-refl), 100% var(--pr-refl), 100% max(6.5em, var(--h));
   background-repeat: no-repeat;
-  position: absolute; bottom: calc(-1 * var(--pr-refl)); left: calc(50% + var(--x)); width: var(--pr-w); height: calc(var(--h) + var(--pr-refl)); margin-left: calc(-0.5 * var(--pr-w));
-  transform-style: preserve-3d; transform-origin: 50% calc(100% - var(--pr-refl)) calc(-0.5 * var(--pr-w)); transform: translateZ(var(--z)) rotateY(var(--pr-yaw)) scale3d(1, 1, 1);
-  animation: prism-shoot 0.7s calc(0.14s + var(--dl)) backwards;
+  position: absolute; bottom: calc(-1 * var(--pr-refl)); left: calc(50% + var(--x) - 0.5 * var(--pr-w)); width: var(--pr-w); height: calc(var(--h) + var(--pr-refl));
+  transform-style: preserve-3d; transform-origin: 50% calc(100% - var(--pr-refl)) calc(-0.5 * var(--pr-w)); transform: translateZ(var(--z)) scale3d(1, 1, 1);
+  animation: prism-grow 1s var(--dl) backwards;
 }
 :root[data-style="prism"] .alert-card .prism-bar::before, :root[data-style="prism"] .alert-card .prism-bar::after { content: ""; position: absolute; left: 0; top: 0; }
-:root[data-style="prism"] .alert-card .prism-bar::before { /* the darker right side, deep blue light glowing inside */
+:root[data-style="prism"] .alert-card .prism-bar::before { /* the darker right side, deep blue light glowing inside; the light pulses run up it */
   left: 100%; width: var(--pr-w); height: 100%; transform-origin: 0 0; transform: rotateY(90deg);
   background-image:
+    linear-gradient(transparent, rgb(140 200 255 / 45%) 30%, rgb(240 250 255 / 95%) 50%, rgb(140 200 255 / 45%) 70%, transparent),
     linear-gradient(#fff, rgb(225 235 255 / 75%) 2.5em, rgb(150 185 255 / 35%)),
     linear-gradient(rgb(220 232 255 / 60%), rgb(150 180 255 / 22%) 3em, transparent),
     linear-gradient(rgb(6 12 50 / 45%), rgb(6 12 50 / 25%)),
@@ -2045,126 +2036,155 @@ html, body { height: 100%; overflow: hidden; }
     radial-gradient(closest-side, rgb(120 235 255 / 85%), transparent),
     radial-gradient(closest-side, rgb(110 170 255 / 85%), rgb(60 120 255 / 30%) 55%, transparent),
     linear-gradient(currentColor -50%, transparent 25%),
-    linear-gradient(rgb(50 105 255 / 58%), rgb(35 80 230 / 24%) 30%, rgb(22 50 180 / 7%) 62%, transparent),
-    linear-gradient(rgb(176 188 236 / 92%), rgb(128 144 222 / 90%) 12%, rgb(70 92 200 / 88%) 24%, rgb(34 54 168 / 88%) 36%, rgb(18 32 128 / 88%) 50%,
-      rgb(14 28 110 / 88%) 64%, rgb(20 46 160 / 88%) 78%, rgb(32 76 220 / 89%) 90%, rgb(48 100 250 / 90%));
-  background-position: 0 0, 100% 0, calc(100% - 0.035em) 0, 30% 0, 50% calc(100% - var(--pr-refl)), 70% 0, 100% var(--g1), 50% var(--r1),
+    linear-gradient(rgb(45 95 240 / 46%), rgb(32 72 215 / 18%) 30%, rgb(22 50 180 / 5%) 62%, transparent),
+    linear-gradient(rgb(176 188 236 / 92%), rgb(128 144 222 / 90%) 12%, rgb(70 92 200 / 88%) 24%, rgb(34 54 168 / 88%) 36%, rgb(22 40 140 / 88%) 50%,
+      rgb(20 44 156 / 88%) 64%, rgb(26 58 190 / 86%) 76%, rgb(18 42 150 / 78%) 88%, rgb(10 24 96 / 50%));
+  background-position: 0 calc(100% + 2em), 0 0, 100% 0, calc(100% - 0.035em) 0, 30% 0, 50% calc(100% - var(--pr-refl)), 70% 0, 100% var(--g1), 50% var(--r1),
     0 100%, 0 100%, 0 calc(100% - var(--pr-refl));
-  background-size: 0.05em var(--pr-t), 0.035em var(--pr-t), 0.18em var(--pr-t), 0.2em var(--pr-t), 140% 3.2em, 0.08em var(--pr-t), 0.22em 0.36em, 170% 1.1em,
-    100% var(--pr-refl), 100% var(--pr-refl), 100% max(7em, var(--h));
+  background-size: 100% 1.6em, 0.05em var(--pr-t), 0.035em var(--pr-t), 0.18em var(--pr-t), 0.2em var(--pr-t), 140% 3.2em, 0.08em var(--pr-t), 0.22em 0.36em, 170% 1.1em,
+    100% var(--pr-refl), 100% var(--pr-refl), 100% max(6.5em, var(--h));
   background-repeat: no-repeat;
 }
+:root[data-style="prism"] .alert-card .prism-lit::before { animation: prism-pulse 0.45s cubic-bezier(0.4, 0, 0.7, 1) var(--dl) backwards; }
 :root[data-style="prism"] .alert-card .prism-bar::after { /* the cap: a frosted glass end, white bevelled rim */
   width: 100%; height: var(--pr-w); transform-origin: 0 0; transform: rotateX(-90deg);
   background: linear-gradient(135deg, #fffaf4 0%, #f1e0d2 32%, #e0cdc2 64%, #f4e9e1 88%, #fff 100%);
   box-shadow: inset 0 0 0 0.05em rgb(255 255 255 / 85%), inset 0 0 0.2em rgb(120 100 130 / 40%), 0 0 0 0.02em rgb(20 26 70 / 75%);
 }
 
-/* ---- themes. light: a frosted white glass slab in front of the reflections (they show through it, softened), ink text;
-   the bars stay deep blue glass, the icon a dark glass block. transparent: smoked black glass that lets the scene through. */
+/* ---- light across the glass: a fast specular flash on the last note (::before), then a slow sweep now and then (::after);
+   masked to the cluster, so it never fogs the empty dark around it */
+:root[data-style="prism"] .alert-card .prism-sheen {
+  position: absolute; inset: -0.5em -1em -2.6em; overflow: hidden;
+  -webkit-mask-image: radial-gradient(7.5em 6.2em at 50% 72%, #000 40%, transparent); mask-image: radial-gradient(7.5em 6.2em at 50% 72%, #000 40%, transparent);
+}
+:root[data-style="prism"] .alert-card .prism-sheen::before, :root[data-style="prism"] .alert-card .prism-sheen::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 34%; opacity: 0; transform: translateX(-100%);
+  background: linear-gradient(102deg, transparent 16%, rgb(170 205 255 / 14%) 30%, rgb(220 235 255 / 40%) 44%, rgb(255 255 255 / 80%) 50%,
+    rgb(220 235 255 / 40%) 56%, rgb(170 205 255 / 14%) 70%, transparent 84%);
+}
+:root[data-style="prism"] .alert-card .prism-sheen::before { animation: prism-flash 0.36s cubic-bezier(0.4, 0, 0.6, 1) 0.36s; }
+:root[data-style="prism"] .alert-card .prism-sheen::after { animation: prism-sweep 3.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) 1.9s infinite; }
+
+/* ---- themes. light: a white mirror floor, ink text with a white halo (the bars stay blue glass). transparent: a lighter
+   floor that lets more of the scene through, a stronger shadow on the letters. */
 :root[data-style="prism"][data-overlay="light"] .alert-card {
-  --pr-ink: #141826; --pr-name: color-mix(in srgb, var(--evt) 72%, #1a1030); --pr-sub: rgb(30 38 60 / 72%);
-  --pr-shade: 0 0 0.3em rgb(255 255 255 / 80%);
+  --pr-ink: #141826; --pr-name: color-mix(in srgb, var(--evt) 72%, #1a1030); --pr-sub: rgb(30 38 60 / 76%);
+  --pr-shade: 0 0 0.12em rgb(255 255 255 / 90%), 0 0 0.3em rgb(255 255 255 / 85%), 0 0 0.9em rgb(255 255 255 / 60%);
 }
-:root[data-style="prism"][data-overlay="light"] .alert-card .prism-slab {
-  z-index: 1;
-  background:
-    radial-gradient(44% 90% at 50% 0, rgb(70 120 255 / 22%), transparent),
-    linear-gradient(104deg, transparent 16%, rgb(255 255 255 / 40%) 30%, transparent 44%),
-    linear-gradient(rgb(255 255 255 / 66%), rgb(244 247 255 / 88%) 1.6em, rgb(248 250 255 / 94%));
-  box-shadow: inset 0 -0.05em 0 rgb(60 90 220 / 18%), inset 0.045em 0 0 rgb(255 120 200 / 30%), inset -0.045em 0 0 rgb(80 200 255 / 34%), 0 0.6em 1.4em rgb(20 30 80 / 25%);
+:root[data-style="prism"][data-overlay="light"] .alert-card .evt { -webkit-box-reflect: below 0.05em linear-gradient(transparent 55%, rgb(0 0 0 / 16%)); }
+:root[data-style="prism"][data-overlay="light"] .alert-card .prism-floor {
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--evt) 24%, transparent), transparent 30%),
+    radial-gradient(closest-side, rgb(80 130 255 / 30%), transparent 60%),
+    radial-gradient(closest-side, rgb(246 248 255 / 80%) 30%, rgb(246 248 255 / 55%) 62%, rgb(246 248 255 / 18%) 84%, transparent);
 }
-:root[data-style="prism"][data-overlay="light"] .alert-card .prism-stage { z-index: 0; }
-:root[data-style="prism"][data-overlay="light"] .alert-card::before { opacity: 0.6; }
-:root[data-style="prism"][data-overlay="transparent"] .alert-card { --pr-shade: 0 0.04em 0.25em rgb(0 0 8 / 90%), 0 0 0.7em rgb(0 0 8 / 60%); }
-:root[data-style="prism"][data-overlay="transparent"] .alert-card .prism-slab {
-  background:
-    radial-gradient(28% 55% at 50% 0, color-mix(in srgb, var(--evt) 24%, transparent), transparent),
-    radial-gradient(44% 90% at 50% 0, rgb(40 95 255 / 26%), transparent),
-    linear-gradient(104deg, transparent 16%, rgb(255 255 255 / 5%) 28%, rgb(255 255 255 / 9%) 33%, transparent 44%),
-    linear-gradient(rgb(150 170 230 / 10%), transparent 1em),
-    linear-gradient(rgb(8 10 20 / 66%), rgb(2 3 8 / 74%));
+:root[data-style="prism"][data-overlay="transparent"] .alert-card { --pr-shade: 0 0 0.12em rgb(0 0 14 / 92%), 0 0.05em 0.28em rgb(0 0 12 / 88%), 0 0 0.9em rgb(0 0 12 / 60%); }
+:root[data-style="prism"][data-overlay="transparent"] .alert-card .prism-floor {
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--evt) 30%, transparent), transparent 30%),
+    radial-gradient(closest-side, rgb(40 90 255 / 42%), rgb(30 60 220 / 10%) 45%, transparent 62%),
+    radial-gradient(closest-side, rgb(2 4 12 / 58%) 30%, rgb(2 4 12 / 38%) 62%, rgb(2 4 12 / 12%) 84%, transparent);
 }
 
-/* Chromium < 111 (OBS 28-30, CEF 103) has no color-mix(): the event colour is used raw (the bars use currentColor and need
-   no fallback) */
+/* Chromium < 111 (OBS 28-30, CEF 103) has no color-mix(): the event colour is used raw (the bars use currentColor) */
 @supports not (color: color-mix(in srgb, red, red)) {
   :root[data-style="prism"] .alert-card, :root[data-style="prism"][data-overlay="light"] .alert-card { --pr-name: var(--evt); }
-  :root[data-style="prism"] .alert-card::after { background: #fff; box-shadow: 0 0 0.3em var(--evt), 0 0 1em rgb(60 110 255 / 50%); }
-  :root[data-style="prism"] .alert-card::before { background: radial-gradient(40% 3.4em at 50% calc(100% - 1em), rgb(40 90 255 / 45%), rgb(30 60 220 / 15%) 55%, transparent), radial-gradient(34% 60% at 50% 62%, rgb(30 70 255 / 22%), transparent); }
-  :root[data-style="prism"]:not([data-overlay="light"]) .alert-card .prism-slab { background: radial-gradient(44% 90% at 50% 0, rgb(40 95 255 / 30%), transparent), linear-gradient(104deg, transparent 16%, rgb(255 255 255 / 9%) 33%, transparent 44%), linear-gradient(rgb(8 10 20 / 95%), rgb(2 3 8 / 97%)); }
-  :root[data-style="prism"][data-overlay="transparent"] .alert-card .prism-slab { background: radial-gradient(44% 90% at 50% 0, rgb(40 95 255 / 26%), transparent), linear-gradient(rgb(8 10 20 / 66%), rgb(2 3 8 / 74%)); }
-  :root[data-style="prism"] .alert-card .evt-icon { background: radial-gradient(90% 80% at 50% 100%, var(--evt), transparent 70%), linear-gradient(#1c2a6e, #070b22); box-shadow: inset 0 0.06em 0 rgb(255 255 255 / 75%), inset 0 0 0 0.04em rgb(160 190 255 / 30%); }
-  :root[data-style="prism"] .alert-card .evt-amount { background: linear-gradient(rgb(255 255 255 / 22%), transparent 45%), var(--evt); box-shadow: inset 0 0.05em 0 rgb(255 255 255 / 70%); }
+  :root[data-style="prism"] .alert-card .evt-icon { background: linear-gradient(135deg, rgb(255 255 255 / 80%) 0 6%, transparent 40%), radial-gradient(80% 80% at 70% 70%, var(--evt), transparent), linear-gradient(135deg, #3a5cf0, #0b1660 75%); box-shadow: inset 0 0 0 0.05em rgb(225 238 255 / 75%), 0 0 0.3em rgb(0 0 12 / 60%); }
+  :root[data-style="prism"] .alert-card .evt-amount { background: linear-gradient(rgb(255 255 255 / 24%), transparent 45%), var(--evt); box-shadow: inset 0 0.05em 0 rgb(255 255 255 / 70%); }
+  :root[data-style="prism"] .alert-card .prism-floor { background: radial-gradient(closest-side, rgb(40 90 255 / 42%), rgb(30 60 220 / 10%) 45%, transparent 62%), radial-gradient(closest-side, rgb(2 4 12 / 74%) 30%, rgb(2 4 12 / 52%) 62%, rgb(2 4 12 / 18%) 84%, transparent); }
+  :root[data-style="prism"][data-overlay="light"] .alert-card .prism-floor { background: radial-gradient(closest-side, rgb(80 130 255 / 30%), transparent 60%), radial-gradient(closest-side, rgb(246 248 255 / 80%) 30%, rgb(246 248 255 / 55%) 62%, rgb(246 248 255 / 18%) 84%, transparent); }
+  :root[data-style="prism"] .alert-card .prism-floor::after { background: radial-gradient(closest-side, transparent 93%, rgb(230 240 255 / 80%) 96.5%, transparent); }
 }
 
 /* ---- positions: pinned to their edge, so the next alert does not jump when the old one is removed */
 :root[data-style="prism"][data-position="top"] .ov-list { align-items: start; }
-:root[data-style="prism"][data-position="top"] .alert-card { margin-top: calc(var(--pr-sky) + 1.5em); } /* room for the overshoot and the camera's dolly-in at the top edge */
+:root[data-style="prism"][data-position="top"] .alert-card { margin-top: calc(var(--pr-sky) + 2em); } /* room for the overshoot at the source's top edge */
 :root[data-style="prism"][data-position="bottom"] .ov-list { align-items: end; }
 
-/* ---- narrow source: the amount goes under the text; the cluster is scaled down to the card */
+/* ---- narrow source: the cluster is scaled down to the source */
 @media (max-width: 560px) {
-  :root[data-style="prism"] .alert-card { --pr-sky: 5.6em; }
-  :root[data-style="prism"] .alert-card .evt { flex-wrap: wrap; gap: 0.6em; padding: 0.7em 0.85em 0.7em 0.65em; }
-  :root[data-style="prism"] .alert-card .evt-icon { width: 1.9em; height: 1.9em; }
-  :root[data-style="prism"] .alert-card .evt-body { flex: 1 1 60%; }
-  :root[data-style="prism"] .alert-card .evt-amount { margin-left: 2.5em; }
-  :root[data-style="prism"] .alert-card .prism-stage { transform: scale(0.72); transform-origin: 50% 100%; }
-  :root[data-style="prism"] .alert-card .prism-sheen { left: calc(50% - 6.2em); width: 12.4em; }
+  :root[data-style="prism"] .alert-card { --pr-sky: 7.4em; --pr-ground: 1.7em; }
+  :root[data-style="prism"] .alert-card .prism-stage, :root[data-style="prism"] .alert-card .prism-sheen { transform: scale(0.8); transform-origin: 50% 100%; }
 }
 
-/* ---- exit (450 ms): the text goes out, the bars drop back into the slab from the edges in, the slab folds up into its
-   line of light, which closes to the centre. Each exit is appended to the element's entry list, so an alert that leaves
-   during its entry starts from where it is. */
+/* ---- .gone (450 ms): if the outro has not run yet (a short alert), the same moves, faster; then everything fades.
+   Each list repeats the element's earlier animations first, so they are not restarted. */
 :root[data-style="prism"] .alert-card.gone { animation: prism-out 0.45s linear forwards; }
-:root[data-style="prism"] .alert-card.gone .prism-bar { animation: prism-shoot 0.7s calc(0.14s + var(--dl)) backwards, prism-drop 0.2s cubic-bezier(0.5, 0, 0.9, 0.5) calc(0.1s - var(--dl) * 0.3) forwards; }
-:root[data-style="prism"] .alert-card.gone .evt-body, :root[data-style="prism"] .alert-card.gone .evt-icon, :root[data-style="prism"] .alert-card.gone .evt-amount { animation: prism-dim 0.16s ease-in forwards; }
-:root[data-style="prism"] .alert-card.gone .prism-slab { animation: prism-unfold 0.32s cubic-bezier(0.3, 0.7, 0.2, 1) 0.06s backwards, prism-fold 0.18s cubic-bezier(0.6, 0, 0.8, 0.5) 0.22s forwards; }
-:root[data-style="prism"] .alert-card.gone .prism-sheen { animation: prism-hide 0.12s ease-in forwards; }
-:root[data-style="prism"] .alert-card.gone::after { animation: prism-line 0.22s cubic-bezier(0.2, 0.8, 0.3, 1) backwards, prism-close 0.12s ease-in 0.33s forwards; }
-:root[data-style="prism"] .alert-card.gone::before { animation: prism-glow-in 0.9s ease-out 0.2s backwards, prism-hide 0.3s ease-in 0.1s forwards; }
+:root[data-style="prism"] .alert-card.gone .prism-drop { animation: prism-collapse 0.5s linear calc(var(--pr-out-at) + var(--out)) forwards, prism-drop 0.26s cubic-bezier(0.5, 0, 0.9, 0.5) calc(var(--out) * 0.5) forwards; }
+:root[data-style="prism"] .alert-card.gone .prism-scene { animation: prism-away 0.9s cubic-bezier(0.55, 0, 0.75, 0.45) var(--pr-out-at) forwards, prism-away-fast 0.42s cubic-bezier(0.55, 0, 0.75, 0.45) forwards; }
+:root[data-style="prism"] .alert-card.gone .evt { animation: prism-hide 0.22s ease-in forwards; }
 
-@keyframes prism-out { 0%, 88% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes prism-line { from { transform: scaleX(0); } }
-@keyframes prism-close { to { transform: scaleX(0); } }
-@keyframes prism-unfold { from { transform: scaleY(0.02); } }
-@keyframes prism-fold { to { transform: scaleY(0.02); } }
-@keyframes prism-glow-in { from { opacity: 0; transform: scaleX(0.5); } }
-@keyframes prism-sheen { /* one slow pass (1.2 s), then out of sight until the next (every 3.6 s: 0.45, 4.05 s…) */
+@keyframes prism-show { from { opacity: 0; } }
+@keyframes prism-hide { to { opacity: 0; } }
+@keyframes prism-fade { to { filter: opacity(0) blur(0.06em); } } /* filter: the entry already animates opacity and transform */
+@keyframes prism-rise { from { opacity: 0; transform: translateY(0.4em); } }
+@keyframes prism-out { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes prism-crane { /* from the floor's level, close and side-on (the bars read as an equalizer in a row), the camera swings round and cranes up to the three-quarter view: the cluster's depth opens up. The heading (with the orbit's) stays within (-90°, 0°), where each bar's three drawn faces close the box */
+  from { transform: rotateX(-3deg) rotateY(-76deg) scale3d(1.3, 1.3, 1.3); } /* with the orbit's -12° at 0 ms: -88° */
+  to { transform: rotateX(-20deg) rotateY(-45deg) scale3d(1, 1, 1); }
+}
+@keyframes prism-orbit { from { transform: rotateY(-16deg); } to { transform: rotateY(16deg); } }
+@keyframes prism-wave { /* two beats, each a quick attack and a slow decay; starts and ends at rest height */
+  0%, 100% { transform: scaleY(1); animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
+  10% { transform: scaleY(0.86); animation-timing-function: cubic-bezier(0.3, 0, 0.2, 1); }
+  16% { transform: scaleY(1.1); animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
+  42% { transform: scaleY(0.84); animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
+  58% { transform: scaleY(0.92); animation-timing-function: cubic-bezier(0.3, 0, 0.2, 1); }
+  64% { transform: scaleY(1.06); animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
+  88% { transform: scaleY(0.9); animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1); }
+}
+@keyframes prism-grow { /* the chime pumps the bar up in four kicks (0 / 110 / 224 / 364 ms after the ripple reaches it), the last one overshoots */
+  0% { transform: translateZ(var(--z)) scale3d(0.05, 0.001, 0.05); animation-timing-function: cubic-bezier(0.2, 0.75, 0.4, 1); }
+  6% { transform: translateZ(var(--z)) scale3d(1, 0.4, 1); animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.6); }
+  11% { transform: translateZ(var(--z)) scale3d(1, 0.34, 1); animation-timing-function: cubic-bezier(0.2, 0.75, 0.4, 1); }
+  17% { transform: translateZ(var(--z)) scale3d(1, 0.7, 1); animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.6); }
+  22.4% { transform: translateZ(var(--z)) scale3d(1, 0.63, 1); animation-timing-function: cubic-bezier(0.2, 0.75, 0.4, 1); }
+  29% { transform: translateZ(var(--z)) scale3d(1, 0.96, 1); animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.6); }
+  36.4% { transform: translateZ(var(--z)) scale3d(1, 0.88, 1); animation-timing-function: cubic-bezier(0.2, 0.75, 0.4, 1); }
+  47% { transform: translateZ(var(--z)) scale3d(1, 1.16, 1); animation-timing-function: ease-in-out; }
+  63% { transform: translateZ(var(--z)) scale3d(1, 0.93, 1); animation-timing-function: ease-in-out; }
+  80% { transform: translateZ(var(--z)) scale3d(1, 1.03, 1); animation-timing-function: ease-in-out; }
+  100% { transform: translateZ(var(--z)) scale3d(1, 1, 1); }
+}
+@keyframes prism-pulse { /* light runs up inside the bar from the floor on the chime's first note */
+  from { background-position-y: calc(100% + 0.8em - var(--pr-refl)), 0, 0, 0, 0, calc(100% - var(--pr-refl)), 0, var(--g1), var(--r1), 100%, 100%, calc(100% - var(--pr-refl)); }
+  to { background-position-y: -2em, 0, 0, 0, 0, calc(100% - var(--pr-refl)), 0, var(--g1), var(--r1), 100%, 100%, calc(100% - var(--pr-refl)); }
+}
+@keyframes prism-ring { /* a ring of light runs out on the floor from the cluster's foot */
+  0% { opacity: 0.9; transform: scale(0.15); }
+  45% { opacity: 0.55; }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+@keyframes prism-flash { 0% { opacity: 1; transform: translateX(-100%); } 100% { opacity: 1; transform: translateX(300%); } }
+@keyframes prism-sweep { /* one slow pass (1.2 s), then out of sight until the next */
   0% { opacity: 1; transform: translateX(-100%); }
-  33% { opacity: 1; transform: translateX(265%); }
-  33.01%, 100% { opacity: 0; transform: translateX(265%); }
+  33% { opacity: 1; transform: translateX(300%); }
+  33.01%, 100% { opacity: 0; transform: translateX(300%); }
 }
-@keyframes prism-crane { /* the camera starts close and level, and cranes up to look down on the cluster */
-  from { transform: translateZ(10em) rotateX(-2deg); }
-  to { transform: translateZ(0) rotateX(-22deg); }
+@keyframes prism-collapse { /* a last kick, then the column sinks into the floor while it is pulled into the cluster's centre */
+  0% { transform: scale3d(1, 1, 1); }
+  28% { transform: scale3d(1, 1.12, 1); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0.3); }
+  70% { transform: scale3d(0.75, 0.15, 0.75); animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1); }
+  100% { transform: scale3d(0.02, 0.001, 0.02); }
 }
-@keyframes prism-drift { to { transform: rotateX(6deg); } }
-@keyframes prism-shoot { /* sprouts from a point (no tile shows while it waits), up past its height, a dip, a small rebound: an equalizer hit */
-  0% { transform: translateZ(var(--z)) rotateY(var(--pr-yaw)) scale3d(0.05, 0.001, 0.05); animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1); }
-  12% { transform: translateZ(var(--z)) rotateY(var(--pr-yaw)) scale3d(1, 0.35, 1); animation-timing-function: cubic-bezier(0.2, 0.7, 0.35, 1); }
-  36% { transform: translateZ(var(--z)) rotateY(var(--pr-yaw)) scale3d(1, 1.16, 1); animation-timing-function: ease-in-out; }
-  62% { transform: translateZ(var(--z)) rotateY(var(--pr-yaw)) scale3d(1, 0.92, 1); animation-timing-function: ease-in-out; }
-  82% { transform: translateZ(var(--z)) rotateY(var(--pr-yaw)) scale3d(1, 1.025, 1); animation-timing-function: ease-in-out; }
-  100% { transform: translateZ(var(--z)) rotateY(var(--pr-yaw)) scale3d(1, 1, 1); }
+@keyframes prism-drop { to { transform: scale3d(0.02, 0.001, 0.02); } }
+@keyframes prism-away { /* the camera pulls back and up, the scene fades */
+  0% { transform: none; opacity: 1; }
+  60% { opacity: 1; }
+  100% { transform: translateY(-1.2em) scale(0.78); opacity: 0; }
 }
-@keyframes prism-drop { /* falls back into the slab and closes to a point */
-  80% { transform: translateZ(var(--z)) rotateY(var(--pr-yaw)) scale3d(1, 0.08, 1); }
-  100% { transform: translateZ(var(--z)) rotateY(var(--pr-yaw)) scale3d(0.05, 0.001, 0.05); }
-}
-@keyframes prism-eq-a { 0%, 100% { transform: scaleY(1); } 22% { transform: scaleY(0.86); } 41% { transform: scaleY(0.97); } 63% { transform: scaleY(0.8); } 81% { transform: scaleY(0.94); } }
-@keyframes prism-eq-b { 0%, 100% { transform: scaleY(1); } 30% { transform: scaleY(0.83); } 52% { transform: scaleY(0.95); } 74% { transform: scaleY(0.88); } }
-@keyframes prism-eq-c { 0%, 100% { transform: scaleY(1); } 18% { transform: scaleY(0.92); } 45% { transform: scaleY(0.78); } 70% { transform: scaleY(0.9); } 88% { transform: scaleY(0.85); } }
-@keyframes prism-turn { from { opacity: 0; transform: perspective(10em) rotateY(-80deg) scale(0.8); } }
-@keyframes prism-word { /* split by the prism: a pink and a cyan ghost converge into the word */
-  0% { opacity: 0; color: transparent; transform: translateX(-0.25em); text-shadow: -0.24em 0 0.05em rgb(255 90 190 / 90%), 0.24em 0 0.05em rgb(90 220 255 / 90%); }
-  40% { opacity: 1; text-shadow: -0.07em 0 0.02em rgb(255 90 190 / 75%), 0.07em 0 0.02em rgb(90 220 255 / 75%); }
+@keyframes prism-away-fast { to { transform: translateY(-1em) scale(0.8); opacity: 0; } }
+@keyframes prism-gem { from { opacity: 0; transform: rotate(-135deg) scale(0.3); } }
+@keyframes prism-word-in { from { opacity: 0; transform: translateX(-0.25em); } 40% { opacity: 1; } }
+@keyframes prism-split { /* split by the prism: a pink and a cyan ghost converge into the word */
+  0% { color: transparent; text-shadow: -0.24em 0 0.05em rgb(255 90 190 / 90%), 0.24em 0 0.05em rgb(90 220 255 / 90%); }
+  60% { text-shadow: -0.06em 0 0.02em rgb(255 90 190 / 70%), 0.06em 0 0.02em rgb(90 220 255 / 70%); }
   100% { text-shadow: var(--pr-shade); }
 }
-@keyframes prism-rise { from { opacity: 0; transform: translateY(0.4em); } }
-@keyframes prism-dim { to { opacity: 0; filter: blur(0.12em); } }
-@keyframes prism-hide { to { opacity: 0; } }
+@keyframes prism-word-out { /* and split back into light (colour and shadow only: the entry animates opacity and transform) */
+  0% { text-shadow: var(--pr-shade); }
+  40% { color: transparent; text-shadow: -0.08em 0 0.02em rgb(255 90 190 / 85%), 0.08em 0 0.02em rgb(90 220 255 / 85%); }
+  100% { color: transparent; text-shadow: -0.34em 0 0.08em rgb(255 90 190 / 0%), 0.34em 0 0.08em rgb(90 220 255 / 0%); }
+}
 
 /* ---- silk (ref D): a sphere woven of line-hatched silk sheets (cold at the top, the event colour at the bottom, smoke
    wisps lifting off the top) holds the icon; a silk ribbon flows under the title and past it. Sheets whip in on spirals and

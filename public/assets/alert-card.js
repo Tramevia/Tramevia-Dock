@@ -172,43 +172,43 @@ function rocker(card) {
   );
 }
 
-// ------------------------------------------------------------------ prism: glass prisms on a black glass slab
-// A cluster of glass prisms standing on a black glass slab (after a 3D motion piece: glossy glass bars rising and
-// falling like an equalizer). Each bar is one element: its lit front face, its darker right side (::before) and its cap
-// (::after); under the slab's edge the bar goes on as its reflection. The bars stand in three rows in a 3D rig (the camera:
-// the rig cranes up during the entry, the cam inside it drifts at rest; one transform animation each, so both stay on the
-// compositor), each turned three-quarters to the camera. They are dealt into three voices (one bar in three each, so
-// neighbours differ): at rest each voice breathes on its own rhythm, an equalizer in which only three layers move.
-// Rows: [depth (0 front … 2 back), x offset in bar spacings, heights (em) left to right]: heights in clumps.
-const ROWS = [
-  [2, 0.25, [3.6, 6.8, 7.4, 6.6, 3.2, 5.6, 6]],
-  [1, 0, [2.6, 5.4, 6.2, 5, 2.2, 2.8, 6.4, 3]],
-  [0, 0.25, [1.6, 2, 4.2, 4.8, 3.8, 1.4, 1.9]],
+// ------------------------------------------------------------------ prism: glass prisms on a black mirror floor
+// A cluster of glass prisms on a black mirror floor (after a 3D motion piece: glossy glass bars rising and falling
+// like an equalizer while the camera moves around them). No card: the text floats in front of the cluster, above the floor.
+// Each bar is one element: its front face, its side (::before) and its cap (::after); under the floor it goes on as its
+// reflection. Scene graph: scene (2D: the camera pulling away at the end) > stage (perspective) > rig (the crane at the
+// start) > cam (the slow orbit) > floor + 5 drops (the outro's collapse, column by column) > 5 columns (the travelling wave
+// of the equalizer) > bars (the burst). One transform animation per element: two on one element (even one still waiting)
+// would take it off the compositor.
+// [column, row, height (em)] on a 5 x 5 grid seen corner-on: row 0 is the back, column 4 the right; heights in clumps.
+const BARS = [
+  [0, 0, 3.6], [1, 0, 5.4], [2, 0, 6.9], [3, 0, 4.2],
+  [0, 1, 4.6], [1, 1, 7.6], [2, 1, 6], [3, 1, 3.4], [4, 1, 2.8],
+  [0, 2, 3], [1, 2, 5.9], [2, 2, 5], [3, 2, 6.4], [4, 2, 2.2],
+  [0, 3, 4.2], [1, 3, 3.6], [2, 3, 2.6], [3, 3, 2], [4, 3, 1.4],
+  [1, 4, 1.8], [2, 4, 3], [3, 4, 1.3],
 ];
-const STEP = 1.75; // em between bar centres in a row: a 1em bar turned 38° spans 1.4em, so the black shows between bars
+const STEP = 1.28; // em between bar centres; the bars are 0.82em square
 
 function prism(card, event) {
-  const flip = [...(event.user?.name || '')].length % 2 ? -1 : 1; // every other name length mirrors the cluster
-  const voices = [0, 1, 2].map(v => h(`i.prism-voice.prism-v${v}`));
-  let i = 0;
-  for (const [depth, offset, heights] of ROWS) {
-    heights.forEach((ht, k) => {
-      const x = +(flip * (k - (heights.length - 1) / 2 + offset - 0.25) * STEP).toFixed(2);
-      voices[i % 3].append(h('i.prism-bar', { style: {
-        '--x': `${x}em`, '--z': `${-STEP * depth}em`, '--h': `${ht}em`,
-        // the burst runs from the centre out in five rings (each distinct start time costs the main thread a style pass
-        // per frame while it waits, so 25 bars start in a few groups), the back rows a beat late
-        '--dl': `${70 * Math.min(4, Math.floor(Math.abs(x) / 1.75)) + 20 * depth}ms`,
-        // refractions seen through the glass and the iridescent glints on the edges, at bar-specific heights
-        '--r1': `${(0.9 + (i * 0.53) % 1.8).toFixed(2)}em`, '--r2': `${(1.8 + (i * 0.71) % 2.2).toFixed(2)}em`,
-        '--g1': `${(0.3 + (i * 0.37) % 1.4).toFixed(2)}em`, '--g2': `${(0.8 + (i * 0.61) % 1.9).toFixed(2)}em`,
-      } }));
-      i++;
-    });
-  }
-  card.prepend(h('i.prism-slab')); // the black glass under everything: the bars' reflections and the text lie on it
-  card.append(h('i.prism-stage', h('i.prism-rig', h('i.prism-cam', ...voices))), h('i.prism-sheen'));
-  if (card.querySelector('.evt-amount')) card.classList.add('prism-money'); // the title sizes for the narrower column (no :has() in CEF 103)
+  const flip = [...(event.user?.name || '')].length % 2; // every other name length mirrors the cluster
+  const cols = [0, 1, 2, 3, 4].map(c => h('i.prism-col', { style: { '--ph': `${c * 480}ms` } })); // the wave reaches each column 480 ms after the last
+  const drops = cols.map((col, c) => h('i.prism-drop', { style: { '--out': `${c * 80}ms` } }, col)); // the collapse runs across the columns
+  BARS.forEach(([c0, r, ht], i) => {
+    const c = flip ? r : c0, row = flip ? c0 : r; // swapping column and row mirrors the cluster left to right on screen
+    const ring = Math.round(Math.hypot(c - 2, row - 2)); // rings around the impact point, the cluster's centre
+    // light pulses run up the tall bars on the chime (a background animation: main thread, so the short ones are left out)
+    cols[c].append(h(ht >= 4.5 ? 'i.prism-bar.prism-lit' : 'i.prism-bar', { style: {
+      '--x': `${(c - 2) * STEP}em`, '--z': `${(row - 2) * STEP}em`, '--h': `${ht}em`,
+      '--dl': `${ring * 60}ms`, // the chime's ripples reach this ring after 0 / 60 / 120 / 180 ms
+      // refractions seen through the glass and the iridescent glints on the edges, at bar-specific heights
+      '--r1': `${(0.7 + (i * 0.53) % 1.6).toFixed(2)}em`, '--r2': `${(1.4 + (i * 0.71) % 1.9).toFixed(2)}em`,
+      '--g1': `${(0.3 + (i * 0.37) % 1.2).toFixed(2)}em`, '--g2': `${(0.8 + (i * 0.61) % 1.5).toFixed(2)}em`,
+    } }));
+  });
+  card.append(h('i.prism-scene',
+    h('i.prism-stage', h('i.prism-rig', h('i.prism-cam', h('i.prism-floor'), ...drops))),
+    h('i.prism-sheen')));
 }
 
 /** Style → function(card, event) that adds the style's own elements to a new card. Styles made of CSS only (card, text) have none. */
