@@ -9,10 +9,14 @@
 // when that is smaller.
 // A long name splits at a seam (aB, a1, _ . -) into two rows: a stack of two rings, a turning drum.
 // Geometry is in em of the ring font (the CSS sizes the stage from --neon-wd / --neon-h).
+// The hero: the name again, flat and big under the ring (the ring's ends curl away), as a neon sign: one line, or two at
+// that same seam when the source is narrow (the CSS sizes it from --neon-nw / --neon-np).
 const FONT = '900 100px Impact, "Bahnschrift Condensed", "Arial Narrow", sans-serif';
+const HERO = '400 100px Impact, "Bahnschrift Condensed", "Arial Narrow", sans-serif', HTRACK = 0.02; // the hero's font and tracking, as in the CSS
 const PICTO = /\p{Extended_Pictographic}/u;
 const SEAM = /(?<=\p{Ll})(?=\p{Lu}|\d)|(?<=[_.\-\s])(?=[^_.\-\s])/u; // where a name may split into two rows
 const SEP = '✦';
+const ZWSP = '\u200b'; // zero-width space: a line may break here
 const TRACK = 0.06; // letter spacing (em), as in the CSS: a gap where the walls show between letters
 const TILT = 28, ROLL = -10; // rest view (deg), as in the CSS (.neon-tilt)
 const SY1 = 2.3, SY2 = 1.75; // the letters' stretch (--neon-sy): one ring, a two-row drum (whose row pitch follows)
@@ -47,18 +51,15 @@ export default function decorate(card, event, { h }) {
   const adv = g => ctx.measureText(g).width / 100 + TRACK;
   const glyphs = t => [...new Intl.Segmenter().segment(t.toUpperCase())].map(s => [s.segment, adv(s.segment)]);
   const width = gs => gs.reduce((s, g) => s + g[1], 0);
-  // One row, or two split at the seam that balances them best (each at least a third of the name).
-  let lines = [raw];
-  const total = width(glyphs(raw));
-  if (total > 8.5) {
-    const parts = raw.split(SEAM);
-    let best = null;
-    for (let i = 1; i < parts.length; i++) {
-      const a = parts.slice(0, i).join('').trim(), b = parts.slice(i).join('').trim(), wa = width(glyphs(a));
-      if (Math.min(wa, total - wa) >= total / 3 && (!best || Math.abs(2 * wa - total) < best[0])) best = [Math.abs(2 * wa - total), a, b];
-    }
-    if (best) lines = best.slice(1);
+  // The seam that splits the name most evenly (each part at least a third of it): the ring's two rows (a long name), the
+  // hero's line break.
+  const total = width(glyphs(raw)), parts = raw.split(SEAM);
+  let best = null;
+  for (let i = 1; i < parts.length; i++) {
+    const cut = parts.slice(0, i).join('').length, wa = width(glyphs(raw.slice(0, cut).trim()));
+    if (Math.min(wa, total - wa) >= total / 3 && (!best || Math.abs(2 * wa - total) < best.d)) best = { d: Math.abs(2 * wa - total), cut };
   }
+  const lines = best && total > 8.5 ? [raw.slice(0, best.cut).trim(), raw.slice(best.cut).trim()] : [raw];
   const rows = lines.map(glyphs);
   const SY = rows.length > 1 ? SY2 : SY1, ROW = 0.81 * SY + 0.3;
   const lineW = Math.max(...rows.map(width));
@@ -147,4 +148,13 @@ export default function decorate(card, event, { h }) {
   set('--neon-h', y1 - y0 + 0.4);
   set('--neon-cy', -y0 + 0.2);
   card.append(h('i.neon-stage', h('i.neon-tilt', h('i.neon-sway', h('i.neon-whip', ...spins)))));
+  if (!user) return;
+  // The hero, with a zero-width space at the seam (a break opportunity, used only if the line is too long), its width and
+  // its widest unbreakable piece in em of its font.
+  ctx.font = HERO;
+  const hw = t => ctx.measureText(t).width / 100 + [...new Intl.Segmenter().segment(t)].length * HTRACK;
+  const text = best ? raw.slice(0, best.cut) + ZWSP + raw.slice(best.cut) : raw;
+  set('--neon-nw', hw(raw));
+  set('--neon-np', Math.max(...text.split(/[\s\u200b]+/).map(hw)));
+  card.append(h('i.neon-name', text));
 }

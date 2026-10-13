@@ -2311,6 +2311,8 @@ html, body { height: 100%; overflow: hidden; }
   --neon-sheen: linear-gradient(160deg, rgb(255 130 205 / 50%) 18%, rgb(255 130 205 / 0%) 44%, rgb(40 0 110 / 14%) 60%, rgb(40 225 255 / 55%) 84%);
   --neon-glint: linear-gradient(100deg, rgb(255 255 255 / 0%) 35%, rgb(255 255 255 / 85%) 50%, rgb(255 255 255 / 0%) 65%);
   --neon-fs: min(2.6em, min(100vw - 2.4em, 18em) / var(--neon-wd), 8.5em / var(--neon-h)); /* the ring's font size */
+  /* the hero's size (in em of the card's text), see .neon-name; no name: its largest */
+  --neon-hs: clamp(max(0.8em, min(1.4em, min(100vw - 2.4em, 21em) / (var(--neon-np, 1) * 1.03))), min(100vw - 2.4em, 21em) / (var(--neon-nw, 1) * 1.03), 1.9em);
   display: flex; flex-direction: column; align-items: center; isolation: isolate;
 }
 
@@ -2379,6 +2381,20 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="neon"] .alert-card .neon-pic { color: #fff; -webkit-text-stroke: 0; }
 :root[data-style="neon"] .alert-card .neon-pic::before { display: none; }
 
+/* ---- the hero: the name flat and big under the ring, a neon sign in the event colour (white-hot core, a tube glow, a dark
+   halo for bright scenes). One line, shrunk to the source down to 1.4em (1.33 x the title); then it wraps at the seam
+   decorate.js marks; a name with no seam shrinks further rather than breaking a word (--neon-nw / --neon-np: its width
+   and its widest piece, in em of its font; 3 % of slack for the measure) */
+:root[data-style="neon"] .alert-card .neon-name {
+  order: -1; display: block; max-width: 100%; margin: 0.1em 0 0.02em; text-align: center; pointer-events: none;
+  font-family: Impact, "Bahnschrift Condensed", "Arial Narrow", sans-serif; font-weight: 400; font-synthesis: none; letter-spacing: 0.02em;
+  font-size: var(--neon-hs);
+  line-height: 1.12; overflow-wrap: anywhere; /* the last resort: a piece wider than the source even at 0.8em */
+  color: color-mix(in srgb, var(--evt) 28%, #fff);
+  text-shadow: 0 0 0.03em #fff, 0 0 0.09em var(--evt), 0 0 0.22em var(--evt), 0 0 0.55em color-mix(in srgb, var(--evt) 75%, transparent),
+    0 0.04em 0.1em var(--neon-halo), 0 0 0.9em var(--neon-halo2);
+}
+
 /* ---- the flat text under the ring: white light, the event colour as its glow */
 :root[data-style="neon"] .alert-card .evt {
   flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.2em 0.55em; margin-top: 0.15em; text-align: center; color: var(--neon-ink);
@@ -2392,8 +2408,9 @@ html, body { height: 100%; overflow: hidden; }
 }
 :root[data-style="neon"] .alert-card .evt-icon svg { width: 1.3em; height: 1.3em; }
 :root[data-style="neon"] .alert-card .evt-body { flex: 0 1 auto; align-items: center; }
-:root[data-style="neon"] .alert-card .evt-title { /* a neon sign: white core, a halo in the event colour */
-  font-size: 1.05em; font-weight: 700; line-height: 1.25;
+:root[data-style="neon"] .alert-card .evt-title { /* a neon sign: white core, a halo in the event colour. 1.05em, smaller (to
+   0.8em) only when the hero had to shrink, so the name stays 1.3 x bigger */
+  font-size: clamp(0.8em, var(--neon-hs) / 1.3, 1.05em); font-weight: 700; line-height: 1.25;
   text-shadow: 0 0 0.06em rgb(255 255 255 / 55%), 0 0 0.25em var(--evt), 0 0.04em 0.12em var(--neon-halo), 0 0 0.6em var(--neon-halo2), 0 0 1.1em color-mix(in srgb, var(--evt) 45%, var(--neon-halo2));
 }
 :root[data-style="neon"] .alert-card .evt-meta { justify-content: center; color: var(--neon-sub); font-size: 0.75em; }
@@ -2413,6 +2430,7 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="neon"] .alert-card .neon-spin.neon-r2 { animation-name: neon-spin-r2; }
 :root[data-style="neon"] .alert-card .neon-f::before { animation: neon-light 1200ms cubic-bezier(0.18, 0.5, 0.3, 1) backwards, neon-glint 700ms ease-in-out 1450ms backwards; }
 :root[data-style="neon"] .alert-card .neon-r2 .neon-f::before { animation-name: neon-light-r2, neon-glint; }
+:root[data-style="neon"] .alert-card .neon-name { animation: neon-ignite 700ms linear 560ms backwards; } /* the hero first */
 :root[data-style="neon"] .alert-card .evt-icon { animation: neon-ignite 700ms linear 850ms backwards; }
 :root[data-style="neon"] .alert-card .evt-title .w { animation: neon-ignite 700ms linear calc(950ms + var(--i) * 70ms) backwards; }
 :root[data-style="neon"] .alert-card .evt-text { animation: neon-ignite 700ms linear 1150ms backwards; }
@@ -2475,7 +2493,7 @@ html, body { height: 100%; overflow: hidden; }
    it is. */
 :root[data-style="neon"] .alert-card.gone { animation: neon-out 450ms linear forwards; }
 :root[data-style="neon"] .alert-card.gone .neon-whip { animation: neon-whip 450ms cubic-bezier(0.55, 0, 0.85, 0.4) forwards; }
-:root[data-style="neon"] .alert-card.gone .evt { animation: neon-off 300ms linear forwards; }
+:root[data-style="neon"] .alert-card.gone :is(.evt, .neon-name) { animation: neon-off 300ms linear forwards; }
 @keyframes neon-out { 0%, 50% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes neon-whip { to { transform: rotateX(-34deg) rotateY(-240deg) scale3d(0.42, 0.42, 0.42); } }
 @keyframes neon-off { 0% { opacity: 1; } 20% { opacity: 0.25; } 38% { opacity: 0.85; } 100% { opacity: 0; } }
@@ -2491,6 +2509,10 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="neon"][data-overlay="light"] .alert-card .neon-f::after {
   --neon-b: color-mix(in srgb, var(--g) 55%, var(--neon-side));
   --neon-bloom: 0 0 0.25em color-mix(in srgb, var(--g) 60%, transparent), 0 0 0.8em color-mix(in srgb, var(--g) 30%, transparent);
+}
+:root[data-style="neon"][data-overlay="light"] .alert-card .neon-name { /* the name in event-colour ink, a white halo, a soft tinted glow */
+  color: color-mix(in srgb, var(--evt) 80%, #1b1530);
+  text-shadow: 0 0 0.06em var(--neon-halo), 0 0 0.25em var(--neon-halo), 0 0 0.7em color-mix(in srgb, var(--evt) 45%, transparent);
 }
 :root[data-style="neon"][data-overlay="light"] .alert-card .evt-title {
   text-shadow: 0 0 0.12em var(--neon-halo), 0 0 0.5em var(--neon-halo2), 0 0 1em color-mix(in srgb, var(--evt) 35%, transparent);
@@ -2525,6 +2547,8 @@ html, body { height: 100%; overflow: hidden; }
   :root[data-style="neon"] .alert-card .evt-icon { color: #fff; }
   :root[data-style="neon"] .alert-card .evt-title { text-shadow: 0 0 0.25em var(--evt), 0 0.04em 0.12em var(--neon-halo), 0 0 0.6em var(--neon-halo2); }
   :root[data-style="neon"] .alert-card .evt-amount { border-color: var(--evt); }
+  :root[data-style="neon"] .alert-card .neon-name { color: #fff; text-shadow: 0 0 0.09em var(--evt), 0 0 0.22em var(--evt), 0 0 0.55em var(--evt), 0 0.04em 0.1em var(--neon-halo); }
+  :root[data-style="neon"][data-overlay="light"] .alert-card .neon-name { color: var(--evt); text-shadow: 0 0 0.06em var(--neon-halo), 0 0 0.25em var(--neon-halo); }
   :root[data-style="neon"][data-overlay="light"] .alert-card .evt-icon { color: var(--evt); }
   :root[data-style="neon"][data-overlay="light"] .alert-card .evt-title { text-shadow: 0 0 0.12em var(--neon-halo), 0 0 0.5em var(--neon-halo2); }
 }
