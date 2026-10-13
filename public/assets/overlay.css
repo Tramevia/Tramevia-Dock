@@ -871,6 +871,8 @@ html, body { height: 100%; overflow: hidden; }
   --gl-hot: color-mix(in srgb, var(--evt) 40%, #fff6e6);   /* white-hot: the lit edge, the lens ring, the hot spot */
   --gl-fringe: color-mix(in srgb, var(--evt) 40%, #5b3dff); /* where the warm light meets the cool ground */
   --gl-tint: rgb(9 12 17 / 86%);
+  --gl-see: rgb(190 215 240 / 15%);  /* the glass before the light: see-through frost. The dark tint (the text backing) only comes once
+                                        the warm light has filled the glass, so no dark shape ever appears on the scene before the light */
   --gl-frost: rgb(255 255 255 / 6%); --gl-ice: rgb(150 190 255 / 8%);
   --gl-ink: #eef3f6; --gl-name: color-mix(in srgb, var(--evt) 32%, #fff); --gl-sub: rgb(214 226 236 / 68%);
   --gl-shade: 0 0.03em 0.3em rgb(0 0 0 / 60%);
@@ -939,8 +941,9 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="glass"] .alert-card :is(.glass-body, .glass-rim) { position: absolute; pointer-events: none; }
 :root[data-style="glass"] .alert-card .glass-body {
   inset: calc(-1 * var(--gl-v)) 0; z-index: 0; clip-path: inset(var(--gl-v) 0 round var(--gl-r));
-  background: radial-gradient(90% 120% at 100% 100%, var(--gl-ice), transparent 65%), linear-gradient(170deg, var(--gl-frost), transparent 45%), var(--gl-tint);
-  --gl-in: glass-clip 1.05s var(--gl-ease) backwards; animation: var(--gl-in);
+  background-color: var(--gl-tint);
+  background-image: radial-gradient(90% 120% at 100% 100%, var(--gl-ice), transparent 65%), linear-gradient(170deg, var(--gl-frost), transparent 45%);
+  --gl-in: glass-clip 1.05s var(--gl-ease) backwards, glass-tint 0.55s ease-in-out 0.6s backwards; animation: var(--gl-in);
 }
 /* the light behind the lens corner, seen through the frost: hot in the corner, fading across the glass. Its layer has 2em of
    room on every side for the idle drift (7 s, transform only). */
@@ -1008,7 +1011,7 @@ html, body { height: 100%; overflow: hidden; }
   --gl-tint: rgb(244 247 250 / 86%); --gl-frost: rgb(255 255 255 / 60%); --gl-ice: rgb(110 150 210 / 10%);
   --gl-cool: #4a83bd; --gl-coolglow: #a8d2ff; --gl-hot: color-mix(in srgb, var(--evt) 75%, #fff);
   --gl-ink: #14181b; --gl-name: color-mix(in srgb, var(--evt) 75%, #1a1020); --gl-sub: rgb(28 38 48 / 68%);
-  --gl-shade: 0 0 0.3em rgb(255 255 255 / 70%);
+  --gl-shade: 0 0 0.3em rgb(255 255 255 / 70%); --gl-see: rgb(255 255 255 / 28%);
 }
 :root[data-style="glass"][data-overlay="light"] .alert-card .glass-rim.glass-glow { opacity: 0.6; }
 :root[data-style="glass"][data-overlay="light"] .alert-card .glass-body::after { box-shadow: inset 0 0.05em 0 rgb(255 255 255 / 90%), inset 0 -0.05em 0 rgb(0 30 60 / 6%); }
@@ -1051,7 +1054,7 @@ html, body { height: 100%; overflow: hidden; }
    from the live value instead of jumping. */
 :root[data-style="glass"] .alert-card.gone { animation: glass-in 1.25s cubic-bezier(0.3, 0.6, 0.2, 1) backwards, glass-out 0.45s cubic-bezier(0.5, 0, 0.75, 0) forwards; }
 :root[data-style="glass"] .alert-card.gone::after { animation: var(--gl-in), glass-hide 0.16s ease-in forwards; }
-:root[data-style="glass"] .alert-card.gone .glass-body { animation: var(--gl-in), glass-clip-out 0.3s cubic-bezier(0.6, 0, 0.4, 1) 0.07s forwards; }
+:root[data-style="glass"] .alert-card.gone .glass-body { animation: var(--gl-in), glass-clip-out 0.3s cubic-bezier(0.6, 0, 0.4, 1) 0.07s forwards, glass-tint-out 0.3s ease-in forwards; }
 :root[data-style="glass"] .alert-card.gone .glass-body::before { animation: glass-show 0.5s ease-out 0.95s backwards, glass-drift 7s ease-in-out 1.45s infinite alternate, glass-hide 0.25s ease-in forwards; }
 :root[data-style="glass"] .alert-card.gone .glass-body::after { animation: glass-show 0.3s ease-out 0.95s backwards, glass-hide 0.1s ease-in forwards; }
 :root[data-style="glass"] .alert-card.gone .glass-rim rect { animation: var(--gl-in), glass-rect-out 0.3s cubic-bezier(0.6, 0, 0.4, 1) 0.07s forwards; }
@@ -1069,6 +1072,8 @@ html, body { height: 100%; overflow: hidden; }
   100% { transform: perspective(40em) rotateY(0deg) rotateX(0deg) rotate(0deg) scale(1); }
 }
 @keyframes glass-clip { 0%, 36% { clip-path: inset(calc(50% - var(--gl-ch)) calc(50% - var(--gl-cw)) round var(--gl-cw)); } 100% { clip-path: inset(var(--gl-v) 0 round var(--gl-r)); } }
+@keyframes glass-tint { from { background-color: var(--gl-see); } }
+@keyframes glass-tint-out { to { background-color: var(--gl-see); } }
 @keyframes glass-clip-out { to { clip-path: inset(calc(50% - var(--gl-ch)) calc(50% - var(--gl-cw)) round var(--gl-cw)); } }
 @keyframes glass-rect { 0%, 36% { x: calc(50% - var(--gl-cw)); y: calc(50% - var(--gl-ch)); width: calc(2 * var(--gl-cw)); height: calc(2 * var(--gl-ch)); rx: var(--gl-cw); } }
 @keyframes glass-rect-out { to { x: calc(50% - var(--gl-cw)); y: calc(50% - var(--gl-ch)); width: calc(2 * var(--gl-cw)); height: calc(2 * var(--gl-ch)); rx: var(--gl-cw); } }
