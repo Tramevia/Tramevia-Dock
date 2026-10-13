@@ -1803,8 +1803,6 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="wave"] .wave-body { stroke-width: 14; opacity: 0.36; }     /* their glow (blurred fibres) */
 :root[data-style="wave"] .wave-grain { stroke-width: 4; opacity: 0.62; }    /* fine dust, lace, tendrils */
 :root[data-style="wave"] .wave-haze { stroke-width: 5; opacity: 0.4; }      /* the dim particles behind, smoke, spray dust */
-:root[data-style="wave"] .wave-fx .wave-pit { stroke: #000; stroke-width: 4; opacity: 0.85; }
-:root[data-style="wave"] .wave-haze-live { stroke-width: 26; opacity: 0.13; }
 :root[data-style="wave"] .wave-live .wave-core { stroke-width: 4.4; }
 :root[data-style="wave"] .wave-live .wave-grain { stroke-width: 4.8; opacity: 0.75; }
 :root[data-style="wave"] .wave-spray { stroke-width: 4.4; opacity: 0.85; animation: wave-lip 640ms step-end backwards; }
@@ -1812,20 +1810,42 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="wave"] .wave-live { animation: wave-rise 450ms ease-in backwards; }
 @keyframes wave-rise { from { opacity: 0.25; } }
 
-/* the dark: under the foam (tight to it), and a mist hugging the text lines and the icon (the text's own dark dust) */
+/* the dark: a light support under the foam (it rides in with it), and a mist hugging the text lines and the icon: dark dust
+   that arrives with the letters' dust (two widths stacked, so it is soft without a blur) */
 :root[data-style="wave"] .wave-fx .wave-shadow { stroke: #000; stroke-width: 64; opacity: 0.48; }
-:root[data-style="wave"] .wave-shade { filter: blur(0.3em); animation: wave-condense 600ms ease-in-out 700ms backwards; }
-:root[data-style="wave"] .wave-fx .wave-dark { stroke: #000; stroke-width: 70; opacity: 0.62; }
-:root[data-style="wave"] .wave-mist { filter: blur(0.32em); animation: wave-condense 500ms ease-out 960ms backwards; }
+:root[data-style="wave"] .wave-shade { filter: blur(0.3em); animation: wave-condense 300ms ease-out 700ms backwards; }
+:root[data-style="wave"] .wave-fx .wave-mist { stroke: #000; stroke-width: 70; opacity: 0.34; animation: wave-mist 1520ms linear backwards; }
+@keyframes wave-mist { 0%, 45% { opacity: 0; } }
 
-/* the rest condenses as the wave settles, stretch by stretch: until then the outline is the moving wave */
-:root[data-style="wave"] .wave-seg { transform-origin: 18% 55%; animation: wave-condense 460ms ease-out 700ms backwards, wave-sway-a 11s ease-in-out 1160ms infinite alternate; }
-:root[data-style="wave"] .wave-s1 { animation-delay: 860ms, 1320ms; animation-name: wave-condense, wave-sway-b; }
-:root[data-style="wave"] .wave-s2 { animation-delay: 1000ms, 1460ms; }
-/* at rest the foam is still alive: the stretches sway a hair against each other (transform only) */
-@keyframes wave-sway-a { from { transform: none; } to { transform: rotate(-0.8deg) translate(0.05em, -0.04em); } }
-@keyframes wave-sway-b { from { transform: none; } to { transform: rotate(0.7deg) translate(-0.04em, 0.05em); } }
+/* the dense rest rides in on the wave (decorate.js moves every particle from where the wave held it): base and mass from
+   640 ms, crest and lip from 800 ms; each stretch comes up as it starts moving */
+:root[data-style="wave"] .wave-seg { animation: wave-condense 280ms ease-out 640ms backwards; }
+:root[data-style="wave"] .wave-s1 { animation-delay: 800ms; }
+:root[data-style="wave"] .wave-glow { filter: blur(0.07em); }
+:root[data-style="wave"] .wave-glow .wave-body { animation: wave-condense 280ms ease-out 640ms backwards; }
+:root[data-style="wave"] .wave-glow .wave-g1 { animation-delay: 800ms; }
 @keyframes wave-condense { from { opacity: 0; } }
+
+/* ---- the hold: the wave never stops (decorate.js draws the layers once; here they move for ever, transform and opacity
+   only). Foam rolls round the curl along the wave's flow (three rings of sheet fragments: the inner faster, a dim
+   counter-current), a conveyor runs along the crest to the lip, spray keeps tearing off the lip and the base, steam leaves the
+   crest's edge, dust drifts. Curl and crest are masked by the wave's own outline: the material flows through the shape. */
+:root[data-style="wave"] .wave-flow { position: absolute; inset: 0; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; animation: wave-condense 600ms ease-out 900ms backwards; }
+:root[data-style="wave"] .wave-ring { transform-origin: var(--wave-ox) var(--wave-oy); }
+:root[data-style="wave"] .wave-ri { animation: wave-turn 6.5s linear infinite; }
+:root[data-style="wave"] .wave-rm { animation: wave-turn 10s linear -3s infinite; }
+:root[data-style="wave"] .wave-rc { animation: wave-turn 16s linear infinite reverse; }
+:root[data-style="wave"] .wave-strip { animation: wave-convey 2.2s linear infinite; }
+:root[data-style="wave"] .wave-sprays { position: absolute; inset: 0; animation: wave-condense 600ms ease-out 1100ms backwards; }
+:root[data-style="wave"] .wave-loop { transform-origin: var(--wave-lx) var(--wave-ly); opacity: 0; animation: wave-loop 2.1s cubic-bezier(0.2, 0.6, 0.4, 1) infinite; }
+:root[data-style="wave"] .wave-l1 { animation-delay: -1.05s; animation-name: wave-loop-b; }
+:root[data-style="wave"] .wave-steam { opacity: 0; animation: wave-steam 3.2s ease-out infinite; }
+:root[data-style="wave"] .wave-t1 { animation-delay: -1.6s; }
+@keyframes wave-turn { to { transform: rotate(360deg); } }
+@keyframes wave-convey { to { transform: translate(var(--wave-px), var(--wave-py)); } }
+@keyframes wave-loop { 0% { transform: scale(0.3); opacity: 0; } 12% { opacity: 1; } 100% { transform: translate(2.8em, -0.8em) scale(1.8); opacity: 0; } }
+@keyframes wave-loop-b { 0% { transform: rotate(12deg) scale(0.3); opacity: 0; } 12% { opacity: 0.9; } 100% { transform: translate(2.5em, 0.35em) rotate(12deg) scale(1.7); opacity: 0; } }
+@keyframes wave-steam { 0% { transform: translate(-0.2em, 0.15em); opacity: 0; } 25%, 55% { opacity: 0.8; } 100% { transform: translate(0.7em, -0.75em); opacity: 0; } } /* torn off the edge, drifting downwind */
 
 /* the text forms out of the dust (decorate.js draws the letters' dust): the words take over from it, left to right */
 :root[data-style="wave"] .wave-text { stroke-width: 4.2; opacity: 0; animation: wave-letters 1520ms linear; }
@@ -1834,12 +1854,6 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="wave"] .alert-card :is(.evt-icon, .evt-meta, .evt-text, .evt-amount) { animation: wave-word 420ms ease-out 1180ms backwards; }
 @keyframes wave-word { from { opacity: 0; filter: blur(0.12em); } }
 
-/* ---- rest: a faint dust drifts off the wave (two thin layers half a cycle apart, transform and opacity only) */
-:root[data-style="wave"] .wave-dusts { position: absolute; inset: 0; animation: wave-condense 900ms ease-out 1300ms backwards; }
-:root[data-style="wave"] .wave-speck { stroke-width: 4.6; opacity: 0.6; }
-:root[data-style="wave"] .wave-drift { animation: wave-drift 9s linear infinite; }
-:root[data-style="wave"] .wave-db { animation-delay: -4.5s; }
-@keyframes wave-drift { 0% { transform: translate(-0.35em, 0.12em); opacity: 0; } 30%, 65% { opacity: 1; } 100% { transform: translate(0.8em, -0.4em); opacity: 0; } }
 
 /* ---- exit (450 ms): the alert disintegrates into dust blown away. The text hands over to its dust at once; a gust from
    the left blows the live particles and the letters' dust away (d keyframes from decorate.js); the dense foam drifts off and
@@ -1848,8 +1862,9 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="wave"] .alert-card.gone .evt > * { animation: wave-vanish 110ms ease-in forwards; }
 :root[data-style="wave"] .alert-card.gone .wave-live path { animation: wave-blow 450ms cubic-bezier(0.4, 0, 0.8, 0.6) forwards; }
 :root[data-style="wave"] .alert-card.gone .wave-live .wave-text { animation: wave-blow-text 450ms cubic-bezier(0.4, 0, 0.8, 0.6) forwards; }
-:root[data-style="wave"] .alert-card.gone :is(.wave-seg, .wave-dusts) { animation: wave-scatter 330ms ease-in forwards; }
-:root[data-style="wave"] .alert-card.gone :is(.wave-shade, .wave-mist) { animation: wave-vanish 420ms ease-in 30ms forwards; }
+:root[data-style="wave"] .alert-card.gone :is(.wave-seg, .wave-glow, .wave-flow, .wave-sprays) { animation: wave-scatter 330ms ease-in forwards; }
+:root[data-style="wave"] .alert-card.gone .wave-shade { animation: wave-vanish 420ms ease-in 30ms forwards; }
+:root[data-style="wave"] .alert-card.gone .wave-live .wave-mist { animation: wave-vanish 260ms ease-in forwards; }
 @keyframes wave-out { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes wave-vanish { to { opacity: 0; } }
 @keyframes wave-blow { 33.3% { d: var(--wave-x1); } 100% { d: var(--wave-x2); opacity: 0; } }
@@ -1857,11 +1872,10 @@ html, body { height: 100%; overflow: hidden; }
 @keyframes wave-scatter { to { opacity: 0; transform: translate(1.4em, -0.35em); } }
 
 /* ---- themes. dark (default): the reference itself, white particles on black. light: its negative, ink particles on paper
-   (the dark turns to paper, the pits white). transparent: the particles on the scene with lighter darks. */
+   (the dark turns to paper). transparent: the particles on the scene with lighter darks. */
 :root[data-style="wave"][data-overlay="light"] .wave-fx path { stroke: #15171d; }
 :root[data-style="wave"][data-overlay="light"] .wave-fx .wave-shadow { stroke: #fbfbfd; opacity: 0.6; }
-:root[data-style="wave"][data-overlay="light"] .wave-fx .wave-dark { stroke: #fbfbfd; opacity: 0.8; }
-:root[data-style="wave"][data-overlay="light"] .wave-fx .wave-pit { stroke: #fff; opacity: 0.9; }
+:root[data-style="wave"][data-overlay="light"] .wave-fx .wave-mist { stroke: #fbfbfd; }
 :root[data-style="wave"][data-overlay="light"] .wave-body { opacity: 0.25; }
 :root[data-style="wave"][data-overlay="light"] .wave-haze { opacity: 0.4; }
 :root[data-style="wave"][data-overlay="light"] .alert-card .evt { color: #16181f; text-shadow: 0 0 0.2em rgb(255 255 255 / 70%); }
@@ -1872,7 +1886,7 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="wave"][data-overlay="light"] .alert-card .evt-amount { color: #16181f; }
 
 :root[data-style="wave"][data-overlay="transparent"] .wave-fx .wave-shadow { opacity: 0.4; }
-:root[data-style="wave"][data-overlay="transparent"] .wave-fx .wave-dark { opacity: 0.5; }
+:root[data-style="wave"][data-overlay="transparent"] .wave-fx .wave-mist { opacity: 0.3; }
 :root[data-style="wave"][data-overlay="transparent"] .alert-card .evt {
   --o: 0.045em; --oc: rgb(0 0 0 / 70%);
   text-shadow: var(--o) 0 0 var(--oc), calc(-1 * var(--o)) 0 0 var(--oc), 0 var(--o) 0 var(--oc), 0 calc(-1 * var(--o)) 0 var(--oc), 0 0.05em 0.35em rgb(0 0 0 / 60%);
@@ -2152,19 +2166,20 @@ html, body { height: 100%; overflow: hidden; }
 @keyframes prism-dim { to { opacity: 0; filter: blur(0.12em); } }
 @keyframes prism-hide { to { opacity: 0; } }
 
-/* ---- silk (ref D): a sphere woven of line-hatched silk ribbons (cold at the top, the event colour at the bottom, flame
-   tongues lifting off the top) holds the icon; a silk swash runs under the title. Ribbons whip in on spirals and weave the
-   orb, the flames flick up, then a broad ribbon sweeps across the card and the title appears behind it. At rest the orb
-   keeps folding (its layers sway against each other: the moiré drifts), the flames flicker, the swash breathes. Leaves by
-   unravelling: the swash whips back into the orb wiping the text, the orb's sheets spin apart and fade.
-   decorate.js builds the ribbons (one SVG per layer: threads + hems) and plays their `d` during the entry (WAAPI); this
-   file lays them out and runs everything else. Lengths shared by the card and the title are in --sk-fc (the text size). */
+/* ---- silk (ref D): a sphere woven of line-hatched silk sheets (cold at the top, the event colour at the bottom, smoke
+   wisps lifting off the top) holds the icon; a silk ribbon flows under the title and past it. Sheets whip in on spirals and
+   weave the orb, the wisps flick up, then a broad sheet sweeps across the card and the title appears behind it. For the
+   whole hold the ribbon flows: waves and bright folds travel along it, it turns edge-on and opens again, a second ribbon
+   crosses it (moiré), its tail flutters past the text; the orb's sheets fold in 3D, the wisps waver. Leaves by unravelling:
+   the ribbon whips back into the orb wiping the text, the orb's sheets spin apart and fade.
+   decorate.js builds the silk (one SVG per layer, one path each) and plays the entry's `d`; this file lays it out and runs
+   everything else (the hold: transforms only). Lengths shared by the card and the title are in --sk-fc (the text size). */
 :root[data-style="silk"] .alert-card {
   --sk-fc: min(var(--chat-fs, 28px), 7vw); /* the text size as an absolute length */
   --sk-d: calc(9 * var(--sk-fc));          /* the sphere's diameter: the hero */
   --sk-gap: calc(0.8 * var(--sk-fc));      /* orb to text */
   /* the silk, top to bottom: deep blue tips (fading out at the flames' ends), ice, a cold mix, the event colour */
-  --sk-tip: #3a5cff; --sk-ice: #3fe0ff;
+  --sk-tip: #3a5cff; --sk-ice: #3fe0ff; --sk-glint: #e6fbff;
   --sk-mid: color-mix(in oklab, var(--evt) 55%, var(--sk-ice));
   --sk-low: var(--evt);
   --sk-pool: rgb(2 4 10 / 88%);            /* the dark behind the text */
@@ -2198,8 +2213,8 @@ html, body { height: 100%; overflow: hidden; }
   animation: silk-glow 1s ease-out 0.2s backwards;
 }
 :root[data-style="silk"] .silk-orb { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-:root[data-style="silk"] .silk-core { /* a small soft dark core behind the glyph, over the sheets: the sphere itself stays open */
-  position: absolute; left: 50%; top: 50%; width: 3.2em; height: 3.2em; margin: -1.6em; border-radius: 50%;
+:root[data-style="silk"] .silk-orb::after { /* a small soft dark core behind the glyph, over the sheets: the sphere itself stays open */
+  content: ""; position: absolute; left: 50%; top: 50%; width: 3.2em; height: 3.2em; margin: -1.6em; border-radius: 50%;
   background: radial-gradient(closest-side, var(--sk-core), color-mix(in srgb, var(--sk-core) 72%, transparent) 45%, transparent);
   animation: silk-core 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) 0.32s backwards;
 }
@@ -2207,9 +2222,7 @@ html, body { height: 100%; overflow: hidden; }
    50% 55.56% of it, the top of the sphere at 50% 27.78% */
 :root[data-style="silk"] .silk-layer { position: absolute; left: -35%; top: -50%; width: 170%; height: 180%; transform-origin: 50% 55.56%; will-change: transform; }
 :root[data-style="silk"] .silk-layer > svg { display: block; width: 100%; height: 100%; overflow: visible; transform-origin: 50% 55.56%; }
-:root[data-style="silk"] :is(.silk-r, .silk-h) { fill: none; stroke-linejoin: round; }
-:root[data-style="silk"] .silk-r { stroke-width: 0.55; opacity: 0.8; } /* threads: very fine, spaced: you see through a sheet */
-:root[data-style="silk"] .silk-h { stroke-width: 0.7; opacity: 0.5; } /* hems: soft edges (the bright folds come from the threads bunching) */
+:root[data-style="silk"] .silk-r { fill: none; stroke-linejoin: round; stroke-width: 0.55; opacity: 0.75; } /* threads (and hems): very fine, spaced: you see through a sheet */
 :root[data-style="silk"] .silk-back { opacity: 0.45; }
 :root[data-style="silk"] .silk-front { opacity: 0.72; }
 :root[data-style="silk"] .silk-flame { opacity: 0.62; }
@@ -2219,11 +2232,15 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="silk"] .silk-o2 { stop-color: var(--sk-ice); }
 :root[data-style="silk"] .silk-o3 { stop-color: var(--sk-mid); }
 :root[data-style="silk"] .silk-o4 { stop-color: var(--sk-low); }
-:root[data-style="silk"] .silk-w0 { stop-color: var(--evt); stop-opacity: 0; }
-:root[data-style="silk"] .silk-w1 { stop-color: var(--evt); }
+:root[data-style="silk"] .silk-w0 { stop-color: var(--sk-tip); stop-opacity: 0; } /* the ribbon: cold above, the event colour below */
+:root[data-style="silk"] .silk-w1 { stop-color: var(--sk-ice); }
 :root[data-style="silk"] .silk-w2 { stop-color: var(--sk-mid); }
-:root[data-style="silk"] .silk-w3 { stop-color: var(--sk-ice); }
-:root[data-style="silk"] .silk-w4 { stop-color: var(--sk-tip); stop-opacity: 0.5; }
+:root[data-style="silk"] .silk-w3 { stop-color: var(--sk-low); }
+/* strip b's glint, along it (it repeats every period and travels with it): the event colour, cold, a bright band, cold */
+:root[data-style="silk"] .silk-g0 { stop-color: var(--sk-low); }
+:root[data-style="silk"] .silk-g1 { stop-color: var(--sk-mid); }
+:root[data-style="silk"] .silk-g2 { stop-color: var(--sk-glint); }
+:root[data-style="silk"] .silk-g3 { stop-color: var(--sk-mid); }
 
 /* entry: each layer spins in a little while its ribbons slide along their own circles (decorate.js) */
 :root[data-style="silk"] .silk-layer > svg { animation: silk-spin 1.16s cubic-bezier(0.2, 0.7, 0.25, 1) backwards; }
@@ -2231,17 +2248,19 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="silk"] .silk-front > svg { --sk-spin: 30deg; }
 :root[data-style="silk"] .silk-rim > svg { --sk-spin: -35deg; }
 :root[data-style="silk"] .silk-flame > svg { transform-origin: 50% 27.78%; animation-name: silk-flick; } /* from the top of the sphere: the flames flick up as the orb closes */
-/* rest: the layers sway against each other (the sheets seem to fold, the moiré drifts), the flames flicker from their base */
-:root[data-style="silk"] .silk-back { animation: silk-sway 9s ease-in-out -3s infinite alternate; --sk-a: rotate(-9deg) scale(1, 0.96); --sk-b: rotate(9deg) scale(0.88, 1); }
-:root[data-style="silk"] .silk-front { animation: silk-sway 7s ease-in-out -5s infinite alternate; --sk-a: rotate(11deg) scale(0.9, 1); --sk-b: rotate(-10deg) scale(1, 0.94); }
-:root[data-style="silk"] .silk-rim { animation: silk-sway 8s ease-in-out -2s infinite alternate; --sk-a: rotate(-3deg); --sk-b: rotate(3deg) scale(1.01); }
-:root[data-style="silk"] .silk-swash { animation: silk-breathe 4.6s ease-in-out -1s infinite alternate; }
-:root[data-style="silk"] .silk-flame { transform-origin: 50% 27.78%; animation: silk-flicker 2.6s ease-in-out infinite; }
+/* hold: the sheets fold in 3D against each other (the back one tips over, the front one swings: they foreshorten and the
+   moiré drifts), the limb sways, the wisps waver from their base. Transforms of 4 composited layers only */
+:root[data-style="silk"] .silk-back { animation: silk-sway 4.4s ease-in-out -2s infinite alternate;
+  --sk-a: perspective(30em) rotateX(-34deg) rotate(-22deg); --sk-b: perspective(30em) rotateX(30deg) rotate(22deg) scale(0.95, 1); }
+:root[data-style="silk"] .silk-front { animation: silk-sway 3.2s ease-in-out -1s infinite alternate;
+  --sk-a: perspective(30em) rotateY(-42deg) rotate(18deg); --sk-b: perspective(30em) rotateY(38deg) rotate(-20deg); }
+:root[data-style="silk"] .silk-rim { animation: silk-sway 3.6s ease-in-out -2s infinite alternate; --sk-a: rotate(-7deg) scale(1, 0.96); --sk-b: rotate(7deg) scale(0.96, 1.03); }
+:root[data-style="silk"] .silk-flame { transform-origin: 50% 27.78%; animation: silk-flicker 1.6s ease-in-out infinite; }
 
 /* ---- text: the title appears behind the sweeping ribbon, word by word, left to right */
 :root[data-style="silk"] .alert-card .evt-body { gap: 0.12em; text-shadow: var(--sk-shade); }
 :root[data-style="silk"] .alert-card .evt-title {
-  position: relative; z-index: 0; margin-bottom: calc(1.3 * var(--sk-fc)); font-weight: 650; line-height: 1.2;
+  position: relative; z-index: 0; margin-bottom: calc(3 * var(--sk-fc)); font-weight: 650; line-height: 1.2;
   font-size: clamp(0.8em, min((100vw - 12.6em) / (0.62 * var(--longest-part, 1)), 26em / var(--longest-part, 1)), 1.25em);
 }
 :root[data-style="silk"] .alert-card .evt-title .w { animation: silk-word 0.42s cubic-bezier(0.25, 0.7, 0.3, 1) calc(0.56s + var(--i) * 0.06s) backwards; }
@@ -2255,20 +2274,35 @@ html, body { height: 100%; overflow: hidden; }
   box-shadow: inset 0 0 0 0.05em color-mix(in srgb, var(--evt) 75%, #fff), 0 0 0.6em color-mix(in srgb, var(--evt) 35%, transparent);
   animation: silk-rise 0.5s ease-out 1.1s backwards;
 }
-/* the swash: a silk ribbon under the title, from inside the orb to past the title's end (stretched to it) */
+/* the swash: silk flowing under the title. The window (1000 × 480 units, y −320…160, the ribbon around y 60 between the
+   title (its bottom at y −40) and the meta line (y 160): 1 unit = 0.015 text size) runs from inside the orb to just past the title and fades out at both ends (a static mask, which also
+   clips: the strips slide inside it). Each strip is its ribbon drawn over the window plus one period on the left; a linear
+   loop slides it right by exactly one period while it opens and turns edge-on again (scaleY) and leans in the wind (skewX):
+   the waves and folds travel along it forever, with no seam. Strip a: period 500, 2.4 s; strip b: narrower, period 400,
+   1.5 s, the other phase. Past the title the tail curls up out of the ribbon and flutters */
 :root[data-style="silk"] .silk-swash {
-  position: absolute; z-index: -1; left: calc(-1 * (var(--sk-gap) + var(--sk-d) * 0.3)); bottom: calc(-1.55 * var(--sk-fc));
-  width: calc(100% + var(--sk-gap) + var(--sk-d) * 0.3 + 0.6em); height: calc(1.8 * var(--sk-fc)); overflow: visible; pointer-events: none;
+  position: absolute; z-index: -1; left: calc(-1 * (var(--sk-gap) + var(--sk-d) * 0.3)); bottom: calc(-3 * var(--sk-fc));
+  width: calc(100% + var(--sk-gap) + var(--sk-d) * 0.3 + 0.4em); height: calc(7.2 * var(--sk-fc)); pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 calc(var(--sk-d) * 0.22) calc(100% - 1.7em), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 calc(var(--sk-d) * 0.22) calc(100% - 1.7em), transparent);
 }
-:root[data-style="silk"] .silk-swash :is(.silk-r, .silk-h) { vector-effect: non-scaling-stroke; }
-:root[data-style="silk"] .silk-swash .silk-r { stroke-width: 0.7px; }
-:root[data-style="silk"] .silk-swash .silk-h { stroke-width: 1px; }
+:root[data-style="silk"] .silk-strip { position: absolute; top: 0; display: block; height: 100%; overflow: visible; will-change: transform; }
+:root[data-style="silk"] :is(.silk-strip, .silk-tail) .silk-r { vector-effect: non-scaling-stroke; stroke-width: 0.7px; opacity: 0.95; }
+:root[data-style="silk"] .silk-strip-0 { left: -50%; width: 150%; transform-origin: 50% 79.2%; animation: silk-flow-a 2.4s linear 1.32s infinite backwards; }
+:root[data-style="silk"] .silk-strip-1 { left: -40%; width: 140%; transform-origin: 50% 80%; animation: silk-in 0.45s ease-out 0.95s backwards, silk-flow-b 1.5s linear 1.32s infinite backwards; }
+:root[data-style="silk"] .silk-tail { /* box 300 × 310 units (y −150…160), its base (0, 60) on the ribbon's line, in the window's fade */
+  position: absolute; z-index: -1; left: calc(100% - 1em); bottom: calc(-3 * var(--sk-fc));
+  width: calc(4.5 * var(--sk-fc)); height: calc(4.65 * var(--sk-fc)); overflow: visible; pointer-events: none; will-change: transform;
+  transform-origin: 0 67.7%; animation: silk-in 0.45s ease-out 1.15s backwards, silk-flutter 1.3s ease-in-out 1.15s infinite alternate;
+}
+:root[data-style="silk"] .silk-tail .silk-r { stroke-width: 0.6px; opacity: 0.8; }
 
 /* ---- exit (450 ms): the swash whips back into the orb and wipes the text out behind it, then the orb unravels: its sheets
    spin apart and widen as they fade, the flames shoot up and burn out, the core closes. The layers' exits run on their SVGs,
    so they add to the idle sway of the layers (no jump) */
 :root[data-style="silk"] .alert-card.gone { animation: silk-out 0.45s linear forwards; }
-:root[data-style="silk"] .alert-card.gone .silk-swash { transform-origin: 0 50%; animation: silk-breathe 4.6s ease-in-out -1s infinite alternate, silk-swash-out 0.28s cubic-bezier(0.55, 0, 0.8, 0.45) forwards; }
+:root[data-style="silk"] .alert-card.gone .silk-swash { transform-origin: 0 80%; animation: silk-swash-out 0.28s cubic-bezier(0.55, 0, 0.8, 0.45) forwards; }
+:root[data-style="silk"] .alert-card.gone .silk-tail { animation: silk-flutter 1.3s ease-in-out 1.15s infinite alternate, silk-fade 0.16s ease-in forwards; }
 :root[data-style="silk"] .alert-card.gone .evt-body { animation: silk-wipe-out 0.28s cubic-bezier(0.55, 0, 0.8, 0.45) forwards; }
 :root[data-style="silk"] .alert-card.gone .evt-amount { animation: silk-vanish 0.18s ease-in forwards; }
 :root[data-style="silk"] .alert-card.gone .silk-layer > svg { animation: silk-unravel 0.32s cubic-bezier(0.45, 0, 0.75, 0.5) 0.1s forwards; }
@@ -2276,7 +2310,7 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="silk"] .alert-card.gone .silk-front > svg { --sk-out: rotate(110deg) scale(1.9); animation-delay: 0.06s; }
 :root[data-style="silk"] .alert-card.gone .silk-rim > svg { --sk-out: rotate(-140deg) scale(1.7); animation-delay: 0.12s; }
 :root[data-style="silk"] .alert-card.gone .silk-flame > svg { --sk-out: translateY(-24%) scale(0.85, 2.2); animation-duration: 0.26s; animation-delay: 0.04s; }
-:root[data-style="silk"] .alert-card.gone .silk-core { animation: silk-vanish 0.25s ease-in 0.15s forwards; }
+:root[data-style="silk"] .alert-card.gone .silk-orb::after { animation: silk-vanish 0.25s ease-in 0.15s forwards; }
 :root[data-style="silk"] .alert-card.gone .evt-icon::before { animation: silk-glow-out 0.4s ease-in forwards; }
 :root[data-style="silk"] .alert-card.gone .evt-icon > :not(.silk-orb) { animation: silk-vanish 0.2s ease-in 0.1s forwards; }
 :root[data-style="silk"] .alert-card.gone .evt-body::before { animation: silk-pool-out 0.4s ease-in forwards; }
@@ -2288,7 +2322,7 @@ html, body { height: 100%; overflow: hidden; }
   --sk-shade: 0 0.05em 0.1em rgb(0 0 0 / 90%), 0 0 0.3em rgb(0 0 0 / 75%), 0 0 0.8em rgb(0 0 0 / 45%);
 }
 :root[data-style="silk"][data-overlay="light"] .alert-card {
-  --sk-tip: #2236c8; --sk-ice: #0b7fb3; --sk-mid: color-mix(in oklab, var(--evt) 60%, #0b6f9a);
+  --sk-tip: #2236c8; --sk-ice: #0b7fb3; --sk-glint: #0a2a8a; --sk-mid: color-mix(in oklab, var(--evt) 60%, #0b6f9a);
   --sk-low: color-mix(in srgb, var(--evt) 80%, #000);
   --sk-pool: rgb(255 255 255 / 94%); --sk-core: rgb(255 255 255 / 96%); --sk-glow: rgb(255 255 255 / 72%);
   --sk-ink: #161827; --sk-name: color-mix(in srgb, var(--evt) 78%, #000); --sk-sub: #4b5270; --sk-shade: none;
@@ -2305,7 +2339,7 @@ html, body { height: 100%; overflow: hidden; }
   :root[data-style="silk"][data-overlay="light"] .alert-card { --sk-mid: #0b6f9a; --sk-low: var(--evt); --sk-name: var(--evt); }
   :root[data-style="silk"] .alert-card { --sk-glow: transparent; }
   :root[data-style="silk"][data-overlay="light"] .alert-card { --sk-glow: rgb(255 255 255 / 80%); }
-  :root[data-style="silk"] .silk-core { background: radial-gradient(closest-side, var(--sk-core), var(--sk-core) 30%, transparent); }
+  :root[data-style="silk"] .silk-orb::after { background: radial-gradient(closest-side, var(--sk-core), var(--sk-core) 30%, transparent); }
   :root[data-style="silk"] .alert-card .evt-amount { background: repeating-linear-gradient(-62deg, var(--evt) 0 1px, transparent 1px 3.5px), rgb(2 4 10 / 85%); box-shadow: inset 0 0 0 0.05em var(--evt); }
   :root[data-style="silk"][data-overlay="light"] .alert-card .evt-amount { background: rgb(255 255 255 / 94%); box-shadow: inset 0 0 0 0.05em var(--evt); }
   :root[data-style="silk"][data-overlay="light"] .alert-card .evt-icon { color: var(--evt); }
@@ -2319,7 +2353,8 @@ html, body { height: 100%; overflow: hidden; }
   :root[data-style="silk"] .alert-card .evt-meta { justify-content: center; }
   :root[data-style="silk"] .alert-card .evt-title { font-size: clamp(0.62em, (100vw - 3em) / (0.62 * var(--longest-part, 1)), 1.15em); }
   :root[data-style="silk"] .alert-card .evt-amount { position: relative; left: auto; top: auto; transform: none; margin-top: 0.2em; }
-  :root[data-style="silk"] .silk-swash { left: -0.6em; width: calc(100% + 1.2em); }
+  :root[data-style="silk"] .silk-swash { left: -0.6em; width: calc(100% + 1em); }
+  :root[data-style="silk"] .silk-tail { width: calc(3.4 * var(--sk-fc)); height: calc(3.534 * var(--sk-fc)); bottom: calc(-2.64 * var(--sk-fc)); } /* a smaller tail (0.76): it stays in the source; its base kept on the ribbon line */
 }
 
 @keyframes silk-pool { from { opacity: 0; transform: scale(0.08, 0.7); } 30% { opacity: 1; } }
@@ -2332,13 +2367,41 @@ html, body { height: 100%; overflow: hidden; }
   100% { transform: none; }
 }
 @keyframes silk-sway { from { transform: var(--sk-a); } to { transform: var(--sk-b); } }
-@keyframes silk-breathe { from { transform: scaleY(1); } to { transform: scaleY(0.82); } }
 @keyframes silk-flicker {
   0%, 100% { transform: scale(1, 1) skewX(0deg); }
-  28% { transform: scale(0.99, 1.05) skewX(-2deg); }
-  52% { transform: scale(1.01, 0.97) skewX(1.2deg); }
-  76% { transform: scale(0.995, 1.03) skewX(-0.8deg); }
+  28% { transform: scale(0.97, 1.12) skewX(-5deg); }
+  52% { transform: scale(1.02, 0.94) skewX(3deg); }
+  76% { transform: scale(0.99, 1.07) skewX(-2deg); }
 }
+/* the strips: a linear slide of exactly one period (% of the strip: 500 / 1500, 400 / 1400), the twist on a sine (8 steps) */
+@keyframes silk-flow-a {
+  0% { transform: translateX(0) scaleY(1) skewX(0deg); }
+  12.5% { transform: translateX(4.1667%) scaleY(0.9) skewX(9deg); }
+  25% { transform: translateX(8.3333%) scaleY(0.66) skewX(13deg); }
+  37.5% { transform: translateX(12.5%) scaleY(0.42) skewX(9deg); }
+  50% { transform: translateX(16.6667%) scaleY(0.32) skewX(0deg); }
+  62.5% { transform: translateX(20.8333%) scaleY(0.42) skewX(-9deg); }
+  75% { transform: translateX(25%) scaleY(0.66) skewX(-13deg); }
+  87.5% { transform: translateX(29.1667%) scaleY(0.9) skewX(-9deg); }
+  100% { transform: translateX(33.3333%) scaleY(1) skewX(0deg); }
+}
+@keyframes silk-flow-b {
+  0% { transform: translateX(0) scaleY(0.6) skewX(0deg); }
+  12.5% { transform: translateX(3.5714%) scaleY(0.88) skewX(-8deg); }
+  25% { transform: translateX(7.1429%) scaleY(1.2) skewX(-11deg); }
+  37.5% { transform: translateX(10.7143%) scaleY(1.32) skewX(-8deg); }
+  50% { transform: translateX(14.2857%) scaleY(1.2) skewX(0deg); }
+  62.5% { transform: translateX(17.8571%) scaleY(0.88) skewX(8deg); }
+  75% { transform: translateX(21.4286%) scaleY(0.6) skewX(11deg); }
+  87.5% { transform: translateX(25%) scaleY(0.5) skewX(8deg); }
+  100% { transform: translateX(28.5714%) scaleY(0.6) skewX(0deg); }
+}
+@keyframes silk-flutter { /* the tail: lifts, curls tighter, drops back (alternate) */
+  from { transform: rotate(12deg) skewY(-10deg) scale(1.04, 0.8); }
+  to { transform: rotate(-16deg) skewY(12deg) scale(0.9, 1.2); }
+}
+@keyframes silk-in { from { opacity: 0; } }
+@keyframes silk-fade { to { opacity: 0; } }
 @keyframes silk-core { from { opacity: 0; transform: scale(0.4); } }
 @keyframes silk-glow { 0% { opacity: 0; transform: scale(0.5); } 40% { opacity: 1; transform: scale(1.12); } }
 @keyframes silk-glyph { from { opacity: 0; transform: scale(0.4); filter: blur(0.15em); } }
@@ -2346,7 +2409,8 @@ html, body { height: 100%; overflow: hidden; }
 @keyframes silk-rise { from { opacity: 0; transform: translateY(0.4em); } }
 @keyframes silk-out { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes silk-swash-out { 70% { opacity: 1; } to { opacity: 0; transform: scaleX(0.04); } }
-@keyframes silk-wipe-out { from { clip-path: inset(-1em -1em -1em -1em); } to { clip-path: inset(-1em 100% -1em -1em); opacity: 0.4; } }
+@keyframes silk-wipe-out { /* wide margins: the ribbon reaches into the orb and the tail past the text */
+  from { clip-path: inset(-5em -7em -5em -14em); } to { clip-path: inset(-5em 100% -5em -14em); opacity: 0.4; } }
 @keyframes silk-unravel { to { opacity: 0; transform: var(--sk-out); } }
 @keyframes silk-glow-out { 30% { opacity: 1; transform: scale(1.1); } to { opacity: 0; transform: scale(0.8); } }
 @keyframes silk-vanish { to { opacity: 0; transform: scale(0.6); } }

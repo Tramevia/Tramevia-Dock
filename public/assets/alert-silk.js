@@ -141,59 +141,105 @@ const orbFrames = () => ORB_T.map(t => {
   return out;
 });
 
-// The swash: two strands of thread sheets running under the title (box 1000 × 120 under the title, stretched to its width),
-// wide in the middle, folding over irregularly; the right end lifts into a flame tongue. Entry: the sweep. The head runs out
-// of the orb to the right end; near it the sheet is broad and lifted over the title (y < 0 is above the box), fluttering,
-// so a wide sheet of silk crosses the card and the words appear behind it; behind the head it narrows and sinks into the
-// swash, which settles.
+// The swash: silk flowing out of the orb under the title and past it, for the whole alert. It lives in a window (1000 × 480
+// units: y −320…160, the ribbon around y 60) stretched under the title, whose ends fade out (a mask, style.css). Each ribbon's
+// rest shape is periodic (strip a: period 500, strip b: 400): it is drawn over the window plus one period on its left, and
+// a CSS loop slides it right by exactly one period (2.4 s, 1.5 s) while it opens and turns edge-on again (scaleY): the
+// picture repeats exactly, so its waves, its folds (where it turns edge-on its threads bunch into a bright line) and their
+// colours travel along it forever with no seam. Strip b, narrower and faster, crosses strip a (moiré: the threads shimmer)
+// and carries a glint: its colour runs along it (the event colour, cold, a bright band, cold) once per period, so a light
+// runs along the silk. Past the title a tail curls up out of it and flutters (its own transform loop). A ribbon is one
+// path: threads + hems.
+// The entry sweep plays strip a's `d` once (14 keyframes): its head runs out of the orb to the end of the window, the sheet
+// behind it broad and lifted over the title, fluttering, then sinking into the rest shape (the strip at its start).
 const SW_T = [0, 50, 100, 150, 200, 250, 300, 350, 400, 460, 530, 610, 700, 800];
-const STRANDS = [ // threads, width, twist turns, twist phase (deg), wave phase, y offset, lag (fraction of the sweep)
-  [220, 54, 2.4, 80, 0.4, 0, 0],
-  [140, 24, 3.4, 200, 2.2, 6, 0.08],
+const STRIPS = [ // P: period, k: threads per period, w: half width, a: wave height, ph: wave phase, f: twist phase (deg), y: centre
+  { P: 500, k: 110, w: 56, a: 40, ph: 0.4, f: 80, y: 60 },
+  { P: 400, k: 70, w: 30, a: 28, ph: 2.3, f: 200, y: 64 },
 ];
-function swashHems(q, [n, wd, turns, f0, ph, dy, lag]) {
-  const e = 1 - (1 - c01((q - lag) / (1 - lag))) ** 3, head = 1000 * e, big = 1 - e ** 4; // big: how much of the sweep is left
+// a strip's hems at its threads (window x from −P to 1000; strip x = window x + P), at sweep progress q (1: at rest)
+function stripHems(st, q) {
+  const { P, k, w: W, a, ph, f, y: Y } = st, n = Math.round((k * (1000 + P)) / P) + 1;
+  const e = 1 - (1 - q) ** 3, head = 1000 * e, big = 1 - e ** 4; // big: how much of the sweep is left
   const A = new Float64Array(2 * n), B = new Float64Array(2 * n);
   for (let j = 0; j < n; j++) {
-    const s = j / (n - 1), x = head * s, gap = head - x; // distance behind the head
-    const front = Math.exp(-gap / 260) * big, flut = Math.exp(-gap / 140) * (1 - e * 0.85);
-    const curl = c01((x - 840) / 160) ** 2;
-    const y = 60 + dy + 9 * Math.sin((x / 1000) * Math.PI * 1.6 + ph) + 22 * flut * Math.sin(gap / 45 + ph) - 150 * front - 70 * curl;
-    const phi = f0 * DEG + turns * Math.PI * (x / 1000) + 0.7 * Math.sin(8.2 * (x / 1000) + ph) + 2.6 * flut;
-    const lead = 1 - big * (1 - c01((1 - s) / 0.1) ** 0.5); // the head: a rounded leading edge
-    const w = (wd * (0.55 + 0.45 * Math.sin(Math.PI * Math.min(1, x / 900))) * (1 - 0.75 * curl) + 140 * front) * Math.min(1, s * 6) ** 0.7 * lead * c01(e / 0.05);
-    const nx = 0.35 * Math.sin(phi) * w, ny = Math.cos(phi) * w, cx = x + 14 * curl;
-    A[2 * j] = cx + nx; A[2 * j + 1] = y + ny; B[2 * j] = cx - nx; B[2 * j + 1] = y - ny;
+    const x0 = -P + (j * P) / k; // its place at rest
+    let x = x0, lift = 0, flut = 0, wide = 0, lead = 1;
+    if (q < 1 && x0 >= 0) { // in the window, during the sweep: it runs behind the head
+      const s = x0 / 1000, gap = head - head * s, front = Math.exp(-gap / 260) * big;
+      x = head * s; lift = 150 * front; wide = 140 * front; flut = Math.exp(-gap / 140) * (1 - e * 0.85);
+      lead = (1 - big * (1 - c01((1 - s) / 0.1) ** 0.5)) * c01(e / 0.05); // a rounded leading edge; nothing at the start
+    }
+    const th = (2 * Math.PI * x) / P, phi = f * DEG + th + 2.6 * flut; // one full turn per period: edge-on twice
+    const w = (W * (0.8 + 0.2 * Math.sin(th + 1.3)) + wide) * lead;
+    const cy = Y + a * Math.sin(th + ph) + 22 * flut * Math.sin((head - x) / 45 + ph) - lift;
+    const nx = 0.35 * Math.sin(phi) * w, ny = Math.cos(phi) * w, cx = x + P;
+    A[2 * j] = cx + nx; A[2 * j + 1] = cy + ny; B[2 * j] = cx - nx; B[2 * j + 1] = cy - ny;
   }
-  return [A, B];
+  return [A, B, n];
 }
-const swashFrames = () => SW_T.map(t => {
-  const out = ['', ''];
-  for (const st of STRANDS) { const [A, B] = swashHems(c01(t / SW_T[SW_T.length - 1]), st); sheet(A, B, st[0], 0.03, st[4], out); }
-  return out;
-});
+// a strip as one path: threads (A at j to B at j + 2, a curve through the middle) and both hems; periodic like its points
+function stripPath(st, q) {
+  const [A, B, n] = stripHems(st, q), R0 = Math.round;
+  let d = '';
+  for (let j = 0; j < n; j++) {
+    const i = Math.min(n - 1, j + 2), m = Math.min(n - 1, j + 1), x = R0(A[2 * j]), y = R0(A[2 * j + 1]);
+    const cx = R0(A[2 * m] + B[2 * m] - (A[2 * j] + B[2 * i]) / 2), cy = R0(A[2 * m + 1] + B[2 * m + 1] - (A[2 * j + 1] + B[2 * i + 1]) / 2);
+    d += `M${x} ${y}q${cx - x} ${cy - y} ${R0(B[2 * i]) - x} ${R0(B[2 * i + 1]) - y}`;
+  }
+  for (const H of [A, B]) {
+    let x = R0(H[0]), y = R0(H[1]);
+    d += `M${x} ${y}l`;
+    for (let j = 1; j < n; j++) { const X = R0(H[2 * j]), Y = R0(H[2 * j + 1]); d += `${X - x} ${Y - y} `; x = X; y = Y; }
+  }
+  return d;
+}
+// the tail (box 300 × 310: y −150…160, its base at 0, 60 on the ribbon's line): it leaves the ribbon to the right, lifts,
+// curls back over and tapers to a point; 10 strands along it that cross where it twists (smoke, like the wisps)
+function tailPath() {
+  const N = 40, S = 10, pts = [];
+  let x = 0, y = 60;
+  for (let i = 0; i <= N; i++) {
+    const f = i / N, hd = -0.7 * smooth(f / 0.5) - 1.9 * smooth((f - 0.4) / 0.6) ** 1.3; // heading: east, lifting, then up and back over
+    // it grows out of the ribbon from a point (no hatched block at its base), swells, and tapers to a point again
+    const w = 62 * (0.12 + 0.88 * smooth(f / 0.35)) * (0.8 + 0.5 * Math.sin(Math.PI * Math.min(1, f / 0.7))) * (1 - f) ** 0.7, tw = Math.cos(0.2 + 1.3 * Math.PI * f);
+    pts.push([x, y, -Math.sin(hd) * w * tw, Math.cos(hd) * w * tw]);
+    x += Math.cos(hd) * 8.5; y += Math.sin(hd) * 8.5;
+  }
+  let d = '';
+  for (let s = 0; s < S; s++) {
+    const u = (s + 0.5) / S - 0.5;
+    let [px, py] = [Math.round(pts[0][0] + u * pts[0][2]), Math.round(pts[0][1] + u * pts[0][3])];
+    d += `M${px} ${py}l`;
+    for (const [cx, cy, nx, ny] of pts.slice(1)) { const X = Math.round(cx + u * nx), Y = Math.round(cy + u * ny); d += `${X - px} ${Y - py} `; px = X; py = Y; }
+  }
+  return d;
+}
 
 let uid = 0;
 export default function decorate(card, event, { h, svg }) {
   const id = `silk${++uid}`;
-  const of = orbFrames(), sf = swashFrames();
-  const [orbRest, swRest] = [of[of.length - 1], sf[sf.length - 1]];
+  const of = orbFrames(), orbRest = of[of.length - 1];
+  const sweep = SW_T.map(t => stripPath(STRIPS[0], c01(t / SW_T[SW_T.length - 1])));
   const stops = (cls, offsets) => offsets.map((o, i) => `<stop class="${cls}${i}" offset="${o}"/>`).join('');
-  const paths = (g, d) => `<path class="silk-r" stroke="url(#${id}-${g})" d="${d[0]}"/><path class="silk-h" stroke="url(#${id}-${g})" d="${d[1]}"/>`;
-  // the gradients (the orb's runs top to bottom in the layers' space, the swash's left to right) and the bloom live in the
-  // first layer's SVG. The bloom: the threads glow in their own colours, the glow's alpha raised to 1.5 and doubled, so a
-  // dense fold glows and an open sheet barely hazes
+  // the gradients and the bloom live in the first layer's SVG. The orb's runs top to bottom in the layers' space; the
+  // swash's too, in the swash's units (so the strips can slide under it, and the tail gets it too): cold at the top, the
+  // event colour at the bottom, so the hems swap colours where the ribbon turns over. The bloom: the threads glow in their
+  // own colours, the glow's alpha raised to 1.5 and doubled, so a dense fold glows and an open sheet barely hazes
   const defs = `<linearGradient id="${id}-o" gradientUnits="userSpaceOnUse" x1="0" y1="-200" x2="0" y2="105">${stops('silk-o', [0, 0.23, 0.43, 0.61, 0.79])}</linearGradient>
-    <linearGradient id="${id}-w" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1000" y2="0">${stops('silk-w', [0, 0.18, 0.5, 0.85, 1])}</linearGradient>
+    <linearGradient id="${id}-w" gradientUnits="userSpaceOnUse" x1="0" y1="-150" x2="0" y2="100">${stops('silk-w', [0, 0.5, 0.72, 0.9])}</linearGradient>
+    <linearGradient id="${id}-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${STRIPS[1].P}" y2="0" spreadMethod="repeat">${stops('silk-g', [0.1, 0.42, 0.5, 0.6])}</linearGradient>
     <filter id="${id}-b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3.2"/><feComponentTransfer><feFuncA type="gamma" amplitude="1.9" exponent="1.5"/></feComponentTransfer><feComposite in="SourceGraphic" operator="over"/></filter>`;
   const layers = ['silk-back', 'silk-front', 'silk-rim', 'silk-flame'].map((cls, g) => h(`i.silk-layer.${cls}`,
-    svg(`<svg viewBox="-170 -200 340 360" width="0" height="0" filter="url(#${id}-b)" aria-hidden="true">${g ? '' : defs}${paths('o', orbRest[g])}</svg>`)));
-  const swash = svg(`<svg class="silk-swash" viewBox="0 0 1000 120" preserveAspectRatio="none" width="0" height="0" aria-hidden="true">${paths('w', swRest)}</svg>`);
-  card.querySelector('.evt-icon')?.append(h('i.silk-orb', ...layers, h('i.silk-core'))); // the small dark core: over the sheets, under the glyph
-  card.querySelector('.evt-title')?.append(swash);
-  // the entry: every path replays its keyframes
-  const play = (el, frames, times, k, opts) => el.animate(
-    frames.map((f, i) => ({ offset: times[i] / times[times.length - 1], d: `path("${f[k]}")` })), { duration: times[times.length - 1], ...opts });
-  layers.forEach((l, g) => l.querySelectorAll('path').forEach((p, k) => play(p, of.map(f => f[g]), ORB_T, k, {})));
-  swash.querySelectorAll('path').forEach((p, k) => play(p, sf, SW_T, k, { delay: 520, fill: 'backwards' }));
+    svg(`<svg viewBox="-170 -200 340 360" width="0" height="0" filter="url(#${id}-b)" aria-hidden="true">${g ? '' : defs}<path class="silk-r" stroke="url(#${id}-o)" d="${orbRest[g][0]}${orbRest[g][1]}"/></svg>`)));
+  const strip = (st, i, g, d) => svg(`<svg class="silk-strip silk-strip-${i}" viewBox="0 -320 ${1000 + st.P} 480" preserveAspectRatio="none" width="0" height="0" aria-hidden="true"><path class="silk-r" stroke="url(#${id}-${g})" d="${d}"/></svg>`);
+  const strips = [strip(STRIPS[0], 0, 'w', sweep[sweep.length - 1]), strip(STRIPS[1], 1, 'g', stripPath(STRIPS[1], 1))];
+  const tail = svg(`<svg class="silk-tail" viewBox="0 -150 300 310" width="0" height="0" aria-hidden="true"><path class="silk-r" stroke="url(#${id}-w)" d="${tailPath()}"/></svg>`);
+  card.querySelector('.evt-icon')?.append(h('i.silk-orb', ...layers)); // its ::after is the small dark core: over the sheets, under the glyph
+  card.querySelector('.evt-title')?.append(h('i.silk-swash', ...strips), tail);
+  // the entry: every path of the orb replays its keyframes, then strip a sweeps
+  const play = (el, frames, times, opts) => el.animate(
+    frames.map((d, i) => ({ offset: times[i] / times[times.length - 1], d: `path("${d}")` })), { duration: times[times.length - 1], ...opts });
+  layers.forEach((l, g) => play(l.querySelector('path'), of.map(f => f[g][0] + f[g][1]), ORB_T, {}));
+  play(strips[0].querySelector('path'), sweep, SW_T, { delay: 520, fill: 'backwards' });
 }
