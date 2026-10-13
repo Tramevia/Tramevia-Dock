@@ -118,6 +118,17 @@ function chime(volume) {
   chimeEl.play().catch(() => {}); // blocked autoplay (a browser tab before any click), no audio device: the alert still shows
 }
 
+/** Kinetic title: every word in its own span with its index (--i), so the CSS can bring them in one after the other. */
+function kinetic(title) {
+  let i = 0;
+  for (const node of [...title.childNodes]) {
+    if (node.nodeType !== Node.TEXT_NODE) { node.classList.add('w'); node.style.setProperty('--i', i++); continue; }
+    const frag = document.createDocumentFragment();
+    for (const part of node.textContent.split(/(\s+)/)) frag.append(!part || /^\s+$/.test(part) ? part : h('span.w', { style: { '--i': i++ } }, part));
+    node.replaceWith(frag);
+  }
+}
+
 /** Shows the next waiting alert for S.alertSeconds, then the one after. Nothing waiting = screen left empty. */
 function nextAlert() {
   clearTimeout(alertTimer);
@@ -125,7 +136,11 @@ function nextAlert() {
   for (const old of list.children) remove(old);
   const d = alerts.shift();
   if (!d) return;
-  list.append(h('div.alert-card', { class: `pf-${String(d.platform).replace(/[^a-z]/g, '')}` }, renderEvent(d, { ...opts, timestamps: false })));
+  const evt = renderEvent(d, { ...opts, timestamps: false });
+  kinetic(evt.querySelector('.evt-title'));
+  const card = h('div.alert-card', { class: `pf-${String(d.platform).replace(/[^a-z]/g, '')}` }, evt);
+  list.append(card);
+  card.style.setProperty('--evt', getComputedStyle(evt).getPropertyValue('--evt')); // the event colour, for the card's own glow and accent
   chime(S.volume);
   alertTimer = setTimeout(nextAlert, S.alertSeconds * 1000);
 }
