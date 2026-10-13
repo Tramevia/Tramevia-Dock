@@ -24,7 +24,7 @@ test('overlays: defaults until saved, save merges + validates + persists + publi
   assert.deepEqual(out.offPlatforms, ['kick']);
   assert.ok(!('bogus' in out));
   assert.equal(overlays.saved(), true);
-  assert.deepEqual(settings.get('overlays'), { chat: out, featured: DEFAULTS.featured, alerts: DEFAULTS.alerts });
+  assert.deepEqual(settings.get('overlays'), { chat: out, featured: DEFAULTS.featured, alerts: DEFAULTS.alerts, viewers: DEFAULTS.viewers });
   assert.deepEqual(published, [{ t: 'overlay', d: { id: 'chat', settings: out } }]);
 
   const merged = overlays.save('chat', { align: 'right' }); // patch keeps earlier values

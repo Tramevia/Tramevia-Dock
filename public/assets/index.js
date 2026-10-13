@@ -149,14 +149,17 @@ addI18n({
     'home.ovl.sub': 'Affiche ton chat sur le stream. Tes réglages sont enregistrés ici et s’appliquent en direct.',
     'home.ovl.how': 'Dans OBS : Sources → + → Navigateur → colle l’adresse, largeur 400, hauteur 600. Chaque overlay a sa propre adresse : une source Navigateur pour chacun. Colle-la une seule fois, ensuite tes changements s’appliquent en direct. Une ancienne adresse qui contient des réglages marche toujours, mais ne suit plus le tableau de bord.',
     'home.ovl.readonly': 'Cette adresse utilise la clé overlay, en lecture seule : elle ne permet aucune action sur tes comptes.',
-    'home.ovl.mode': 'Overlay à régler', 'home.ovl.mode.chat': 'Chat', 'home.ovl.mode.featured': 'Message mis en avant', 'home.ovl.mode.alerts': 'Alertes',
+    'home.ovl.mode': 'Overlay à régler', 'home.ovl.mode.chat': 'Chat', 'home.ovl.mode.featured': 'Message mis en avant', 'home.ovl.mode.alerts': 'Alertes', 'home.ovl.mode.viewers': 'Spectateurs',
     'home.ovl.hint.chat': 'Affiche les messages de tes chats.', 'home.ovl.hint.featured': 'Affiche seulement le message que tu mets en avant depuis le dock Chat.',
     'home.ovl.hint.alerts': 'Affiche chaque follow, sub, don ou raid à l’écran, une alerte à la fois, sur toutes tes plateformes.',
+    'home.ovl.hint.viewers': 'Affiche le total de tes spectateurs en direct, toutes plateformes confondues : chaque hausse s’anime en vert (+x), chaque baisse en rouge (−x).',
+    'home.ovl.number': 'Nombre', 'home.ovl.number.left': 'À gauche', 'home.ovl.number.center': 'Au centre', 'home.ovl.number.right': 'À droite',
+    'home.ovl.testViewers': 'Tester une variation', 'home.ovl.testedViewers': 'Variation de test envoyée : le total change quelques secondes dans l’aperçu et ta source OBS, puis revient.',
     'home.ovl.alertSeconds': 'Durée de chaque alerte (s)', 'home.ovl.position': 'Position', 'home.ovl.position.top': 'Haut', 'home.ovl.position.center': 'Milieu', 'home.ovl.position.bottom': 'Bas',
     'home.ovl.types': 'Alertes affichées', 'home.ovl.type.follow': 'Follows', 'home.ovl.type.sub': 'Subs et membres', 'home.ovl.type.giftsub': 'Subs offerts',
     'home.ovl.type.tip': 'Bits, KICKs, Super Chats, cadeaux', 'home.ovl.type.raid': 'Raids', 'home.ovl.type.redemption': 'Récompenses de points', 'home.ovl.type.like': 'J’aime TikTok', 'home.ovl.type.share': 'Partages TikTok',
     'home.ovl.test': 'Envoyer une alerte de test', 'home.ovl.tested': 'Alerte de test envoyée : regarde l’aperçu et ta source OBS.',
-    'home.ovl.style': 'Style', 'home.ovl.style.card': 'Carte', 'home.ovl.style.text': 'Grand texte', 'home.ovl.style.impact': 'Impact', 'home.ovl.style.eclipse': 'Éclipse', 'home.ovl.volume': 'Volume du son (0 = muet)',
+    'home.ovl.style': 'Style', 'home.ovl.style.card': 'Carte', 'home.ovl.style.text': 'Grand texte', 'home.ovl.style.impact': 'Impact', 'home.ovl.style.eclipse': 'Éclipse', 'home.ovl.style.plasma': 'Plasma', 'home.ovl.style.glass': 'Verre', 'home.ovl.style.vinyl': 'Vinyle', 'home.ovl.volume': 'Volume du son (0 = muet)',
     'home.ovl.theme': 'Thème', 'home.ovl.theme.dark': 'Sombre', 'home.ovl.theme.light': 'Clair', 'home.ovl.theme.transparent': 'Transparent',
     'home.ovl.themeHint.transparent': 'Texte seul, posé directement sur ta scène. Active « Bulles » ou « Contour du texte » si ton fond est chargé.',
     'home.ovl.themeHint.dark': 'Chaque message dans une carte sombre, avec la couleur de sa plateforme : lisible sur n’importe quel fond.',
@@ -362,14 +365,17 @@ addI18n({
     'home.ovl.sub': 'Shows your chat on stream. Your settings are saved here and apply live.',
     'home.ovl.how': 'In OBS: Sources → + → Browser → paste the address, width 400, height 600. Each overlay has its own address: one Browser source for each. Paste it once, then your changes apply live. An older address that carries settings keeps working but no longer follows the dashboard.',
     'home.ovl.readonly': 'This address uses the read-only overlay key: it cannot act on your accounts.',
-    'home.ovl.mode': 'Overlay to edit', 'home.ovl.mode.chat': 'Chat', 'home.ovl.mode.featured': 'Featured message', 'home.ovl.mode.alerts': 'Alerts',
+    'home.ovl.mode': 'Overlay to edit', 'home.ovl.mode.chat': 'Chat', 'home.ovl.mode.featured': 'Featured message', 'home.ovl.mode.alerts': 'Alerts', 'home.ovl.mode.viewers': 'Viewers',
     'home.ovl.hint.chat': 'Shows the messages from your chats.', 'home.ovl.hint.featured': 'Shows only the message you feature from the Chat dock.',
     'home.ovl.hint.alerts': 'Shows every follow, sub, tip or raid on screen, one alert at a time, from all your platforms.',
+    'home.ovl.hint.viewers': 'Shows your total live viewers across all platforms: every rise animates in green (+x), every drop in red (−x).',
+    'home.ovl.number': 'Number', 'home.ovl.number.left': 'Left', 'home.ovl.number.center': 'Centre', 'home.ovl.number.right': 'Right',
+    'home.ovl.testViewers': 'Test a change', 'home.ovl.testedViewers': 'Test change sent: the total changes for a few seconds in the preview and your OBS source, then comes back.',
     'home.ovl.alertSeconds': 'Duration of each alert (s)', 'home.ovl.position': 'Position', 'home.ovl.position.top': 'Top', 'home.ovl.position.center': 'Middle', 'home.ovl.position.bottom': 'Bottom',
     'home.ovl.types': 'Alerts shown', 'home.ovl.type.follow': 'Follows', 'home.ovl.type.sub': 'Subs and members', 'home.ovl.type.giftsub': 'Gifted subs',
     'home.ovl.type.tip': 'Bits, KICKs, Super Chats, gifts', 'home.ovl.type.raid': 'Raids', 'home.ovl.type.redemption': 'Channel point rewards', 'home.ovl.type.like': 'TikTok likes', 'home.ovl.type.share': 'TikTok shares',
     'home.ovl.test': 'Send a test alert', 'home.ovl.tested': 'Test alert sent: watch the preview and your OBS source.',
-    'home.ovl.style': 'Style', 'home.ovl.style.card': 'Card', 'home.ovl.style.text': 'Big text', 'home.ovl.style.impact': 'Impact', 'home.ovl.style.eclipse': 'Eclipse', 'home.ovl.volume': 'Sound volume (0 = off)',
+    'home.ovl.style': 'Style', 'home.ovl.style.card': 'Card', 'home.ovl.style.text': 'Big text', 'home.ovl.style.impact': 'Impact', 'home.ovl.style.eclipse': 'Eclipse', 'home.ovl.style.plasma': 'Plasma', 'home.ovl.style.glass': 'Glass', 'home.ovl.style.vinyl': 'Vinyl', 'home.ovl.volume': 'Sound volume (0 = off)',
     'home.ovl.theme': 'Theme', 'home.ovl.theme.dark': 'Dark', 'home.ovl.theme.light': 'Light', 'home.ovl.theme.transparent': 'Transparent',
     'home.ovl.themeHint.transparent': 'Text only, right on top of your scene. Turn on "Bubbles" or "Text outline" if your background is busy.',
     'home.ovl.themeHint.dark': 'Each message on a dark card with its platform colour: readable on any background.',
@@ -1199,6 +1205,7 @@ function renderOverlayForm() {
   const o = S.state.overlays[id];
   const featured = id === 'featured';
   const alerts = id === 'alerts';
+  const viewers = id === 'viewers';
   const set = (key, value) => { o[key] = value; saveOverlay(id, key); };
   const num = (key, min, max) => {
     const input = h('input', {
@@ -1222,8 +1229,8 @@ function renderOverlayForm() {
       set(list, next);
     },
   }, iconEl, label);
-  const choice = (key, values, rerender = false) => h('div.field', h('span.label', t(`home.ovl.${key}`)),
-    segmented(t(`home.ovl.${key}`), values.map(v => [v, t(`home.ovl.${key}.${v}`)]), o[key], v => { set(key, v); if (rerender) renderOverlayForm(); }, `ov:${key}`));
+  const choice = (key, values, rerender = false, name = key) => h('div.field', h('span.label', t(`home.ovl.${name}`)),
+    segmented(t(`home.ovl.${name}`), values.map(v => [v, t(`home.ovl.${name}.${v}`)]), o[key], v => { set(key, v); if (rerender) renderOverlayForm(); }, `ov:${key}`));
   // Bubbles and outline only change something on the transparent theme (dark/light always draw cards).
   const textOnly = o.theme === 'transparent';
 
@@ -1238,22 +1245,24 @@ function renderOverlayForm() {
     h('div.stack.tight', h('span.label', t('home.ovl.url', { name: t(`home.ovl.mode.${id}`) })), secretField(overlayUrl(id, S.state.publicUrl), 'ov:url'),
       h('p.small.muted', t('home.ovl.how')), h('p.tiny.muted', icon('shield', 12), ' ', t('home.ovl.readonly'))),
     h('div.row.ov-choices', choice('theme', ['transparent', 'dark', 'light'], true),
-      alerts ? [choice('position', ['top', 'center', 'bottom']), choice('style', STYLES)] : choice('align', ['left', 'right'])),
-    h('p.small.muted', t(`home.ovl.themeHint.${o.theme}`)),
+      alerts ? [choice('position', ['top', 'center', 'bottom']), choice('style', STYLES)]
+        : viewers ? choice('align', ['left', 'center', 'right'], false, 'number') : choice('align', ['left', 'right'])),
+    !viewers && h('p.small.muted', t(`home.ovl.themeHint.${o.theme}`)),
     h('div.ov-fields',
-      alerts ? [num('alertSeconds', 1, 60), num('volume', 0, 100)] : featured ? num('featureSeconds', 0, 300) : [num('max', 1, 100), num('fade', 0, 600)],
+      alerts ? [num('alertSeconds', 1, 60), num('volume', 0, 100)] : featured ? num('featureSeconds', 0, 300) : viewers ? null : [num('max', 1, 100), num('fade', 0, 600)],
       num('size', 10, 48)),
     alerts && h('div.stack.tight', h('span.label', t('home.ovl.types')),
       h('div.row.tight', Object.keys(ALERT_TYPES).map((c, _, all) => chip('offTypes', all, c, t(`home.ovl.type.${c}`))))),
-    h('div.stack.tight', h('span.label', t('home.ovl.display')),
+    !viewers && h('div.stack.tight', h('span.label', t('home.ovl.display')),
       h('div.ov-switches', (alerts ? ['icons', 'credit'] : ['badges', 'icons', 'avatars', ...(textOnly ? ['bubble', 'outline'] : []), 'credit']).map(toggle))),
-    !featured && !alerts ? h('div.stack.tight', h('span.label', t('home.ovl.filters')),
+    !featured && !alerts && !viewers ? h('div.stack.tight', h('span.label', t('home.ovl.filters')),
       h('div.ov-switches', ['hideBots', 'hideCommands', 'events'].map(toggle))) : null,
     !featured && h('div.stack.tight', h('span.label', t('home.ovl.platforms')),
       h('div.row.tight', S.state.platforms.map((p, _, all) => chip('offPlatforms', all.map(x => x.id), p.id, p.name, platformIcon(p.id))))),
     !featured && S.accounts.length > 1 && h('div.stack.tight', h('span.label', t('home.ovl.accounts')),
       h('div.row.tight', S.accounts.map((a, _, all) => chip('offAccounts', all.map(x => x.id), a.id, a.displayName, platformIcon(a.platform))))),
     alerts && h('button.btn.sm', { type: 'button', dataset: { focus: 'ov:test' }, onclick: e => testAlert(e.currentTarget) }, icon('zap'), t('home.ovl.test')),
+    viewers && h('button.btn.sm', { type: 'button', dataset: { focus: 'ov:test' }, onclick: e => testViewers(e.currentTarget) }, icon('zap'), t('home.ovl.testViewers')),
     el.ovStatus = h('p.small.muted', { attrs: { role: 'status' } }),
   ].filter(c => c instanceof Node)));
 }
@@ -1263,6 +1272,13 @@ async function testAlert(button) {
   const s = ovSyncOf('alerts');
   await busy(button, () => (s.queue = s.queue.then(() => api('/api/overlays/alerts/test', { method: 'POST' }))));
   ovStatus(t('home.ovl.tested'));
+}
+
+/** A test change of the viewer total (preview and OBS source), after any pending save. */
+async function testViewers(button) {
+  const s = ovSyncOf('viewers');
+  await busy(button, () => (s.queue = s.queue.then(() => api('/api/overlays/viewers/test', { method: 'POST' }))));
+  ovStatus(t('home.ovl.testedViewers'));
 }
 
 /** 'hello' / 'overlay' frames: settings changed elsewhere (another tab, a reset). Our own echoes are skipped. */

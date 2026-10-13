@@ -2,15 +2,16 @@
 // Pure module (no DOM, no imports): Node can import it from src/, browsers from /assets/.
 //
 // Two kinds of overlay URL:
-//  - saved:  /overlay/chat?key=…&id=chat|featured  → settings stored on the server, applied live; any param below that
+//  - saved:  /overlay/chat?key=…&id=chat|featured|alerts|viewers → settings stored on the server, applied live; any param below that
 //            the URL also carries overrides that one setting (a variant for another scene, the builder's draft preview).
 //  - legacy: /overlay/chat?key=…&theme=…&max=…     → no id: configured only by its params, exactly like before 1.3.
 
-export const OVERLAY_IDS = ['chat', 'featured', 'alerts'];
+export const OVERLAY_IDS = ['chat', 'featured', 'alerts', 'viewers'];
 export const BOOLS = ['hideBots', 'hideCommands', 'events', 'badges', 'icons', 'avatars', 'bubble', 'outline', 'credit'];
 export const THEMES = ['transparent', 'dark', 'light'];
 export const POSITIONS = ['top', 'center', 'bottom'];
-export const STYLES = ['card', 'text', 'impact', 'eclipse']; // alerts: glass card · big kinetic text · impact (physical, product shot) · eclipse (lines of light)
+export const ALIGNS = ['left', 'center', 'right']; // chat: left | right (anything else = left) · viewers: the number beside or inside the orb
+export const STYLES = ['card', 'text', 'impact', 'eclipse', 'plasma', 'glass', 'vinyl']; // alerts: glass card · big kinetic text · impact (physical, product shot) · eclipse (lines of light) · plasma (thermal star) · glass (frosted glass lit from behind) · vinyl (a record)
 /** [min, max] of every number (the overlay page clamps URL values to the same ranges). */
 export const RANGES = { max: [1, 100], fade: [0, 3600], size: [8, 120], featureSeconds: [0, 3600], alertSeconds: [1, 60], volume: [0, 100] };
 const LIST_MAX = 50;
@@ -30,7 +31,8 @@ const SAVED_BASE = {
   offPlatforms: [], offAccounts: [], offTypes: [],
 };
 /** Defaults of a saved overlay (what the dashboard builder starts from). */
-export const DEFAULTS = { chat: { ...SAVED_BASE }, featured: { ...SAVED_BASE }, alerts: { ...SAVED_BASE, size: 28 } };
+export const DEFAULTS = { chat: { ...SAVED_BASE }, featured: { ...SAVED_BASE }, alerts: { ...SAVED_BASE, size: 28 },
+  viewers: { ...SAVED_BASE, theme: 'transparent', size: 28, align: 'center' } };
 
 /** What a legacy URL means when a param is missing (the overlay page's behaviour before saved overlays). size null = CSS default. */
 export const LEGACY = {
@@ -50,7 +52,7 @@ export function cleanOverlay(input, base = SAVED_BASE) {
   const src = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
   const out = {};
   out.theme = THEMES.includes(src.theme) ? src.theme : base.theme;
-  out.align = src.align === 'left' || src.align === 'right' ? src.align : base.align;
+  out.align = ALIGNS.includes(src.align) ? src.align : base.align;
   out.position = POSITIONS.includes(src.position) ? src.position : base.position;
   out.style = STYLES.includes(src.style) ? src.style : base.style;
   for (const [k, range] of Object.entries(RANGES)) {
@@ -65,7 +67,7 @@ export function cleanOverlay(input, base = SAVED_BASE) {
 /**
  * Settings the overlay page runs with.
  * query: URLSearchParams of the page. saved: { chat, featured } from the server (only used when the URL has a valid id).
- * Returns { id, featured, alerts, settings, onlyPlatforms, onlyAccounts }: id null = legacy URL; only* = inclusion lists from the URL.
+ * Returns { id, featured, alerts, viewers, settings, onlyPlatforms, onlyAccounts }: id null = legacy URL; only* = inclusion lists from the URL.
  */
 export function overlayFromQuery(query, saved) {
   const id = OVERLAY_IDS.includes(query.get('id')) ? query.get('id') : null;
@@ -79,11 +81,11 @@ export function overlayFromQuery(query, saved) {
   }
   for (const k of BOOLS) if (query.has(k)) s[k] = ['1', 'true', 'yes'].includes(query.get(k));
   if (THEMES.includes(query.get('theme'))) s.theme = query.get('theme');
-  if (query.has('align')) s.align = query.get('align') === 'right' ? 'right' : 'left';
+  if (query.has('align')) s.align = ALIGNS.includes(query.get('align')) ? query.get('align') : 'left';
   if (POSITIONS.includes(query.get('position'))) s.position = query.get('position');
   if (STYLES.includes(query.get('style'))) s.style = query.get('style');
   const csv = k => (query.get(k) || '').split(',').map(x => x.trim()).filter(Boolean);
-  const alerts = id === 'alerts';
-  const featured = !alerts && (has('mode') ? query.get('mode') === 'featured' : id === 'featured');
-  return { id, featured, alerts, settings: s, onlyPlatforms: csv('platforms').map(p => p.toLowerCase()), onlyAccounts: csv('accounts') };
+  const alerts = id === 'alerts', viewers = id === 'viewers';
+  const featured = !alerts && !viewers && (has('mode') ? query.get('mode') === 'featured' : id === 'featured');
+  return { id, featured, alerts, viewers, settings: s, onlyPlatforms: csv('platforms').map(p => p.toLowerCase()), onlyAccounts: csv('accounts') };
 }

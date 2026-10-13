@@ -61,11 +61,12 @@ Sous Linux avec Wayland, OBS peut ne pas proposer les docks de navigateur. Ouvre
 
 L’overlay affiche ton chat sur le stream, avec un fond transparent. Il utilise une clé à part, **en lecture seule** : elle permet d’afficher ton chat et de lire les réglages de l’overlay, jamais de les modifier ni d’agir sur tes comptes.
 
-Il y a trois overlays, chacun avec ses réglages et son adresse :
+Il y a quatre overlays, chacun avec ses réglages et son adresse :
 
 - **Chat** : ton chat, message après message ;
 - **Message mis en avant** : seulement le message que tu choisis dans le dock Chat (voir plus bas) ;
-- **Alertes** : chaque follow, sub, sub offert, don (bits, KICKs, Super Chats, cadeaux), raid, récompense de points, j’aime et partage TikTok, une alerte à la fois, sur toutes tes plateformes (voir plus bas).
+- **Alertes** : chaque follow, sub, sub offert, don (bits, KICKs, Super Chats, cadeaux), raid, récompense de points, j’aime et partage TikTok, une alerte à la fois, sur toutes tes plateformes (voir plus bas) ;
+- **Spectateurs** : le total de tes spectateurs en direct, toutes plateformes confondues, avec chaque variation animée (voir plus bas).
 
 Leurs réglages sont enregistrés dans Tramevia Dock et **s’appliquent en direct** : change une option dans le tableau de bord, l’overlay suit tout de suite dans OBS. Tu colles chaque adresse dans OBS **une seule fois**.
 
@@ -82,12 +83,16 @@ Pour le message mis en avant, choisis « Message mis en avant » dans le table
 
 ### Alertes
 
-Choisis « Alertes » dans le tableau de bord et ajoute son adresse comme une autre source Navigateur, à la taille de ta scène (par exemple largeur **1920**, hauteur **1080**) : l’alerte apparaît centrée en **haut**, au **milieu** ou en **bas** de la source, à ton choix. **Style** : « Carte » (une carte en verre qui flotte en 3D), « Grand texte » (de grands mots posés sur ta scène, sans cadre), « Impact » (un plan produit : l’alerte tombe comme une étiquette de canette coupée en trois tranches qui tournent, se recollent d’un coup et éclaboussent) ou « Éclipse » (rien que de la lumière : deux faisceaux convergent sur un anneau, un couloir sombre s’ouvre entre deux parois de lumière courbes). Le texte se réduit tout seul dans une source étroite. Chaque alerte reste le temps de la **durée** réglée (6 secondes par défaut) ; les suivantes attendent leur tour. Un petit carillon accompagne chaque alerte : mets le **volume du son** à 0 pour le couper. Dans « Alertes affichées », désactive celles que tu ne veux pas à l’écran. Clique sur « Envoyer une alerte de test » pour en voir une dans l’aperçu et dans OBS sans attendre un vrai follow.
+Choisis « Alertes » dans le tableau de bord et ajoute son adresse comme une autre source Navigateur, à la taille de ta scène (par exemple largeur **1920**, hauteur **1080**) : l’alerte apparaît centrée en **haut**, au **milieu** ou en **bas** de la source, à ton choix. **Style** : « Carte » (une carte en verre qui flotte en 3D), « Grand texte » (de grands mots posés sur ta scène, sans cadre), « Impact » (un plan produit : l’alerte tombe comme une étiquette de canette coupée en trois tranches qui tournent, se recollent d’un coup et éclaboussent), « Éclipse » (rien que de la lumière : deux faisceaux convergent sur un anneau, un couloir sombre s’ouvre entre deux parois de lumière courbes), « Plasma » (une étoile thermique qui chauffe jusqu’au blanc, gonfle en sphère et s’étire en alerte), « Verre » (une capsule de verre dépoli devient une carte pendant qu’une lumière chaude passe dessous et reste allumée derrière le verre) ou « Vinyle » (un disque à la couleur de l’événement, le pseudo imprimé sur son bord, qui plonge et se pose à côté du texte). Le texte se réduit tout seul dans une source étroite. Chaque alerte reste le temps de la **durée** réglée (6 secondes par défaut) ; les suivantes attendent leur tour. Un petit carillon accompagne chaque alerte : mets le **volume du son** à 0 pour le couper. Dans « Alertes affichées », désactive celles que tu ne veux pas à l’écran. Clique sur « Envoyer une alerte de test » pour en voir une dans l’aperçu et dans OBS sans attendre un vrai follow.
 
 Les alertes s’affichent seulement au moment où elles arrivent : quand OBS recharge la source, les anciennes ne repassent pas.
 
 > [!TIP]
 > Pour que le carillon s’entende dans ton stream et pas seulement sur ton PC, coche « Contrôler l’audio via OBS » dans les propriétés de la source Navigateur, et vérifie que la source n’est pas coupée dans le mixeur audio.
+
+### Spectateurs
+
+Choisis « Spectateurs » dans le tableau de bord et ajoute son adresse comme une autre source Navigateur (par exemple largeur **400**, hauteur **400**). Elle affiche un orbe de particules lumineuses avec le total de tes spectateurs en direct sur toutes tes plateformes. Quand il monte, un **+x** vert s’anime ; quand il baisse, un **−x** rouge. **Nombre** : dans l’orbe (« Au centre »), ou à sa gauche ou à sa droite. Dans « Plateformes » et « Comptes », retire ceux que tu ne veux pas compter. Le total se met à jour à chaque relevé des plateformes (toutes les 30 à 60 secondes environ). Clique sur « Tester une variation » pour voir une hausse puis une baisse dans l’aperçu et dans OBS.
 
 Ensuite, plus besoin de recoller l’adresse quand tu changes un réglage. Tu ne la recolles que si l’adresse elle-même change : après avoir régénéré la clé de l’overlay (**Paramètres → Sécurité → Clé de l’overlay**), ou après un changement de port ou de `PUBLIC_URL`.
 

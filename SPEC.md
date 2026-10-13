@@ -234,25 +234,30 @@ Errors: `{error, code}`; an `ApiError` thrown by a handler becomes `502 {error, 
   per-account field = inherit the common value.
 
 ### 7.4 Overlays (`src/overlays.js`)
-Three saved overlays, ids `chat`, `featured` and `alerts` (`OVERLAY_IDS`), stored in the settings key `overlays` (`{chat, featured, alerts}`;
+Four saved overlays, ids `chat`, `featured`, `alerts` and `viewers` (`OVERLAY_IDS`), stored in the settings key `overlays` (`{chat, featured, alerts, viewers}`;
 absent = defaults, no migration; a missing id = its defaults). Validation is `cleanOverlay()` from `public/assets/overlay-settings.js`: complete object, unknown keys
 dropped, numbers rounded and clamped (`max` 1–100, `fade` 0–3600, `size` 8–120, `featureSeconds` 0–3600, `alertSeconds` 1–60), enums whitelisted
-(`position` top|center|bottom, `style` card|text|impact|eclipse), `volume` 0–100 (alert chime, /assets/chime.wav), `offPlatforms` / `offAccounts` / `offTypes` = **exclusion** lists of ids (an account added later is shown).
+(`position` top|center|bottom, `style` card|text|impact|eclipse|plasma|glass|vinyl, `align` left|center|right: chat = left|right, anything else drawn left), `volume` 0–100 (alert chime, /assets/chime.wav), `offPlatforms` / `offAccounts` / `offTypes` = **exclusion** lists of ids (an account added later is shown).
 `offTypes` holds alert categories (`ALERT_TYPES`: follow, sub, giftsub, tip, raid, redemption, like, share; `alertCategory(type)` maps an event
 type to its category, null = never alerts: announcements, stream on/off).
-- `GET /api/overlays` (read) → `{overlays: {chat, featured, alerts}, saved}` (`saved` = the settings key exists).
+- `GET /api/overlays` (read) → `{overlays: {chat, featured, alerts, viewers}, saved}` (`saved` = the settings key exists).
 - `POST /api/overlays/alerts/test` (admin) → `{ok, type}`: publishes a sample event (`test: true`) on topic `alert:test`, picked among the
   categories not in `offTypes`. Not stored, not an `event` (the docks never see it).
+- `POST /api/overlays/viewers/test` (admin) → `{ok, delta}`: publishes `{delta}` (±1–12) on topic `viewers:test`; viewer overlays show the
+  total + delta for 3.5 s, then the real total (a drop below 0 is shown as a rise).
 - `PUT /api/overlays/:id {…patch}` (admin) → `{id, settings}`: merged over the current settings, cleaned, saved, published as
   topic `overlay`. `400 {code:'invalid_overlay'}` if the body is not a plain object or its JSON is over 4000 chars;
   `404 {code:'unknown_overlay'}` for another id.
 - `DELETE /api/overlays/:id` (admin) → `{id, settings}`: back to the defaults, saved and published.
 
-Overlay page (`/overlay/chat`): `?key=…&id=chat|featured|alerts` = saved settings, applied live from `overlay` frames; any setting param
+Overlay page (`/overlay/chat`): `?key=…&id=chat|featured|alerts|viewers` = saved settings, applied live from `overlay` frames; any setting param
 also in the URL overrides that one setting. Without `id` (legacy URL) the page is configured only by its params, exactly as in 1.2,
 and ignores `overlay` frames. URL `platforms=` / `accounts=` are **inclusion** lists; a message is shown when it passes both lists.
 `id=alerts`: live `event` and `alert:test` frames only (the hello backlog is ignored, so nothing replays after a reconnect), one card at
 a time for `alertSeconds`, a queue of 20 (oldest waiting dropped beyond that), centred at `position`; `mode=` is ignored.
+`id=viewers`: the sum of `viewers` over the shown accounts that are live with a count (from hello `accounts[].stats`, then `stats`
+frames, coalesced over 1.2 s so one poll = one change), drawn by `public/assets/viewer-badge.js` (`viewerBadge({h, svg, format}).set(total)`:
+entry on the first call, +x / −x animation on every change, none after a settings change); `align` = the number inside the orb or beside it.
 
 ## 8. Realtime (`/ws`)
 
@@ -260,7 +265,7 @@ Frames `{t, d}`. First frame `hello {access, version, accounts, ui, overlays, ov
 `overlays`/`overlaysSaved` as in `GET /api/overlays`, for every access level). `version` is sent
 to every access level: `connectHub` reloads the page when it differs from the first one seen (an update was installed).
 Close code `4001` = credentials rotated/revoked: pages with a header reload (login screen), overlays stop.
-Topics: `chat`, `chat:delete`, `event`, `stats`, `feature`, `overlay` (`{id, settings}` after a save or reset, §7.4), `alert:test` (§7.4) (read-only
+Topics: `chat`, `chat:delete`, `event`, `stats`, `feature`, `overlay` (`{id, settings}` after a save or reset, §7.4), `alert:test`, `viewers:test` (§7.4) (read-only
 clients get only these; the last featured message is replayed after `hello`) and admin-only `accounts` (full list), `settings` (merged UI settings object;
 `PUT /api/settings` is a shallow merge, `null` deletes a key), `presets` (`{presets}` after any preset change), `update` (`UpdateStatus`, §11, on every change). Pages act through HTTP, never by sending WS frames.
 

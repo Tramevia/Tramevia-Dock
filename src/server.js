@@ -153,7 +153,7 @@ router.put('/api/settings', ({ body }) => {
   return merged;
 });
 
-// --- Saved overlays (OBS URL with &id=chat|featured, applied live) ---------
+// --- Saved overlays (OBS URL with &id=chat|featured|alerts|viewers, applied live)
 router.get('/api/overlays', () => ({ overlays: ctx.overlays.all(), saved: ctx.overlays.saved() }), { access: 'read' });
 const overlayId = id => {
   if (!OVERLAY_IDS.includes(id)) throw new HttpError(404, ctx.t('Overlay inconnu.', 'Unknown overlay.'), 'unknown_overlay');
@@ -182,6 +182,12 @@ router.post('/api/overlays/alerts/test', () => {
     user: { id: 'test', name: 'Tramevia' }, ...sample, test: true,
   });
   return { ok: true, type: sample.type };
+});
+// Test change for viewer overlays (topic viewers:test): they show the total ± delta for a few seconds, then the real total again.
+router.post('/api/overlays/viewers/test', () => {
+  const delta = (Math.random() < 0.5 ? -1 : 1) * (1 + Math.floor(Math.random() * 12));
+  hub.publish('viewers:test', { delta });
+  return { ok: true, delta };
 });
 
 // --- Platform apps (client id / secret) -------------------------------------

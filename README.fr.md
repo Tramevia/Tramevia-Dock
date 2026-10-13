@@ -241,6 +241,7 @@ Ce que les plateformes ne permettent pas de changer à distance (le texte de not
 - Overlay de chat transparent pour une source Navigateur d’OBS, réglé dans le tableau de bord (thème, taille, disparition, filtres…) : les réglages s’appliquent en direct, l’adresse se colle une seule fois dans OBS.
 - Mode « Message mis en avant » : tu choisis un message dans le dock Chat, il s’affiche à l’écran.
 - Overlay « Alertes » : follows, subs, dons et raids de toutes tes plateformes à l’écran, une alerte à la fois, avec un bouton de test.
+- Overlay « Spectateurs » : le total de tes spectateurs en direct sur toutes tes plateformes, chaque hausse (+x, en vert) et chaque baisse (−x, en rouge) animée.
 - Aperçu en direct dans le tableau de bord pendant que tu règles.
 
 **🛡️ Installation et sécurité**

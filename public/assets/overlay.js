@@ -1,17 +1,20 @@
 // Chat overlay for OBS browser sources (/overlay/chat): read-only, transparent. Two kinds of URL:
-//  - saved:  ?key=&id=chat|featured|alerts → settings stored on the server (dashboard builder), re-applied live on every change
+//  - saved:  ?key=&id=chat|featured|alerts|viewers → settings stored on the server (dashboard builder), re-applied live on every change
 //            without reloading; any setting param also in the URL overrides that one setting.
 //            id=alerts shows live events one at a time (follows, subs, tips, raids…), never the backlog.
+//            id=viewers shows the live viewer total of the shown channels, with every change animated (+x / −x).
 //  - legacy: ?key= without id → configured only by its params, as in 1.2, ignores live updates:
 //            &theme=dark|light|transparent&max=12&fade=0&platforms=&accounts=&hideBots=1&hideCommands=1&badges=0&icons=0
 //            &avatars=1&size=18&align=left|right&events=1&bubble=1&outline=1&mode=featured&featureSeconds=0&credit=1
 // platforms=/accounts= are inclusion lists; saved settings exclude with offPlatforms/offAccounts. Parsing: overlay-settings.js.
-import { boot, h, query, addI18n, t } from '/assets/core.js';
+import { boot, h, svg, fmt, query, addI18n, t } from '/assets/core.js';
 import { renderMessage, renderEvent } from '/assets/chat-render.js';
 import { alertCard } from '/assets/alert-card.js';
+import { viewerBadge } from '/assets/viewer-badge.js';
 import { overlayFromQuery, alertCategory } from '/assets/overlay-settings.js';
 
-addI18n({ fr: { 'overlay.title': 'Overlay du chat', 'overlay.alerts': 'Overlay des alertes' }, en: { 'overlay.title': 'Chat overlay', 'overlay.alerts': 'Alerts overlay' } });
+addI18n({ fr: { 'overlay.title': 'Overlay du chat', 'overlay.alerts': 'Overlay des alertes', 'overlay.viewers': 'Overlay des spectateurs' },
+  en: { 'overlay.title': 'Chat overlay', 'overlay.alerts': 'Alerts overlay', 'overlay.viewers': 'Viewers overlay' } });
 
 const BOTS = new Set(['nightbot', 'streamelements', 'moobot', 'streamlabs', 'fossabot', 'wizebot', 'sery_bot', 'botrixoficial', 'kickbot', 'soundalerts']);
 const KEEP = 200; // live chat/event frames kept for a rebuild (max is 100, the rest absorbs filtering); the hello backlog is kept whole
@@ -39,11 +42,12 @@ function apply() {
   if (C.id) root.dataset.theme = S.theme === 'light' ? 'light' : 'dark';
   if (S.size) root.style.setProperty('--ov-fs', `${S.size}px`); else root.style.removeProperty('--ov-fs');
   // Alignment, bubbles and outline are chat settings: the alert styles draw their own text (the outline would stroke it).
-  const chat = !C.alerts;
-  for (const [cls, on] of [['ov-right', chat && S.align === 'right'], ['ov-bubble', chat && S.bubble], ['ov-outline', chat && S.outline], ['ov-featured', C.featured], ['ov-alerts', C.alerts]]) root.classList.toggle(cls, on);
+  const chat = !C.alerts && !C.viewers;
+  for (const [cls, on] of [['ov-right', chat && S.align === 'right'], ['ov-bubble', chat && S.bubble], ['ov-outline', chat && S.outline], ['ov-featured', C.featured], ['ov-alerts', C.alerts], ['ov-viewers', C.viewers]]) root.classList.toggle(cls, on);
   root.dataset.position = C.alerts ? S.position : '';
   root.dataset.style = C.alerts ? S.style : '';
-  if (app && S.credit) app.append(credit); else credit.remove();
+  root.dataset.align = C.viewers ? S.align : '';
+  if (app && S.credit && !C.viewers) app.append(credit); else credit.remove();
 }
 if (!C.id) apply(); // legacy: at import time, as before; saved URLs wait for the server settings
 
@@ -147,6 +151,31 @@ function enqueueAlert(d) {
   if (!alertTimer) nextAlert();
 }
 
+// ------------------------------------------------------------------ viewers (id=viewers): the live total, changes animated
+const stats = new Map(); // accountId → { platform, live, viewers } (last 'stats' frame of each channel)
+let badge = null;
+let testDelta = 0; // viewers:test: shown on top of the real total for a few seconds
+let testTimer = 0;
+let statsTimer = 0;
+
+/** Live viewers of the shown channels. A live channel without a count (YouTube owner hid it) adds nothing. */
+function viewerTotal() {
+  let total = 0;
+  for (const [accountId, s] of stats) if (s.live && Number.isFinite(s.viewers) && shown({ accountId, platform: s.platform })) total += s.viewers;
+  return total;
+}
+
+function showViewers(still = false) {
+  if (!app) return;
+  badge ||= viewerBadge({ h, svg, format: n => fmt.number(n) });
+  if (!badge.el.isConnected) app.append(badge.el); // straight in #app (the list stays empty): the badge lays itself out
+  badge.set(Math.max(0, viewerTotal() + testDelta), { still });
+}
+
+function keepStats(accounts) {
+  for (const a of accounts || []) if (a.stats) stats.set(a.id, { platform: a.platform, ...a.stats });
+}
+
 /** Saved URLs: settings from the server (+ URL overrides), re-rendered in place. */
 function reconfigure(overlays, rebuild) {
   if (!C.id || !overlays) return;
@@ -156,7 +185,8 @@ function reconfigure(overlays, rebuild) {
   apply();
   if (!rebuild) return;
   clearTimeout(featureTimer);
-  if (C.alerts) {
+  if (C.viewers) showViewers(true); // a filter change is the streamer's edit, not a change of audience: no +x / −x
+  else if (C.alerts) {
     alerts = alerts.filter(alertWanted); // the card on screen stays; its duration applies from the next one
     // A style has its own elements and animations: the alert on screen is rebuilt in the new style (the builder's preview shows it at once).
     if (S.style !== style && current && alertTimer) { list.replaceChildren(); showAlert(current); }
@@ -172,10 +202,23 @@ function onFrame({ t: type, d }) {
   afterHello = type === 'hello';
   if (type === 'hello') {
     reconfigure(d.overlays, false);
+    if (C.viewers) { keepStats(d.accounts); showViewers(); return; }
     if (C.alerts) return; // alerts never replay the backlog: an old follow must not pop up again after a reconnect
     frames = (d.backlog || []).filter(f => f.t === 'chat' || f.t === 'event').map(f => ({ t: f.t, d: f.d, at: f.d.ts }));
     feature = null;
     renderChat();
+  } else if (C.viewers) {
+    if (type === 'stats' && d?.accountId) {
+      stats.set(d.accountId, { platform: d.platform, live: d.live, viewers: d.viewers });
+      // A stats poll sends every channel within a few ms: one net change on screen, not a burst of +2 −4 +2.
+      statsTimer ||= setTimeout(() => { statsTimer = 0; showViewers(); }, 1200);
+    }
+    else if (type === 'viewers:test' && Number.isFinite(d?.delta)) {
+      clearTimeout(testTimer);
+      testDelta = viewerTotal() + d.delta < 0 ? -d.delta : d.delta; // never below 0: a drop on an empty total is shown as a rise
+      showViewers();
+      testTimer = setTimeout(() => { testDelta = 0; showViewers(); }, 3500);
+    } else if (type === 'overlay' && d?.id === C.id) reconfigure({ ...saved, [d.id]: d.settings }, true);
   } else if (C.alerts) {
     if (type === 'event' || type === 'alert:test') enqueueAlert(d);
     else if (type === 'overlay' && d?.id === C.id) reconfigure({ ...saved, [d.id]: d.settings }, true);
@@ -194,12 +237,13 @@ function onFrame({ t: type, d }) {
 }
 
 boot({
-  page: '/overlay/chat', title: t(C.alerts ? 'overlay.alerts' : 'overlay.title'), header: false, admin: false, ownTheme: Boolean(C.id),
+  page: '/overlay/chat', title: t(C.alerts ? 'overlay.alerts' : C.viewers ? 'overlay.viewers' : 'overlay.title'), header: false, admin: false, ownTheme: Boolean(C.id),
   onReady(state, el) {
     app = el;
     app.classList.add('ov');
     app.append(list);
     if (C.id) reconfigure(state.overlays || {}, false); else apply();
+    if (C.viewers) { keepStats(state.accounts); showViewers(); }
   },
   onFrame,
 });

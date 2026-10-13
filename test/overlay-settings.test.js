@@ -37,7 +37,7 @@ test('legacy URL: theme fallback, align, mode, inclusion lists', () => {
   assert.equal(legacy('theme=neon').settings.theme, 'transparent');
   assert.equal(legacy('theme=light').settings.theme, 'light');
   assert.equal(legacy('align=right').settings.align, 'right');
-  assert.equal(legacy('align=center').settings.align, 'left');
+  assert.equal(legacy('align=middle').settings.align, 'left');
   assert.equal(legacy('mode=featured').featured, true);
   assert.equal(legacy('mode=chat').featured, false);
   const r = legacy('platforms=Twitch, kick,&accounts=a1,,b2');
@@ -88,7 +88,7 @@ test('cleanOverlay: complete object, rounding, clamping, enums, unknown keys', (
   assert.equal(cleanOverlay({ max: NaN }).max, DEFAULTS.chat.max);
   assert.equal(cleanOverlay({ max: Infinity }).max, DEFAULTS.chat.max);
   assert.equal(cleanOverlay({ max: ' ' }).max, DEFAULTS.chat.max);
-  assert.equal(cleanOverlay({ align: 'center', theme: 'neon' }).align, 'left');
+  assert.equal(cleanOverlay({ align: 'middle', theme: 'neon' }).align, 'left');
   assert.equal(cleanOverlay({}, LEGACY).theme, 'transparent');
 });
 
@@ -105,6 +105,18 @@ test('cleanOverlay: id lists deduped, typed, bounded', () => {
 test('OVERLAY_IDS and DEFAULTS agree', () => {
   assert.deepEqual(Object.keys(DEFAULTS).sort(), [...OVERLAY_IDS].sort());
   for (const id of OVERLAY_IDS) assert.deepEqual(cleanOverlay(DEFAULTS[id], DEFAULTS[id]), DEFAULTS[id]);
+});
+
+test('viewers: id=viewers, number beside or inside the orb', () => {
+  const r = overlayFromQuery(q('id=viewers'), {});
+  assert.deepEqual([r.id, r.viewers, r.alerts, r.featured], ['viewers', true, false, false]);
+  assert.deepEqual(r.settings, DEFAULTS.viewers);
+  assert.deepEqual([r.settings.align, r.settings.theme], ['center', 'transparent']);
+  assert.equal(overlayFromQuery(q('id=viewers&mode=featured'), {}).featured, false);
+  assert.equal(overlayFromQuery(q('id=viewers&align=right'), {}).settings.align, 'right');
+  assert.equal(overlayFromQuery(q('id=viewers'), { viewers: { align: 'left', size: 40 } }).settings.size, 40);
+  assert.equal(cleanOverlay({ align: 'middle' }, DEFAULTS.viewers).align, 'center');
+  assert.equal(overlayFromQuery(q('id=chat'), {}).viewers, false);
 });
 
 test('alerts: id=alerts, position, duration, categories', () => {

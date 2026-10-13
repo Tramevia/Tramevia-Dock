@@ -62,11 +62,12 @@ On Linux under Wayland, OBS may not offer custom browser docks. Open the dock ad
 
 ![The chat overlay over a game scene: messages from Twitch, Kick and TikTok with platform icons, and a YouTube Super Sticker event card](../assets/screenshots/en/overlay.png)
 
-There are three overlays, each with its own settings and its own address:
+There are four overlays, each with its own settings and its own address:
 
 - **Chat**: your chat, message after message.
 - **Featured message**: only the message you pick in the Chat dock (see below).
 - **Alerts**: every follow, sub, gifted sub, tip (bits, KICKs, Super Chats, gifts), raid, channel point reward, TikTok like and share, one card at a time, from all your platforms (see below).
+- **Viewers**: your total live viewers across all platforms, with every change animated (see below).
 
 Their settings are saved in Tramevia Dock and **apply live**: change an option in the dashboard and the overlay in OBS follows right away. You paste each address into OBS **once**.
 
@@ -81,12 +82,16 @@ For the featured message, pick **Featured message** in the dashboard and add its
 
 ### Alerts
 
-Pick **Alerts** in the dashboard and add its address as another Browser source, sized like your scene (for example **Width 1920**, **Height 1080**): the alert appears centred at the **top**, **middle** or **bottom** of the source, as you choose. **Style**: *Card* (a glass card floating in 3D), *Big text* (large words right on your scene, no frame), *Impact* (a product shot: the alert falls in as a can label cut in three spinning slices that slam together with a splash) or *Eclipse* (light only: two beams converge on a ring, a dark corridor opens between two curved walls of light). The text scales down by itself in a narrow source. Each alert stays for the **duration** you set (6 seconds by default); the next ones wait their turn. A soft chime plays with every alert: set **Sound volume** to 0 to mute it. Under **Alerts shown**, turn off the kinds you don't want on screen. Click **Send a test alert** to see one in the preview and in OBS without waiting for a real follow.
+Pick **Alerts** in the dashboard and add its address as another Browser source, sized like your scene (for example **Width 1920**, **Height 1080**): the alert appears centred at the **top**, **middle** or **bottom** of the source, as you choose. **Style**: *Card* (a glass card floating in 3D), *Big text* (large words right on your scene, no frame), *Impact* (a product shot: the alert falls in as a can label cut in three spinning slices that slam together with a splash), *Eclipse* (light only: two beams converge on a ring, a dark corridor opens between two curved walls of light), *Plasma* (a thermal star that heats up to white, swells into a sphere and stretches into the alert), *Glass* (a frosted-glass capsule becomes a card while a warm light sweeps under it and stays lit behind the glass) or *Vinyl* (a record in the event colour, the name printed round its rim, that dives in and lands beside the text). The text scales down by itself in a narrow source. Each alert stays for the **duration** you set (6 seconds by default); the next ones wait their turn. A soft chime plays with every alert: set **Sound volume** to 0 to mute it. Under **Alerts shown**, turn off the kinds you don't want on screen. Click **Send a test alert** to see one in the preview and in OBS without waiting for a real follow.
 
 > [!TIP]
 > To hear the chime in your stream and not only on your PC, tick **Control audio via OBS** in the Browser source properties and make sure the source is not muted in the audio mixer.
 
 Alerts are shown only as they happen: when OBS reloads the source, old alerts are not replayed.
+
+### Viewers
+
+Pick **Viewers** in the dashboard and add its address as another Browser source (for example **Width 400**, **Height 400**). It shows an orb of glowing particles with your total live viewers across all your platforms. When it goes up, a green **+x** animates; when it goes down, a red **−x**. **Number**: inside the orb (*Centre*), or to its left or right. Under **Platforms** and **Accounts**, turn off the ones you don't want counted. The total updates with every platform poll (about every 30 to 60 seconds). Click **Test a change** to see a rise and then a drop in the preview and in OBS.
 
 After that, you never paste the address again when you change a setting. You only paste it again if the address itself changes: after you regenerate the overlay key (**Settings → Security → Overlay key**), or after you change the port or `PUBLIC_URL`.
 
