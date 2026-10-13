@@ -8,6 +8,7 @@
 // platforms=/accounts= are inclusion lists; saved settings exclude with offPlatforms/offAccounts. Parsing: overlay-settings.js.
 import { boot, h, query, addI18n, t } from '/assets/core.js';
 import { renderMessage, renderEvent } from '/assets/chat-render.js';
+import { alertCard } from '/assets/alert-card.js';
 import { overlayFromQuery, alertCategory } from '/assets/overlay-settings.js';
 
 addI18n({ fr: { 'overlay.title': 'Overlay du chat', 'overlay.alerts': 'Overlay des alertes' }, en: { 'overlay.title': 'Chat overlay', 'overlay.alerts': 'Alerts overlay' } });
@@ -37,7 +38,9 @@ function apply() {
   root.dataset.overlay = S.theme;
   if (C.id) root.dataset.theme = S.theme === 'light' ? 'light' : 'dark';
   if (S.size) root.style.setProperty('--ov-fs', `${S.size}px`); else root.style.removeProperty('--ov-fs');
-  for (const [cls, on] of [['ov-right', S.align === 'right'], ['ov-bubble', S.bubble], ['ov-outline', S.outline], ['ov-featured', C.featured], ['ov-alerts', C.alerts]]) root.classList.toggle(cls, on);
+  // Alignment, bubbles and outline are chat settings: the alert styles draw their own text (the outline would stroke it).
+  const chat = !C.alerts;
+  for (const [cls, on] of [['ov-right', chat && S.align === 'right'], ['ov-bubble', chat && S.bubble], ['ov-outline', chat && S.outline], ['ov-featured', C.featured], ['ov-alerts', C.alerts]]) root.classList.toggle(cls, on);
   root.dataset.position = C.alerts ? S.position : '';
   root.dataset.style = C.alerts ? S.style : '';
   if (app && S.credit) app.append(credit); else credit.remove();
@@ -118,29 +121,6 @@ function chime(volume) {
   chimeEl.play().catch(() => {}); // blocked autoplay (a browser tab before any click), no audio device: the alert still shows
 }
 
-/** Kinetic title: every word in its own span with its index (--i), so the CSS can bring them in one after the other. */
-function kinetic(title) {
-  let i = 0;
-  for (const node of [...title.childNodes]) {
-    if (node.nodeType !== Node.TEXT_NODE) { node.classList.add('w'); node.style.setProperty('--i', i++); continue; }
-    const frag = document.createDocumentFragment();
-    for (const part of node.textContent.split(/(\s+)/)) frag.append(!part || /^\s+$/.test(part) ? part : h('span.w', { style: { '--i': i++ } }, part));
-    node.replaceWith(frag);
-  }
-}
-
-/** Pop style: a cloud of small pastel shapes that burst out of the icon and float around it (positions and colours in CSS variables). */
-const POP_COLOURS = ['var(--evt)', 'color-mix(in srgb, var(--evt) 45%, #fff)', '#ffd166', '#fff'];
-function confetti(card) {
-  for (let i = 0; i < 10; i++) {
-    const a = (i / 10) * Math.PI * 2 + (i % 2) * 0.3, d = 2.4 + (i % 3) * 0.9;
-    card.append(h('i.pp', { style: {
-      '--dx': `${(Math.cos(a) * d).toFixed(2)}em`, '--dy': `${(Math.sin(a) * d * 0.8).toFixed(2)}em`, '--s': `${0.35 + (i % 4) * 0.12}em`,
-      '--t': `${(i * 0.04).toFixed(2)}s`, '--r': i % 3 === 0 ? '50%' : i % 3 === 1 ? '0.12em' : '1em', '--pc': POP_COLOURS[i % 4],
-    } }));
-  }
-}
-
 /** Shows the next waiting alert for S.alertSeconds, then the one after. Nothing waiting = screen left empty. */
 function nextAlert() {
   clearTimeout(alertTimer);
@@ -148,12 +128,9 @@ function nextAlert() {
   for (const old of list.children) remove(old);
   const d = alerts.shift();
   if (!d) return;
-  const evt = renderEvent(d, { ...opts, timestamps: false });
-  kinetic(evt.querySelector('.evt-title'));
-  const card = h('div.alert-card', { class: `pf-${String(d.platform).replace(/[^a-z]/g, '')}` }, evt);
-  if (S.style === 'pop') confetti(card);
+  const card = alertCard(d, opts, S.style);
   list.append(card);
-  card.style.setProperty('--evt', getComputedStyle(evt).getPropertyValue('--evt')); // the event colour, for the card's own glow and accent
+  card.style.setProperty('--evt', getComputedStyle(card.querySelector('.evt')).getPropertyValue('--evt')); // the event colour, for the card's own glow and accent
   chime(S.volume);
   alertTimer = setTimeout(nextAlert, S.alertSeconds * 1000);
 }

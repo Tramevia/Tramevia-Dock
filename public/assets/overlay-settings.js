@@ -10,7 +10,7 @@ export const OVERLAY_IDS = ['chat', 'featured', 'alerts'];
 export const BOOLS = ['hideBots', 'hideCommands', 'events', 'badges', 'icons', 'avatars', 'bubble', 'outline', 'credit'];
 export const THEMES = ['transparent', 'dark', 'light'];
 export const POSITIONS = ['top', 'center', 'bottom'];
-export const STYLES = ['card', 'text', 'smoke', 'pop']; // alerts: glass card · big kinetic text · smoke reveal · pastel pop
+export const STYLES = ['card', 'text', 'impact', 'eclipse']; // alerts: glass card · big kinetic text · impact (physical, product shot) · eclipse (lines of light)
 /** [min, max] of every number (the overlay page clamps URL values to the same ranges). */
 export const RANGES = { max: [1, 100], fade: [0, 3600], size: [8, 120], featureSeconds: [0, 3600], alertSeconds: [1, 60], volume: [0, 100] };
 const LIST_MAX = 50;
