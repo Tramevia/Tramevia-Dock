@@ -168,8 +168,47 @@ function rocker(card) {
   );
 }
 
+// ------------------------------------------------------------------ prism: glass prisms on a black glass slab
+// A cluster of glass prisms standing on a black glass slab (after a 3D motion piece: glossy glass bars rising and
+// falling like an equalizer). Each bar is one element: its lit front face, its darker right side (::before) and its cap
+// (::after); under the slab's edge the bar goes on as its reflection. The bars stand in three rows in a 3D rig (the camera:
+// the rig cranes up during the entry, the cam inside it drifts at rest; one transform animation each, so both stay on the
+// compositor), each turned three-quarters to the camera. They are dealt into three voices (one bar in three each, so
+// neighbours differ): at rest each voice breathes on its own rhythm, an equalizer in which only three layers move.
+// Rows: [depth (0 front … 2 back), x offset in bar spacings, heights (em) left to right]: heights in clumps.
+const ROWS = [
+  [2, 0.25, [3.6, 6.8, 7.4, 6.6, 3.2, 5.6, 6]],
+  [1, 0, [2.6, 5.4, 6.2, 5, 2.2, 2.8, 6.4, 3]],
+  [0, 0.25, [1.6, 2, 4.2, 4.8, 3.8, 1.4, 1.9]],
+];
+const STEP = 1.75; // em between bar centres in a row: a 1em bar turned 38° spans 1.4em, so the black shows between bars
+
+function prism(card, event) {
+  const flip = [...(event.user?.name || '')].length % 2 ? -1 : 1; // every other name length mirrors the cluster
+  const voices = [0, 1, 2].map(v => h(`i.prism-voice.prism-v${v}`));
+  let i = 0;
+  for (const [depth, offset, heights] of ROWS) {
+    heights.forEach((ht, k) => {
+      const x = +(flip * (k - (heights.length - 1) / 2 + offset - 0.25) * STEP).toFixed(2);
+      voices[i % 3].append(h('i.prism-bar', { style: {
+        '--x': `${x}em`, '--z': `${-STEP * depth}em`, '--h': `${ht}em`,
+        // the burst runs from the centre out in five rings (each distinct start time costs the main thread a style pass
+        // per frame while it waits, so 25 bars start in a few groups), the back rows a beat late
+        '--dl': `${70 * Math.min(4, Math.floor(Math.abs(x) / 1.75)) + 20 * depth}ms`,
+        // refractions seen through the glass and the iridescent glints on the edges, at bar-specific heights
+        '--r1': `${(0.9 + (i * 0.53) % 1.8).toFixed(2)}em`, '--r2': `${(1.8 + (i * 0.71) % 2.2).toFixed(2)}em`,
+        '--g1': `${(0.3 + (i * 0.37) % 1.4).toFixed(2)}em`, '--g2': `${(0.8 + (i * 0.61) % 1.9).toFixed(2)}em`,
+      } }));
+      i++;
+    });
+  }
+  card.prepend(h('i.prism-slab')); // the black glass under everything: the bars' reflections and the text lie on it
+  card.append(h('i.prism-stage', h('i.prism-rig', h('i.prism-cam', ...voices))), h('i.prism-sheen'));
+  if (card.querySelector('.evt-amount')) card.classList.add('prism-money'); // the title sizes for the narrower column (no :has() in CEF 103)
+}
+
 /** Style → function(card, event) that adds the style's own elements to a new card. Styles made of CSS only (card, text) have none. */
-export const DECOR = { impact, eclipse, plasma, glass, switch: rocker, wave: (card, event) => wave(card, event, { h, svg }) };
+export const DECOR = { impact, eclipse, plasma, glass, switch: rocker, wave: (card, event) => wave(card, event, { h, svg }), prism };
 
 /** A new alert card for event d (not yet in the page). Set --evt on it once it is in the page (it comes from the event's CSS class). */
 export function alertCard(d, opts, style) {
