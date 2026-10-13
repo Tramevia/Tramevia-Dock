@@ -140,46 +140,8 @@ function glass(card) {
   if (card.querySelector('.evt-amount')) card.classList.add('glass-money');
 }
 
-// ------------------------------------------------------------------ vinyl: a record, after a music-streaming promo
-// A record (the event colour, a spiral groove, the user name printed around its rim) beside a flat dark-shade panel. Entry:
-// the record cuts in huge and tilted, its rim lettering racing round, and swoops down on a curve into its slot as the camera
-// rises over it; the panel wipes out from under it, the words swing in around its centre. The name is set as text, never parsed.
-let vinylId = 0; // textPath ids: unique per card (two cards are on screen during a handoff)
-// Archimedean spiral from radius a, s apart per turn, as half circles whose centres alternate between 0 and s/2.
-const spiral = (a, s, turns) => {
-  let d = `M${a},0`;
-  for (let k = 0; k < turns * 2; k++) d += ` A${a + k * s / 2},${a + k * s / 2} 0 0 0 ${k % 2 ? a + (k + 1) * s / 2 : -(a + k * s / 2)},0`;
-  return d;
-};
-const GROOVE = spiral(21.5, 6, 2.5);
-const RIM = 'M-41,0 A41,41 0 1 1 41,0 A41,41 0 1 1 -41,0'; // the rim text's baseline, clockwise from the left
-const RECORD = id => `<svg class="vinyl-rec" width="0" height="0" viewBox="-50 -50 100 100" aria-hidden="true">
-  <circle class="vinyl-body" r="50"/><path class="vinyl-groove" d="${GROOVE}"/><circle class="vinyl-paper" r="17"/>
-  <path id="${id}" d="${RIM}" fill="none"/><text><textPath href="#${id}" textLength="252" lengthAdjust="spacing"></textPath></text></svg>`;
-const SEAMS = /(?<=[a-zà-ÿ])(?=[A-ZÀ-Ý0-9])|(?<=[_.-])(?=[^_.-])/; // where kinetic() lets a long name wrap (see seams())
-
-function vinyl(card, event) {
-  const user = (card.querySelector('.evt-user')?.textContent || event.user?.name || '').trim();
-  const name = [...user.toUpperCase()].slice(0, 36).join(''); // fits the rim
-  const reps = Math.min(4, Math.max(1, Math.round(40 / ([...name].length + 3))));
-  const rec = svg(`<i class="vinyl-track"><i class="vinyl-panel"></i><i class="vinyl-disc"><i class="vinyl-spin">${RECORD(`vinyl-rim-${vinylId++}`)}</i></i></i>`);
-  rec.querySelector('textPath').textContent = `${name} • `.repeat(reps);
-  card.append(rec);
-  // Widths in em of the style's condensed font, so the CSS can size the name and leave room for the money pill whatever
-  // font the system resolves (Bahnschrift on Windows, a fallback elsewhere). Without them it guesses from character counts.
-  const ctx = document.createElement('canvas').getContext('2d');
-  ctx.font = `600 100px ${getComputedStyle(document.documentElement).getPropertyValue('--vy-font')}`;
-  ctx.fontStretch = 'condensed';
-  if (!ctx.font.includes('100px')) return; // the family list did not parse
-  const em = t => ctx.measureText(t).width / 100;
-  const set = (k, v) => card.style.setProperty(k, v.toFixed(2));
-  if (user) { set('--vy-w', em(user)); set('--vy-wp', Math.max(...user.split(/\s+/).flatMap(w => w.split(SEAMS)).map(em))); }
-  const amount = card.querySelector('.evt-amount'); // shares the row with the text: pill (1.1em, padding 0.65em) + gap
-  if (amount) set('--vy-amt', em(amount.textContent) * 1.1 + 1.45 + 0.8);
-}
-
 /** Style → function(card, event) that adds the style's own elements to a new card. Styles made of CSS only (card, text) have none. */
-export const DECOR = { impact, eclipse, plasma, glass, vinyl };
+export const DECOR = { impact, eclipse, plasma, glass };
 
 /** A new alert card for event d (not yet in the page). Set --evt on it once it is in the page (it comes from the event's CSS class). */
 export function alertCard(d, opts, style) {

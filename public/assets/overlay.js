@@ -130,6 +130,7 @@ function showAlert(d) {
   const card = alertCard(d, opts, S.style);
   list.append(card);
   card.style.setProperty('--evt', getComputedStyle(card.querySelector('.evt')).getPropertyValue('--evt')); // the event colour, for the card's own glow and accent
+  card.style.setProperty('--alert-ms', String(S.alertSeconds * 1000)); // how long it stays: a style may show the time left
 }
 
 /** Shows the next waiting alert for S.alertSeconds, then the one after. Nothing waiting = screen left empty. */
