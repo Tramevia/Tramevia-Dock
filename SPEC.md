@@ -237,7 +237,7 @@ Errors: `{error, code}`; an `ApiError` thrown by a handler becomes `502 {error, 
 Four saved overlays, ids `chat`, `featured`, `alerts` and `viewers` (`OVERLAY_IDS`), stored in the settings key `overlays` (`{chat, featured, alerts, viewers}`;
 absent = defaults, no migration; a missing id = its defaults). Validation is `cleanOverlay()` from `public/assets/overlay-settings.js`: complete object, unknown keys
 dropped, numbers rounded and clamped (`max` 1–100, `fade` 0–3600, `size` 8–120, `featureSeconds` 0–3600, `alertSeconds` 1–60), enums whitelisted
-(`position` top|center|bottom, `style` card|text|impact|eclipse|plasma|glass, `align` left|center|right: chat = left|right, anything else drawn left), `volume` 0–100 (alert chime, /assets/chime.wav), `offPlatforms` / `offAccounts` / `offTypes` = **exclusion** lists of ids (an account added later is shown).
+(`position` top|center|bottom, `style` card|text|impact|eclipse|plasma|glass|switch|wave|prism|silk|neon, `align` left|center|right: chat = left|right, anything else drawn left), `volume` 0–100 (alert chime, /assets/chime.wav), `offPlatforms` / `offAccounts` / `offTypes` = **exclusion** lists of ids (an account added later is shown).
 `offTypes` holds alert categories (`ALERT_TYPES`: follow, sub, giftsub, tip, raid, redemption, like, share; `alertCategory(type)` maps an event
 type to its category, null = never alerts: announcements, stream on/off).
 - `GET /api/overlays` (read) → `{overlays: {chat, featured, alerts, viewers}, saved}` (`saved` = the settings key exists).
