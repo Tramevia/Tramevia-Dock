@@ -1707,6 +1707,114 @@ html, body { height: 100%; overflow: hidden; }
 @keyframes switch-breathe { to { opacity: 0.55; } }
 @keyframes switch-out { 0%, 66% { opacity: 1; transform: none; } 100% { opacity: 0; transform: scale(0.94); } }
 
+/* ---- wave: a breaking wave of white particles (after a monochrome particle-fluid piece). The alert sits under a lopsided
+   splash: a billowing mass rises behind the icon, its crest throws over the text in a thick curling lip torn into tendrils
+   and spray, its base breaks into foam and low spray. White on the reference's black; --evt only on the name.
+   Particles, the dark under the wave and the mist behind the text: decorate.js. */
+:root[data-style="wave"] .alert-card { isolation: isolate; margin-block: 1em; }
+:root[data-style="wave"] .alert-card .evt { z-index: 1; align-items: center; gap: 0.75em; padding: 1em 1.2em 0.95em 1em; color: #f4f5f8; text-shadow: 0 0 0.2em rgb(0 0 0 / 55%); }
+:root[data-style="wave"] .alert-card .evt-icon { width: 2em; height: 2em; background: none; color: #fff; }
+:root[data-style="wave"] .alert-card .evt-icon svg { width: 1.25em; height: 1.25em; filter: drop-shadow(0 0 0.15em rgb(0 0 0 / 70%)); }
+/* The title shrinks (down to 0.8em) so its longest piece fits a line of the text column: about 19em wide (13.5em beside an
+   amount), a bold character about 0.62em, so 30em / n (21em / n); in a narrow source 70vw / n. */
+:root[data-style="wave"] .alert-card { --wave-col: 30em; }
+:root[data-style="wave"] .alert-card.wave-money { --wave-col: 21em; }
+:root[data-style="wave"] .alert-card .evt-title { font-size: clamp(0.8em, min(70vw / var(--longest-part, 1), var(--wave-col) / var(--longest-part, 1)), 1.1em); font-weight: 650; line-height: 1.25; }
+:root[data-style="wave"] .alert-card .evt-user { font-weight: 800; color: color-mix(in srgb, var(--evt) 50%, #fff); }
+:root[data-style="wave"] .alert-card .evt-meta { color: #b4b8c2; }
+:root[data-style="wave"] .alert-card .evt-amount { background: none; color: #fff; font-size: 1.2em; }
+
+@media (max-width: 560px) { /* narrow source: tighter, the amount goes under the text */
+  :root[data-style="wave"] .alert-card .evt { flex-wrap: wrap; gap: 0.3em 0.6em; padding: 0.85em 0.8em 0.8em 0.65em; }
+  :root[data-style="wave"] .alert-card .evt-icon { width: 1.6em; height: 1.6em; }
+  :root[data-style="wave"] .alert-card .evt-body { flex: 1 1 60%; }
+  :root[data-style="wave"] .alert-card .evt-amount { margin-left: 2.2em; font-size: 1.1em; }
+}
+
+/* particles: the box overhangs the card as decorate.js expects (BOX). Sizes are in path units (100 per em). */
+:root[data-style="wave"] .alert-card .wave-fx { position: absolute; z-index: 0; left: -3em; right: -2.4em; top: -2.8em; bottom: -2.4em; pointer-events: none; }
+:root[data-style="wave"] .wave-fx svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; will-change: transform; }
+:root[data-style="wave"] .wave-fx path { fill: none; stroke: #fff; stroke-linecap: round; }
+:root[data-style="wave"] .wave-core { stroke-width: 3.6; opacity: 0.96; }   /* the luminous sheets: tiny, packed, near-white */
+:root[data-style="wave"] .wave-body { stroke-width: 14; opacity: 0.36; }     /* their glow (blurred fibres) */
+:root[data-style="wave"] .wave-grain { stroke-width: 4; opacity: 0.62; }    /* fine dust, lace, tendrils */
+:root[data-style="wave"] .wave-haze { stroke-width: 5; opacity: 0.4; }      /* the dim particles behind, smoke, spray dust */
+:root[data-style="wave"] .wave-fx .wave-pit { stroke: #000; stroke-width: 4; opacity: 0.85; }
+:root[data-style="wave"] .wave-haze-live { stroke-width: 26; opacity: 0.13; }
+:root[data-style="wave"] .wave-live .wave-core { stroke-width: 4.4; }
+:root[data-style="wave"] .wave-live .wave-grain { stroke-width: 4.8; opacity: 0.75; }
+:root[data-style="wave"] .wave-spray { stroke-width: 4.4; opacity: 0.85; animation: wave-lip 640ms step-end backwards; }
+@keyframes wave-lip { from { opacity: 0; } 85% { opacity: 1; } }
+:root[data-style="wave"] .wave-live { animation: wave-rise 450ms ease-in backwards; }
+@keyframes wave-rise { from { opacity: 0.25; } }
+
+/* the dark: under the foam (tight to it), and a mist hugging the text lines and the icon (the text's own dark dust) */
+:root[data-style="wave"] .wave-fx .wave-shadow { stroke: #000; stroke-width: 64; opacity: 0.48; }
+:root[data-style="wave"] .wave-shade { filter: blur(0.3em); animation: wave-condense 600ms ease-in-out 700ms backwards; }
+:root[data-style="wave"] .wave-fx .wave-dark { stroke: #000; stroke-width: 70; opacity: 0.62; }
+:root[data-style="wave"] .wave-mist { filter: blur(0.32em); animation: wave-condense 500ms ease-out 960ms backwards; }
+
+/* the rest condenses as the wave settles, stretch by stretch: until then the outline is the moving wave */
+:root[data-style="wave"] .wave-seg { transform-origin: 18% 55%; animation: wave-condense 460ms ease-out 700ms backwards, wave-sway-a 11s ease-in-out 1160ms infinite alternate; }
+:root[data-style="wave"] .wave-s1 { animation-delay: 860ms, 1320ms; animation-name: wave-condense, wave-sway-b; }
+:root[data-style="wave"] .wave-s2 { animation-delay: 1000ms, 1460ms; }
+/* at rest the foam is still alive: the stretches sway a hair against each other (transform only) */
+@keyframes wave-sway-a { from { transform: none; } to { transform: rotate(-0.8deg) translate(0.05em, -0.04em); } }
+@keyframes wave-sway-b { from { transform: none; } to { transform: rotate(0.7deg) translate(-0.04em, 0.05em); } }
+@keyframes wave-condense { from { opacity: 0; } }
+
+/* the text forms out of the dust (decorate.js draws the letters' dust): the words take over from it, left to right */
+:root[data-style="wave"] .wave-text { stroke-width: 4.2; opacity: 0; animation: wave-letters 1520ms linear; }
+@keyframes wave-letters { 0%, 45% { opacity: 0; } 49% { opacity: 0.95; } 78% { opacity: 0.95; } 100% { opacity: 0; } }
+:root[data-style="wave"] .alert-card .evt-title .w { animation: wave-word 420ms ease-out calc(1080ms + var(--i) * 45ms) backwards; }
+:root[data-style="wave"] .alert-card :is(.evt-icon, .evt-meta, .evt-text, .evt-amount) { animation: wave-word 420ms ease-out 1180ms backwards; }
+@keyframes wave-word { from { opacity: 0; filter: blur(0.12em); } }
+
+/* ---- rest: a faint dust drifts off the wave (two thin layers half a cycle apart, transform and opacity only) */
+:root[data-style="wave"] .wave-dusts { position: absolute; inset: 0; animation: wave-condense 900ms ease-out 1300ms backwards; }
+:root[data-style="wave"] .wave-speck { stroke-width: 4.6; opacity: 0.6; }
+:root[data-style="wave"] .wave-drift { animation: wave-drift 9s linear infinite; }
+:root[data-style="wave"] .wave-db { animation-delay: -4.5s; }
+@keyframes wave-drift { 0% { transform: translate(-0.35em, 0.12em); opacity: 0; } 30%, 65% { opacity: 1; } 100% { transform: translate(0.8em, -0.4em); opacity: 0; } }
+
+/* ---- exit (450 ms): the alert disintegrates into dust blown away. The text hands over to its dust at once; a gust from
+   the left blows the live particles and the letters' dust away (d keyframes from decorate.js); the dense foam drifts off and
+   fades, the dark goes last. */
+:root[data-style="wave"] .alert-card.gone { animation: wave-out 450ms linear forwards; }
+:root[data-style="wave"] .alert-card.gone .evt > * { animation: wave-vanish 110ms ease-in forwards; }
+:root[data-style="wave"] .alert-card.gone .wave-live path { animation: wave-blow 450ms cubic-bezier(0.4, 0, 0.8, 0.6) forwards; }
+:root[data-style="wave"] .alert-card.gone .wave-live .wave-text { animation: wave-blow-text 450ms cubic-bezier(0.4, 0, 0.8, 0.6) forwards; }
+:root[data-style="wave"] .alert-card.gone :is(.wave-seg, .wave-dusts) { animation: wave-scatter 330ms ease-in forwards; }
+:root[data-style="wave"] .alert-card.gone :is(.wave-shade, .wave-mist) { animation: wave-vanish 420ms ease-in 30ms forwards; }
+@keyframes wave-out { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes wave-vanish { to { opacity: 0; } }
+@keyframes wave-blow { 33.3% { d: var(--wave-x1); } 100% { d: var(--wave-x2); opacity: 0; } }
+@keyframes wave-blow-text { 0% { opacity: 0.95; } 33.3% { d: var(--wave-x1); opacity: 0.95; } 100% { d: var(--wave-x2); opacity: 0; } }
+@keyframes wave-scatter { to { opacity: 0; transform: translate(1.4em, -0.35em); } }
+
+/* ---- themes. dark (default): the reference itself, white particles on black. light: its negative, ink particles on paper
+   (the dark turns to paper, the pits white). transparent: the particles on the scene with lighter darks. */
+:root[data-style="wave"][data-overlay="light"] .wave-fx path { stroke: #15171d; }
+:root[data-style="wave"][data-overlay="light"] .wave-fx .wave-shadow { stroke: #fbfbfd; opacity: 0.6; }
+:root[data-style="wave"][data-overlay="light"] .wave-fx .wave-dark { stroke: #fbfbfd; opacity: 0.8; }
+:root[data-style="wave"][data-overlay="light"] .wave-fx .wave-pit { stroke: #fff; opacity: 0.9; }
+:root[data-style="wave"][data-overlay="light"] .wave-body { opacity: 0.25; }
+:root[data-style="wave"][data-overlay="light"] .wave-haze { opacity: 0.4; }
+:root[data-style="wave"][data-overlay="light"] .alert-card .evt { color: #16181f; text-shadow: 0 0 0.2em rgb(255 255 255 / 70%); }
+:root[data-style="wave"][data-overlay="light"] .alert-card .evt-icon { color: #16181f; }
+:root[data-style="wave"][data-overlay="light"] .alert-card .evt-icon svg { filter: none; }
+:root[data-style="wave"][data-overlay="light"] .alert-card .evt-user { color: color-mix(in srgb, var(--evt) 72%, #000); }
+:root[data-style="wave"][data-overlay="light"] .alert-card .evt-meta { color: #4f5563; }
+:root[data-style="wave"][data-overlay="light"] .alert-card .evt-amount { color: #16181f; }
+
+:root[data-style="wave"][data-overlay="transparent"] .wave-fx .wave-shadow { opacity: 0.4; }
+:root[data-style="wave"][data-overlay="transparent"] .wave-fx .wave-dark { opacity: 0.5; }
+:root[data-style="wave"][data-overlay="transparent"] .alert-card .evt {
+  --o: 0.045em; --oc: rgb(0 0 0 / 70%);
+  text-shadow: var(--o) 0 0 var(--oc), calc(-1 * var(--o)) 0 0 var(--oc), 0 var(--o) 0 var(--oc), 0 calc(-1 * var(--o)) 0 var(--oc), 0 0.05em 0.35em rgb(0 0 0 / 60%);
+}
+:root[data-style="wave"][data-overlay="transparent"] .alert-card .evt-meta { color: #d5d8e0; }
+
 /* Viewers (id=viewers): the total live viewer count in a sphere of glowing particles (viewer-badge.js). Root: .ov-viewers,
    data-align = center (number inside the orb) | right (orb, then the number) | left (number, then the orb), data-overlay = theme.
    At rest only the dot layers move: a slow sway (rotate) and two drifting stray layers (transform + opacity).
