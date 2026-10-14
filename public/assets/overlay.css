@@ -977,7 +977,11 @@ html, body { height: 100%; overflow: hidden; }
   78% { transform: perspective(40em) rotateY(3deg) rotateX(-1.5deg) rotate(0.4deg) scale(1); }
   100% { transform: perspective(40em) rotateY(0deg) rotateX(0deg) rotate(0deg) scale(1); }
 }
-@keyframes glass-clip { 0%, 36% { clip-path: inset(calc(50% - var(--gl-ch)) calc(50% - var(--gl-cw)) round var(--gl-cw)); } 100% { clip-path: inset(var(--gl-v) 0 round var(--gl-r)); } }
+/* --gl-main in the keyframes below: an unregistered custom property keeps these entry animations on the main thread. On the
+   compositor they would turn their elements into layers inside the clipped body while the card still tilts in 3D, and OBS
+   (Chromium 127) then draws the body's clip without its rounded corners: a dark square behind the rim from 0.95 s to 1.25 s.
+   Seen in the OBS engine itself (alert-lab render.mjs --attach --live); the idle drift starts after the tilt and stays composited. */
+@keyframes glass-clip { 0%, 36% { --gl-main: 0; clip-path: inset(calc(50% - var(--gl-ch)) calc(50% - var(--gl-cw)) round var(--gl-cw)); } 100% { --gl-main: 1; clip-path: inset(var(--gl-v) 0 round var(--gl-r)); } }
 @keyframes glass-tint { from { background-color: var(--gl-see); } }
 @keyframes glass-tint-out { to { background-color: var(--gl-see); } }
 @keyframes glass-clip-out { to { clip-path: inset(calc(50% - var(--gl-ch)) calc(50% - var(--gl-cw)) round var(--gl-cw)); } }
@@ -1000,14 +1004,14 @@ html, body { height: 100%; overflow: hidden; }
 }
 @keyframes glass-wrap { from { -webkit-mask-position: 25% 25%; mask-position: 25% 25%; } }
 @keyframes glass-drift { to { transform: translate(0.9em, 0.25em) scale(1.06); } }
-@keyframes glass-streak-a { from { opacity: 0; transform: translateX(-60%) skewX(-35deg); } 30%, 70% { opacity: 1; } to { opacity: 0; transform: translateX(60%) skewX(-35deg); } }
-@keyframes glass-streak-b { from { opacity: 0; transform: translateX(60%) skewX(35deg); } 30%, 70% { opacity: 1; } to { opacity: 0; transform: translateX(-60%) skewX(35deg); } }
-@keyframes glass-wash { from { opacity: 0; transform: translate(45%, 35%); } 30%, 55% { opacity: 1; } to { opacity: 0; transform: translate(-50%, -30%); } }
+@keyframes glass-streak-a { from { --gl-main: 0; opacity: 0; transform: translateX(-60%) skewX(-35deg); } 30%, 70% { opacity: 1; } to { --gl-main: 1; opacity: 0; transform: translateX(60%) skewX(-35deg); } }
+@keyframes glass-streak-b { from { --gl-main: 0; opacity: 0; transform: translateX(60%) skewX(35deg); } 30%, 70% { opacity: 1; } to { --gl-main: 1; opacity: 0; transform: translateX(-60%) skewX(35deg); } }
+@keyframes glass-wash { from { --gl-main: 0; opacity: 0; transform: translate(45%, 35%); } 30%, 55% { opacity: 1; } to { --gl-main: 1; opacity: 0; transform: translate(-50%, -30%); } }
 @keyframes glass-spot { from { opacity: 0; transform: scale(0.2); } 30% { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.6); } }
 @keyframes glass-lens { from { opacity: 0; transform: scale(0.2); } 40% { opacity: 1; } }
 @keyframes glass-word { from { opacity: 0; filter: blur(0.14em); } }
 @keyframes glass-pill { from { opacity: 0; transform: scaleX(0.4) scaleY(0.7); } }
-@keyframes glass-show { from { opacity: 0; } }
+@keyframes glass-show { from { --gl-main: 0; opacity: 0; } to { --gl-main: 1; } }
 @keyframes glass-glow-out { to { opacity: 0; transform: translate(2em, 1.5em) scale(0.9); } }
 @keyframes glass-hide { to { opacity: 0; } }
 @keyframes glass-frost { to { opacity: 0; filter: blur(0.2em); } }
