@@ -79,36 +79,36 @@ function impact(card, event) {
 }
 
 // ------------------------------------------------------------------ eclipse: light is the only material
-// Two folded beams of light converge on the ring (the icon); a dark corridor opens around the text between two curved walls
-// of light that pinch at its middle and curve away above and below (the throat of a tunnel), closed by thin arcs of light;
-// a bead flares under the text and opens into the eclipse rim; a crescent orbits the ring.
-// The SVGs share one box stretched over the card and its overhang (see .ecl-tunnel): x = 11.5 / 88.5 is the throat on the
-// card edges, y = 10 / 90 the corners where the arcs close the corridor; past them the walls run on as hairlines and fade out.
-// The glow (a blurred halo) sits under the corridor, so it only shows outside the walls. The SVGs are grouped in two frames
-// (outer light: glow + sheen; corridor + walls) that carry the exit, so it never stacks on the SVGs' own entry animations.
-// width / height 0: the CSS sizes the SVGs; if the streamer switches style while an alert is on screen, they stay empty.
-const ECL_WALL_L = 'C7.9,14 11.5,32 11.5,50 C11.5,68 7.9,86 5.5,90';
-const ECL_WALL_R = 'C92.1,14 88.5,32 88.5,50 C88.5,68 92.1,86 94.5,90';
-const ECL_WALLS = `M5.5,10 ${ECL_WALL_L} M94.5,10 ${ECL_WALL_R}`;
-const ECL_ARCS = 'M5.5,10 Q50,2 94.5,10 M5.5,90 Q50,98 94.5,90';
-const ECL_LINES = `${ECL_ARCS} M5.5,10 C4,7.5 2,3.5 0,0 M5.5,90 C4,92.5 2,96.5 0,100 M94.5,10 C96,7.5 98,3.5 100,0 M94.5,90 C96,92.5 98,96.5 100,100`;
-
+// Light is the only material. A horizon line thickens under a dome of light (the sunrise) and hands over to the ring
+// (the icon); two folded planes of light converge on the ring and cross through it; a crescent arc leaves the frame; then the
+// tunnel: two tall walls of light, drawn from the top of the source down past the text, brighten with an exposure ramp. The
+// bloom only lives outside the walls; between them it is dark, and the text sits there.
+// One box for both SVGs (see .ecl-tunnel), 0.1em per unit on a follow card: x -344..344 (the walls live in -264..264 = the
+// 20em card + 16.4em per side; the 8em margins hold the bloom), y 0..394.5 (16em above the card, 17em below). Each wall is one
+// cubic (vertical at the top, bending over 20em to 30 degrees) and a straight run to the tip. The box stretches with the card's
+// height and squeezes in a narrow source.
+// Elements: 2 beams, the sun, 1 frame, 2 SVGs (defs: clip + 4 filters, 4 groups + 4 bloom paths; 4 wall paths) = 26.
+const ECL_R = 'M10,0 C10,90 41,146.4 76,207 L184.2,394.5';
+const ECL_L = 'M-10,0 C-10,90 -41,146.4 -76,207 L-184.2,394.5';
+const ECL_BLOOM = [['bloom1', 4], ['bloom2', 10], ['bloom3', 18], ['bloom4', 28]]; // class, blur (units)
+let eclN = 0;
 function eclipse(card) {
-  const layer = (cls, paths) => svg(`<svg class="ecl-tunnel ${cls}" width="0" height="0" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${
-    paths.map(([c, d]) => `<path class="ecl-${c}" d="${d}" vector-effect="non-scaling-stroke"/>`).join('')}</svg>`);
+  const id = `ecl${eclN++}`;
+  const path = (cls, d) => `<path class="ecl-${cls}" d="${d}" vector-effect="non-scaling-stroke"/>`;
+  const head = cls => `<svg class="ecl-tunnel ${cls}" width="0" height="0" viewBox="-344 0 688 394.5" preserveAspectRatio="none" aria-hidden="true">`;
   card.append(
     h('i.ecl-beam.ecl-bl'),
     h('i.ecl-beam.ecl-br'),
-    h('i.ecl-frame.ecl-aura',
-      layer('ecl-glow', [['halo', ECL_WALLS], ['haze', ECL_ARCS]]),
-      layer('ecl-sheen', [['fill', `M0,0 L5.5,10 ${ECL_WALL_L} L0,100 Z M100,0 L94.5,10 ${ECL_WALL_R} L100,100 Z`]])),
+    h('i.ecl-sun'),
     h('i.ecl-frame',
-      layer('ecl-corridor', [['fill', `M5.5,10 Q50,2 94.5,10 ${ECL_WALL_R} Q50,98 5.5,90 C7.9,86 11.5,68 11.5,50 C11.5,32 7.9,14 5.5,10 Z`]]),
-      layer('ecl-walls', [['bloom', ECL_WALLS], ['edge', ECL_WALLS], ['line', ECL_LINES]])),
-    h('i.ecl-rim', h('i.ecl-limb')),
-    h('i.ecl-bead'),
+      // the bloom: four blurred strokes of growing width and falling opacity, clipped to the outside of the walls
+      svg(`${head('ecl-glow')}<defs><clipPath id="${id}o"><path d="${ECL_L} L-344,394.5 L-344,0 Z ${ECL_R} L344,394.5 L344,0 Z"/></clipPath>${
+        ECL_BLOOM.map(([c, b]) => `<filter id="${id}${c}" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="${b}"/></filter>`).join('')
+      }</defs><g clip-path="url(#${id}o)">${
+        ECL_BLOOM.map(([c]) => `<g filter="url(#${id}${c})">${path(c, `${ECL_L} ${ECL_R}`)}</g>`).join('')}</g></svg>`),
+      // the walls: a soft bloom line and a white core (wiped in from the top by a clip-path on the SVG)
+      svg(`${head('ecl-walls')}${path('line', ECL_L)}${path('line', ECL_R)}${path('core', ECL_L)}${path('core', ECL_R)}</svg>`)),
   );
-  card.querySelector('.evt-icon')?.append(h('i.ecl-orbit'));
 }
 
 // ------------------------------------------------------------------ glass: frosted glass lit from behind

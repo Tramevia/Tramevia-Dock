@@ -554,305 +554,211 @@ html, body { height: 100%; overflow: hidden; }
   73%, 100% { filter: blur(0.5em); }
 }
 
-/* ---- eclipse: light is the only material. A star lights up, two folded beams of light converge on it and flash into a small
-   ring (the icon); a dark corridor then opens from the ring between two curved walls of light that pinch around the text and
-   curve away above and below (the throat of a tunnel), closed by thin arcs of light; the walls' glow keeps growing, a bead flares
-   under the text and opens into the eclipse rim, a crescent orbits the ring. Thin luminous lines, soft bloom, slow-in/slow-out.
-   Extra elements come from decorate.js (beams, two frames holding the glow / sheen and corridor / walls SVGs, rim + limb, bead,
-   orbit). An alert can leave before its entry is over (alertSeconds can be 1), so no exit replaces a running entry animation:
-   the tunnel's exit runs on its frames, and a small element's exit is appended to its entry list (--ecl-in). */
+/* ---- eclipse: light is the only material. A horizon line thickens under a dome of light (the sunrise) and hands over to the ring
+   (the icon); two folded planes of light converge on the ring and cross through it; a crescent arc leaves the frame; then the
+   tunnel: two tall walls of light, drawn from the top of the source down past the text, brighten with an exposure ramp. Bloom only
+   outside the walls; between them it is dark and the text sits there. No fills, no boxes.
+   Extra elements come from decorate.js (beams, sun, a frame holding the glow and walls SVGs). An alert can leave before its
+   entry is over (alertSeconds can be 1): the tunnel's exit runs on its frame, never on the SVGs' own entry animations. */
 :root[data-style="eclipse"] .alert-card {
   --ecl-pt: 0.45em;  /* .evt padding-top */
-  --ecl-gap: 0.45em; /* .evt gap (ring to text) */
+  --ecl-gap: 1.3em;  /* .evt gap (ring to text): the ring floats alone in the dark, like the reference */
   --ecl-ring: 2.3em; /* the ring (icon) */
   --ecl-cy: calc(var(--ecl-pt) + var(--ecl-ring) / 2); /* ring centre, from the card top */
-  /* how far the tunnel box runs on above and below the card: 8.14 % of the card height + 1.047em, i.e. 7 % of the box + 0.9em
-     (see .ecl-tunnel). 1.6em for a follow card; it grows with the card so the arcs stay around the text instead of coming down
-     10 % of the card height into a tall card (a message) */
-  --ecl-over: calc(8.14% + 1.047em);
-  /* tunnel overhang per side: 15 % of the card puts the walls' throat on the card edges. In a tight source it shrinks, down to
-     the room left (so it never crosses the source edge); the throat then moves inside the card by 11.5 % - 0.77 x the overhang,
-     and the text padding (.evt) grows by as much, plus 0.35em of air */
-  --ecl-wx: min(max(8%, min(15%, (100vw - 100%) / 2 - 0.2em)), (100vw - 100%) / 2);
-  --ecl-open: eclipse-open 1.2s cubic-bezier(0.16, 0.8, 0.2, 1) 0.375s backwards;
+  /* the walls' box per side beyond the card: 16.4em (the tips reach 18.4em from the centre); in a tight source the room left
+     plus 6em, so the walls get steeper and their lower run leaves through the source sides, like the reference's corners */
+  --ecl-wx: min(16.4em, (100vw - 100%) / 2 + 6em);
   --ecl-core: #f2f6ff;
-  --ecl-glow: color-mix(in srgb, var(--evt) 78%, #86a8ff);
-  --ecl-pool: rgb(7 10 26 / 90%);
-  --ecl-disc: #0a1028;
+  --ecl-glow: color-mix(in srgb, var(--evt) 60%, #8fb0ff);
   --ecl-text: #f4f7ff;
-  --ecl-sub: #b9c6e4;
-  isolation: isolate; min-width: min(100%, 14em);
-  margin-block: 0.8em; /* + the page's 0.8em padding: room for the walls' overhang at position top / bottom */
+  --ecl-sub: #c3cfe8;
+  isolation: isolate; width: min(100%, 20em); /* a fixed stage: the walls look the same for every alert */
+  margin-block: 0.8em;
 }
+/* text between the walls: the wall passes the title line at 28.8 % of the box's half-width from the centre, i.e. 35.6 % of the
+   card minus 0.288 x the overhang inside the card edge; 0.55em of air after that */
 :root[data-style="eclipse"] .alert-card .evt {
   z-index: 1; flex-direction: column; align-items: center; gap: var(--ecl-gap); text-align: center; color: var(--ecl-text);
-  padding: var(--ecl-pt) max(min(1.4em, 7vw), 11.5% - 0.77 * var(--ecl-wx) + 0.35em) 1.1em;
+  padding: var(--ecl-pt) max(0.55em, 35.6% - 0.288 * var(--ecl-wx) + 0.55em) 1.1em;
 }
-/* ring: a small hollow circle of light around the icon. z-index 1: always its own layer, above the text it swallows at the exit */
+/* ring: a small hollow circle of light around the icon, born out of the sunrise. z-index 1: its own layer, above the text it
+   swallows at the exit */
 :root[data-style="eclipse"] .alert-card .evt-icon {
-  position: relative; z-index: 1; width: var(--ecl-ring); height: var(--ecl-ring); border-radius: 50%; color: var(--ecl-core); background: var(--ecl-disc);
+  position: relative; z-index: 1; width: var(--ecl-ring); height: var(--ecl-ring); border-radius: 50%; color: var(--ecl-core);
   border: 0.075em solid var(--ecl-core);
   box-shadow: 0 0 0.25em var(--ecl-glow), 0 0 1em color-mix(in srgb, var(--ecl-glow) 45%, transparent), inset 0 0 0.4em color-mix(in srgb, var(--ecl-glow) 60%, transparent);
   animation: eclipse-ring 0.75s backwards;
 }
-:root[data-style="eclipse"] .alert-card .evt-icon > :not(.ecl-orbit) { animation: eclipse-glyph 0.45s ease-out 0.425s backwards; }
+:root[data-style="eclipse"] .alert-card .evt-icon > * { animation: eclipse-glyph 0.45s ease-out 0.4s backwards; }
 :root[data-style="eclipse"] .alert-card .evt-icon svg { width: 1.1em; height: 1.1em; }
 :root[data-style="eclipse"] .alert-card .evt-icon img { width: 70%; height: 70%; border-radius: 50%; }
-/* one thin ping ring leaves the ring at the contact */
+/* the huge crescent: a one-sided arc leaves the ring when the planes cross it and grows to 12 x, out of the frame, gone by 1225 */
 :root[data-style="eclipse"] .alert-card .evt-icon::before {
-  content: ""; position: absolute; inset: -0.075em; border-radius: 50%; border: 0.05em solid var(--ecl-core); pointer-events: none;
-  animation: eclipse-ping 0.9s cubic-bezier(0.1, 0.6, 0.2, 1) 0.375s both;
+  content: ""; position: absolute; inset: -0.075em; border-radius: 50%; border: 0.035em solid var(--ecl-core); pointer-events: none;
+  box-shadow: 0 0 0.08em var(--ecl-glow), inset 0 0 0.08em var(--ecl-glow);
+  -webkit-mask: linear-gradient(135deg, #000 28%, transparent 48%); mask: linear-gradient(135deg, #000 28%, transparent 48%);
+  animation: eclipse-crescent 0.5s cubic-bezier(0.1, 0.6, 0.2, 1) 0.725s both;
 }
-/* horizon through the ring, behind its disc (z-index -1 in .evt, whatever the ring does): it draws out of the ring, fading in,
-   with a glow that shortens as it slows; at the exit it retracts into the ring */
+/* the sunrise (the reference's first 2 s): the horizon, a line of light through the ring centre, draws out, thickens and
+   brightens, then goes out once the ring is there */
 :root[data-style="eclipse"] .alert-card .evt::after {
-  content: ""; position: absolute; z-index: -1; left: 50%; top: var(--ecl-cy); width: 10em; height: 0.5em; margin: -0.25em -5em; pointer-events: none;
-  background: linear-gradient(90deg, transparent, var(--ecl-glow) 30%, var(--ecl-core) 45% 55%, var(--ecl-glow) 70%, transparent) 50% / 100% 0.06em no-repeat,
-    linear-gradient(transparent, color-mix(in srgb, var(--ecl-glow) 22%, transparent), transparent);
-  -webkit-mask: linear-gradient(90deg, transparent, #000 30% 70%, transparent); mask: linear-gradient(90deg, transparent, #000 30% 70%, transparent);
-  opacity: 0.55; --ecl-in: eclipse-horizon 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.375s backwards; animation: var(--ecl-in);
+  content: ""; position: absolute; z-index: -1; left: 50%; top: var(--ecl-cy); width: 18em; height: 0.12em; margin: -0.06em -9em; pointer-events: none; border-radius: 1em;
+  background: linear-gradient(90deg, transparent, var(--ecl-glow) 25%, var(--ecl-core) 42% 58%, var(--ecl-glow) 75%, transparent);
+  filter: drop-shadow(0 0 0.3em var(--ecl-glow)); /* follows the line's alpha: no glow past its transparent ends */
+  --ecl-in: eclipse-horizon 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; animation: var(--ecl-in);
 }
-/* the star, then the flash with an anamorphic streak when the beams touch the ring (375 ms: the chime's 4th note). It sits
-   above the text (z-index 3), but is gone by 0.9 s, before the words are fully in. */
+/* ... under a dome of light above the horizon: a blurred radial gradient, no outline, rising from a flat glow */
+:root[data-style="eclipse"] .alert-card .ecl-sun {
+  position: absolute; z-index: -1; left: 50%; top: calc(var(--ecl-cy) - 4em); width: 14em; height: 4em; margin-left: -7em; pointer-events: none;
+  background: radial-gradient(ellipse 50% 100% at 50% 100%, var(--ecl-core), color-mix(in srgb, var(--ecl-glow) 70%, transparent) 16%, color-mix(in srgb, var(--ecl-glow) 28%, transparent) 42%, transparent 72%);
+  filter: blur(0.25em); transform-origin: 50% 100%;
+  animation: eclipse-sun 0.5s cubic-bezier(0.3, 0, 0.3, 1) both;
+}
+/* the flash when the planes cross the ring. z-index 3, gone before the words are in */
 :root[data-style="eclipse"] .alert-card .evt::before {
   content: ""; position: absolute; z-index: 3; left: 50%; top: var(--ecl-cy); width: 10em; height: 10em; margin: -5em; pointer-events: none;
   background: radial-gradient(circle, #fff 0 2%, color-mix(in srgb, var(--ecl-glow) 80%, transparent) 5%, color-mix(in srgb, var(--ecl-glow) 18%, transparent) 14%, transparent 36%),
     linear-gradient(transparent 49.6%, var(--ecl-core) 50%, transparent 50.4%);
   -webkit-mask: radial-gradient(closest-side, #000, transparent); mask: radial-gradient(closest-side, #000, transparent);
-  animation: eclipse-flash 0.9s both;
+  animation: eclipse-flash 0.6s 0.55s both;
 }
-/* beams: a bright line on the crease of a folded plane of light, one from each side, slightly tilted, pivoting on the ring.
-   They hand their light to the ring at the contact (83.3 %, 375 ms) and go out as the corridor opens from it. */
-:root[data-style="eclipse"] .alert-card .ecl-beam { position: absolute; z-index: -2; top: var(--ecl-cy); width: min(15em, 45vw); height: 0; pointer-events: none; }
-:root[data-style="eclipse"] .alert-card .ecl-bl { right: calc(50% + var(--ecl-ring) / 2); transform-origin: calc(100% + var(--ecl-ring) / 2) 0; animation: eclipse-beam-l 0.45s both; }
-:root[data-style="eclipse"] .alert-card .ecl-br { left: calc(50% + var(--ecl-ring) / 2); transform-origin: calc(var(--ecl-ring) / -2) 0; animation: eclipse-beam-r 0.45s both; }
+/* beams: the crease of a folded plane of light, one from each side, slightly tilted, pivoting on the ring. They converge on it
+   (70 %, 725 ms), cross through it like swords and go out on the far side. */
+:root[data-style="eclipse"] .alert-card .ecl-beam { position: absolute; z-index: 2; top: var(--ecl-cy); width: min(15em, 45vw); height: 0; pointer-events: none; }
+:root[data-style="eclipse"] .alert-card .ecl-bl { right: calc(50% + var(--ecl-ring) / 2); transform-origin: calc(100% + var(--ecl-ring) / 2) 0; animation: eclipse-beam-l 0.5s 0.375s both; }
+:root[data-style="eclipse"] .alert-card .ecl-br { left: calc(50% + var(--ecl-ring) / 2); transform-origin: calc(var(--ecl-ring) / -2) 0; animation: eclipse-beam-r 0.5s 0.375s both; }
 :root[data-style="eclipse"] .alert-card .ecl-beam::before { /* the folded plane: a bright facet above the crease, a dimmer one below */
   content: ""; position: absolute; left: 0; right: 0; top: -1.3em; height: 4.6em; transform-origin: 50% 1.3em;
   background: linear-gradient(color-mix(in srgb, var(--ecl-glow) 10%, transparent), color-mix(in srgb, var(--ecl-glow) 62%, transparent) 1.3em, color-mix(in srgb, var(--ecl-glow) 26%, transparent) 1.3em, transparent);
   clip-path: polygon(0 0, 100% 1.3em, 0 100%);
   -webkit-mask: linear-gradient(90deg, transparent, #000 55%); mask: linear-gradient(90deg, transparent, #000 55%);
-  animation: eclipse-plane 0.45s both;
+  animation: eclipse-plane 0.5s 0.375s both;
 }
 :root[data-style="eclipse"] .alert-card .ecl-br::before { clip-path: polygon(100% 0, 0 1.3em, 100% 100%); -webkit-mask: linear-gradient(-90deg, transparent, #000 55%); mask: linear-gradient(-90deg, transparent, #000 55%); }
-:root[data-style="eclipse"] .alert-card .ecl-beam::after { /* the line */
+:root[data-style="eclipse"] .alert-card .ecl-beam::after { /* the crease line */
   content: ""; position: absolute; left: 0; right: 0; top: -0.045em; height: 0.09em; border-radius: 1em;
   background: linear-gradient(90deg, transparent, var(--ecl-glow) 45%, var(--ecl-core)); box-shadow: 0 0 0.4em color-mix(in srgb, var(--ecl-glow) 70%, transparent);
 }
 :root[data-style="eclipse"] .alert-card .ecl-br::after { background: linear-gradient(-90deg, transparent, var(--ecl-glow) 45%, var(--ecl-core)); }
-/* glow, sheen, corridor and walls: four SVGs sharing one box (the card, its overhang above and below, the tunnel overhang on the
-   sides), all opening from the ring line (from zero height: nothing shows before the contact, and the corridor is never
-   translucent). Their frames have the card's box and only move at the exit (they are no stacking context before it, so the
-   SVGs' z-index order holds: glow, corridor, sheen, walls; at the exit the sheen goes under the corridor, which it never overlaps) */
+/* the tunnel: two SVGs sharing one box, x -344..344, y 0..394.5, 0.1em per unit on a follow card: the walls in x -264..264 (the
+   card plus --ecl-wx on each side) with 8em of margin each side for the bloom; 16em above the card (the slit reaches the top of
+   a 1080p source at center) and 17em below (the tips reach its bottom). Each wall is one cubic, vertical at the top and bending
+   over 20em to 30 degrees at the title line, then a straight run. It stretches with a taller card (the strokes do not scale).
+   The frame has the card's box and only moves at the exit. */
 :root[data-style="eclipse"] .alert-card .ecl-frame { position: absolute; inset: 0; pointer-events: none; transform-origin: 50% var(--ecl-cy); }
 :root[data-style="eclipse"] .alert-card .ecl-tunnel {
-  position: absolute; z-index: -1; left: calc(-1 * var(--ecl-wx)); top: calc(-1 * var(--ecl-over));
-  width: calc(100% + 2 * var(--ecl-wx)); height: calc(100% + 2 * var(--ecl-over)); overflow: visible; pointer-events: none;
-  transform-origin: 50% calc(7% + 0.9em + var(--ecl-cy)); /* the ring line: --ecl-over + --ecl-cy, in % of the box itself */
-  animation: var(--ecl-open);
+  position: absolute; z-index: -1; left: calc(-1 * var(--ecl-wx) - 8em); top: -16em; width: calc(100% + 2 * var(--ecl-wx) + 16em); height: calc(100% + 33em);
+  overflow: visible; pointer-events: none;
+  /* the source edges cut the walls like the frame cuts the reference's; where the box ends inside a tall source, the tips fade over
+     the last 12em (as wide as the bloom), never on a line. At position bottom the top end fades the same way */
+  -webkit-mask: linear-gradient(#000 calc(100% - 12em), transparent); mask: linear-gradient(#000 calc(100% - 12em), transparent);
 }
-:root[data-style="eclipse"] .ecl-tunnel path { fill: none; stroke-linecap: round; }
-:root[data-style="eclipse"] .ecl-corridor path { fill: var(--ecl-pool); }
-/* light leads: the walls (core, bloom, arcs, tips) are lit from the first frame of the opening (75 % -> 100 %); their glow and
-   the sheen are the reference's exposure ramp (0 -> 55 % at ~615 ms -> 100 % at 2.4 s). The glow is a wide halo under the
-   corridor, so it only shows outside the walls, softened by a static blur (the compositor re-applies it only while the glow
-   itself animates, 0.375-2.375 s; at rest and at the exit it is painted once). The sheen lights the outside of each wall and falls
-   off outward */
-:root[data-style="eclipse"] .alert-card .ecl-walls {
-  z-index: 0; animation: var(--ecl-open), eclipse-lit 1.5s ease-out 0.375s backwards;
-  /* the tips fade out between the arcs' apex (6 %) and 1.6em past the card (7 % - 0.7em), where the source edge is at position
-     top / bottom */
-  -webkit-mask: linear-gradient(transparent calc(7% - 0.7em), #000 calc(6% - 0.05em) calc(94% + 0.05em), transparent calc(93% + 0.7em));
-  mask: linear-gradient(transparent calc(7% - 0.7em), #000 calc(6% - 0.05em) calc(94% + 0.05em), transparent calc(93% + 0.7em));
+:root[data-style="eclipse"][data-position="bottom"] .alert-card .ecl-tunnel {
+  -webkit-mask: linear-gradient(transparent, #000 12em, #000 calc(100% - 12em), transparent); mask: linear-gradient(transparent, #000 12em, #000 calc(100% - 12em), transparent);
 }
-:root[data-style="eclipse"] .alert-card .ecl-sheen {
-  z-index: 0; animation: var(--ecl-open), eclipse-expose 2s ease-out 0.375s backwards;
-  -webkit-mask: linear-gradient(90deg, transparent 2%, #000 11.5% 88.5%, transparent 98%); mask: linear-gradient(90deg, transparent 2%, #000 11.5% 88.5%, transparent 98%);
-}
-:root[data-style="eclipse"] .alert-card .ecl-glow { z-index: -2; filter: blur(0.25em); animation: var(--ecl-open), eclipse-expose 2s ease-out 0.375s backwards; }
-:root[data-style="eclipse"] .ecl-sheen path { fill: var(--ecl-glow); fill-opacity: 0.3; }
-:root[data-style="eclipse"] .ecl-glow .ecl-halo { stroke: var(--ecl-glow); stroke-width: 1em; stroke-opacity: 0.35; }
-:root[data-style="eclipse"] .ecl-glow .ecl-haze { stroke: var(--ecl-glow); stroke-width: 0.5em; stroke-opacity: 0.25; }
-:root[data-style="eclipse"] .ecl-walls .ecl-bloom { stroke: var(--ecl-glow); stroke-width: 0.21em; stroke-opacity: 0.5; }
-:root[data-style="eclipse"] .ecl-walls .ecl-edge { stroke: var(--ecl-core); stroke-width: max(1.5px, 0.065em); }
-:root[data-style="eclipse"] .ecl-walls .ecl-line { stroke: var(--ecl-core); stroke-width: max(1px, 0.045em); stroke-opacity: 0.6; }
-/* the eclipse rim under the text: a bead flares at its apex, then the arc opens outward from it along a fixed curve. The window
-   (.ecl-rim, masked) widens with scaleX while the arc inside (.ecl-limb) gets the inverse scale, so the light runs along the
-   curve instead of stretching: a mask-size opening made of transforms only (keyframes: geometric steps, < 3 % width error). */
-:root[data-style="eclipse"] .alert-card .ecl-rim {
-  position: absolute; z-index: 0; left: 8%; right: 8%; bottom: -0.35em; height: 1.6em; pointer-events: none; opacity: 0.85;
-  -webkit-mask: linear-gradient(90deg, transparent, #000 32% 68%, transparent); mask: linear-gradient(90deg, transparent, #000 32% 68%, transparent);
-  --ecl-in: eclipse-window 0.9s linear 0.875s backwards; animation: var(--ecl-in);
-}
-:root[data-style="eclipse"] .alert-card .ecl-limb {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 1em; border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  border-top: 0.07em solid var(--ecl-core); box-shadow: 0 -0.15em 0.6em -0.25em var(--ecl-glow), inset 0 0.3em 0.5em -0.3em var(--ecl-glow);
-  animation: eclipse-limb 0.9s linear 0.875s backwards;
-}
-:root[data-style="eclipse"] .alert-card .ecl-limb::before { /* the hot spot: where the light grazes the limb it burns thicker */
-  content: ""; position: absolute; inset: -0.07em 0 0; border-radius: inherit; border-top: 0.13em solid var(--ecl-core);
-  -webkit-mask: linear-gradient(90deg, transparent 40%, #000 50%, transparent 60%); mask: linear-gradient(90deg, transparent 40%, #000 50%, transparent 60%);
-}
-:root[data-style="eclipse"] .alert-card .ecl-bead { /* on the rim apex: rim bottom + limb height - half its stroke */
-  position: absolute; z-index: 0; left: 50%; bottom: calc(-0.35em + 1em - 0.035em); width: 0; height: 0; pointer-events: none; opacity: 0.8;
-  --ecl-in: eclipse-bead 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.825s backwards; animation: var(--ecl-in);
-}
-:root[data-style="eclipse"] .alert-card .ecl-bead::before, :root[data-style="eclipse"] .alert-card .ecl-bead::after { content: ""; position: absolute; left: 0; top: 0; }
-:root[data-style="eclipse"] .alert-card .ecl-bead::before {
-  width: 0.8em; height: 0.8em; margin: -0.4em; border-radius: 50%;
-  background: radial-gradient(closest-side, var(--ecl-core) 22%, color-mix(in srgb, var(--ecl-core) 70%, transparent) 40%, color-mix(in srgb, var(--ecl-glow) 30%, transparent) 65%, transparent);
-}
-:root[data-style="eclipse"] .alert-card .ecl-bead::after { /* anamorphic streak */
-  width: 6em; height: 1px; margin: -0.5px -3em; box-shadow: 0 0 0.2em var(--ecl-glow);
-  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ecl-glow) 70%, transparent) 25%, var(--ecl-core) 50%, color-mix(in srgb, var(--ecl-glow) 70%, transparent) 75%, transparent);
-  animation: eclipse-streak 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.875s both;
-}
-/* a crescent of light orbiting the ring (thick middle, needle tips), inside the icon so it follows the ring and its exit:
-   the only idle motion (one small element, transform only) */
-:root[data-style="eclipse"] .alert-card .ecl-orbit {
-  position: absolute; inset: -0.5em; border-radius: 50%; pointer-events: none;
-  box-shadow: inset 0.1em 0.12em 0.03em var(--ecl-core), -0.13em -0.15em 0.45em -0.15em var(--ecl-glow);
-  animation: eclipse-orbit-in 0.8s ease-out 0.925s backwards, eclipse-spin 18s linear 0.925s infinite;
-}
-/* text: white light with a soft bloom; the name in a pastel of the event colour. In a narrow source the title gets a little
-   smaller (7.4vw: only below ~435 px at the default size), and smaller still when its longest word (--ecl-n characters, from
-   decorate.js) would not fit a line: n characters (~0.6em each) fit in 116vw / n, the line being ~72 % of the source. It stops
-   at 75 % (~21 characters at 400 px), so it stays above the meta line: a longer word wraps at its seams */
+:root[data-style="eclipse"] .ecl-tunnel path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+/* the exposure ramp: the core and its line are wiped in from the top down (0.7-1.6 s, a clip-path on their SVG), then the bloom
+   comes up outside the walls, nearest layer first (0.9-3.2 s): four blurred strokes, 1.5 / 4 / 8 / 14em wide at 50 / 30 / 20 / 12 %,
+   so the light is brightest within 1em of the line and falls off continuously over ~12em. At rest the widest layer breathes
+   slowly (one opacity, the only idle motion) */
+:root[data-style="eclipse"] .alert-card .ecl-walls { z-index: 0; animation: eclipse-draw 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.7s backwards; }
+:root[data-style="eclipse"] .ecl-walls .ecl-line { stroke: var(--ecl-glow); stroke-width: 0.3em; stroke-opacity: 0.55; }
+:root[data-style="eclipse"] .ecl-walls .ecl-core { stroke: var(--ecl-core); stroke-width: max(1.5px, 0.075em); }
+:root[data-style="eclipse"] .alert-card .ecl-glow { z-index: -2; }
+:root[data-style="eclipse"] .ecl-glow path { stroke: var(--ecl-glow); }
+:root[data-style="eclipse"] .ecl-glow .ecl-bloom1 { stroke-width: 1.5em; stroke-opacity: 0.5; animation: eclipse-expose 0.8s ease-out 0.9s backwards; }
+:root[data-style="eclipse"] .ecl-glow .ecl-bloom2 { stroke-width: 4em; stroke-opacity: 0.3; animation: eclipse-expose 1.2s ease-out 1s backwards; }
+:root[data-style="eclipse"] .ecl-glow .ecl-bloom3 { stroke-width: 8em; stroke-opacity: 0.2; animation: eclipse-expose 1.6s ease-out 1.2s backwards; }
+:root[data-style="eclipse"] .ecl-glow .ecl-bloom4 { stroke-width: 14em; stroke-opacity: 0.12; animation: eclipse-expose 1.8s ease-out 1.4s backwards, eclipse-breathe 7s ease-in-out 3.2s infinite alternate; }
+/* text: white light with a soft bloom and a dark contact shadow (the scene shows between the walls); the name in a pastel of the
+   event colour. The title shrinks just enough for its longest word (--longest characters, from alert-card.js, ~0.62em each in a
+   ~13.9em line), down to 0.8em; a longer word wraps at its seams */
 :root[data-style="eclipse"] .alert-card .evt-title {
-  font-size: clamp(min(0.8625em, 5.55vw), 116vw / var(--longest, 1), min(1.15em, 7.4vw)); font-weight: 550; line-height: 1.25; letter-spacing: 0.01em; color: var(--ecl-text);
-  text-shadow: 0 0 0.6em color-mix(in srgb, var(--ecl-glow) 55%, transparent);
+  font-size: clamp(0.8em, min(22em / var(--longest, 1), 100vw / var(--longest, 1)), min(1.05em, 7vw)); font-weight: 550; line-height: 1.25; letter-spacing: 0.01em; color: var(--ecl-text);
+  text-shadow: 0 0.05em 0.2em rgb(0 0 0 / 75%), 0 0 0.6em color-mix(in srgb, var(--ecl-glow) 55%, transparent);
 }
-/* a word longer than a whole line (a reward title) breaks inside rather than crossing the walls; decorate.js gives long words
-   break points at their seams (lower to upper case or digit, after _ . -), used first */
-:root[data-style="eclipse"] .alert-card .evt-title .w { overflow-wrap: anywhere; animation: eclipse-word 0.75s cubic-bezier(0.2, 0.75, 0.25, 1) calc(0.475s + var(--i) * 0.055s) backwards; }
-:root[data-style="eclipse"] .alert-card .evt-user { font-weight: 800; color: color-mix(in srgb, var(--evt) 45%, #fff); text-shadow: 0 0 0.08em rgb(255 255 255 / 30%), 0 0 0.7em var(--ecl-glow); }
-:root[data-style="eclipse"] .alert-card .evt-text { color: var(--ecl-sub); font-size: 0.9em; animation: eclipse-rise 0.6s ease-out 0.705s backwards; }
-/* the meta line carries names the viewer chose (gift recipient, membership level, gift name): no case change, light tracking */
-:root[data-style="eclipse"] .alert-card .evt-meta { justify-content: center; color: var(--ecl-sub); font-size: 0.72em; letter-spacing: 0.04em; animation: eclipse-rise 0.6s ease-out 0.805s backwards; }
+:root[data-style="eclipse"] .alert-card .evt-title .w { overflow-wrap: anywhere; animation: eclipse-word 0.75s cubic-bezier(0.2, 0.75, 0.25, 1) calc(0.85s + var(--i) * 0.055s) backwards; }
+:root[data-style="eclipse"] .alert-card .evt-user { font-weight: 800; color: color-mix(in srgb, var(--evt) 45%, #fff); text-shadow: 0 0.05em 0.2em rgb(0 0 0 / 75%), 0 0 0.08em rgb(255 255 255 / 30%), 0 0 0.7em var(--ecl-glow); }
+:root[data-style="eclipse"] .alert-card .evt-text { color: var(--ecl-sub); font-size: 0.9em; text-shadow: 0 0.05em 0.2em rgb(0 0 0 / 75%); animation: eclipse-rise 0.6s ease-out 1.05s backwards; }
+:root[data-style="eclipse"] .alert-card .evt-meta { justify-content: center; color: var(--ecl-sub); font-size: 0.72em; letter-spacing: 0.04em; text-shadow: 0 0.05em 0.2em rgb(0 0 0 / 75%); animation: eclipse-rise 0.6s ease-out 1.15s backwards; }
 :root[data-style="eclipse"] .alert-card .evt-amount {
   color: var(--ecl-core); background: none; border: 0.06em solid var(--ecl-core);
   box-shadow: 0 0 0.4em color-mix(in srgb, var(--ecl-glow) 60%, transparent), inset 0 0 0.3em color-mix(in srgb, var(--ecl-glow) 40%, transparent);
-  --ecl-in: eclipse-rise 0.6s ease-out 0.855s backwards; animation: var(--ecl-in);
+  --ecl-in: eclipse-rise 0.6s ease-out 1.2s backwards; animation: var(--ecl-in);
 }
 
-/* light: the same lines in ink on a white corridor; the bead flares in the glow colour around a white core */
+/* light: the same lines in ink mixed from the event colour, with a coloured glow; dark text with a white halo */
 :root[data-style="eclipse"][data-overlay="light"] .alert-card {
-  --ecl-core: color-mix(in srgb, var(--evt) 60%, #101a3c); --ecl-glow: color-mix(in srgb, var(--evt) 70%, #6f8dff);
-  --ecl-pool: rgb(255 255 255 / 95%); --ecl-disc: #fff; --ecl-text: #121a33; --ecl-sub: #4a5679;
+  --ecl-core: color-mix(in srgb, var(--evt) 60%, #101a3c); --ecl-glow: color-mix(in srgb, var(--evt) 70%, #6f8dff); --ecl-text: #121a33; --ecl-sub: #3e4a6b;
 }
-:root[data-style="eclipse"][data-overlay="light"] .alert-card .evt-title { text-shadow: none; }
-:root[data-style="eclipse"][data-overlay="light"] .alert-card .evt-user { color: var(--ecl-core); text-shadow: none; }
-:root[data-style="eclipse"][data-overlay="light"] .alert-card .ecl-bead::before { background: radial-gradient(closest-side, #fff 20%, color-mix(in srgb, var(--ecl-glow) 55%, transparent) 45%, transparent); }
-:root[data-style="eclipse"][data-overlay="light"] .alert-card .ecl-bead::after { background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ecl-glow) 60%, transparent) 25%, var(--ecl-glow) 50%, color-mix(in srgb, var(--ecl-glow) 60%, transparent) 75%, transparent); }
-/* transparent: a lighter corridor, a dark contact shadow under the words for bright scenes */
-:root[data-style="eclipse"][data-overlay="transparent"] .alert-card { --ecl-pool: rgb(6 10 28 / 76%); --ecl-sub: #d3dbf0; }
-:root[data-style="eclipse"][data-overlay="transparent"] .alert-card .evt-title { text-shadow: 0 0.05em 0.15em rgb(0 0 0 / 70%), 0 0 0.6em color-mix(in srgb, var(--ecl-glow) 55%, transparent); }
-:root[data-style="eclipse"][data-overlay="transparent"] .alert-card .evt-user { text-shadow: 0 0.05em 0.15em rgb(0 0 0 / 70%), 0 0 0.08em rgb(255 255 255 / 30%), 0 0 0.7em var(--ecl-glow); }
-/* Chromium < 111 (OBS 28-30) has no color-mix(): the raw event colour keeps the lines' bloom, the star, the bead, the name and
-   the horizon (its glow band, a color-mix, is dropped) */
+:root[data-style="eclipse"][data-overlay="light"] .alert-card :is(.evt-title, .evt-text, .evt-meta) { text-shadow: 0 0 0.25em #fff, 0 0 0.5em #fff, 0 0 1em rgb(255 255 255 / 80%); }
+:root[data-style="eclipse"][data-overlay="light"] .alert-card .evt-user { color: var(--ecl-core); text-shadow: 0 0 0.25em #fff, 0 0 0.5em #fff, 0 0 1em rgb(255 255 255 / 80%); }
+/* Chromium < 111 (OBS 28-30) has no color-mix(): the raw event colour keeps the lines' bloom, the flash, the name and the sun */
 @supports not (color: color-mix(in srgb, red, red)) {
   :root[data-style="eclipse"] .alert-card { --ecl-glow: var(--evt); }
   :root[data-style="eclipse"][data-overlay="light"] .alert-card { --ecl-core: #101a3c; --ecl-glow: var(--evt); }
   :root[data-style="eclipse"] .alert-card .evt-user { color: var(--evt); }
-  :root[data-style="eclipse"] .alert-card .evt::after { background: linear-gradient(90deg, transparent, var(--ecl-glow) 30%, var(--ecl-core) 45% 55%, var(--ecl-glow) 70%, transparent) 50% / 100% 0.06em no-repeat; }
+  :root[data-style="eclipse"] .alert-card .ecl-sun { background: radial-gradient(ellipse 50% 100% at 50% 100%, var(--ecl-core), var(--ecl-glow) 16%, transparent 72%); }
   :root[data-style="eclipse"] .alert-card .evt::before { background: radial-gradient(circle, #fff 0 2%, var(--ecl-glow) 5%, transparent 24%), linear-gradient(transparent 49.6%, var(--ecl-core) 50%, transparent 50.4%); }
-  :root[data-style="eclipse"] .alert-card .ecl-bead::before { background: radial-gradient(closest-side, var(--ecl-core) 22%, var(--ecl-glow) 40%, transparent); }
-  :root[data-style="eclipse"][data-overlay="light"] .alert-card .ecl-bead::before { background: radial-gradient(closest-side, #fff 20%, var(--ecl-glow) 45%, transparent); }
 }
 /* the cards differ in height: pin them to the edge they sit on, so the next alert does not move when the old one is removed.
-   At center their tops sit on one line a little above the middle (a follow card looks centred), so the next alert's star is
-   born where the old ring closes. A card too tall for that line moves itself up (translate: % of its own height, so the
-   other card never moves) to end 1.6em above the bottom, or, taller than the source, to be centred like before */
+   At center their tops sit on one line a little above the middle, so the next alert's sunrise is born where the old ring closes.
+   A card too tall for that line moves itself up (translate: % of its own height, so the other card never moves) */
 :root[data-style="eclipse"]:is([data-position="top"], [data-position="center"]) .ov-list { align-items: start; }
+/* at the top the card comes down 4.3em so the walls' narrowing shows under the edge, which cuts them like the reference's frame */
+:root[data-style="eclipse"][data-position="top"] .ov-list > .alert-card { margin-top: 4.3em; }
 :root[data-style="eclipse"][data-position="bottom"] .ov-list { align-items: end; }
 :root[data-style="eclipse"][data-position="center"] #app.ov { justify-content: flex-start; padding-top: max(0.8em, 50vh - 4.5em); }
 :root[data-style="eclipse"][data-position="center"] .ov-list > .alert-card { /* top: min(line, max(bottom - 1.6em - H, min(centred, 1.6em))) */
   transform: translateY(min(0px, max(100vh - 1.6em - 100%, min(50vh - 50%, 1.6em)) - max(1.6em, 50vh - 3.7em)));
 }
 
-/* exit: the glow dims, the walls take a short breath and shut like an eyelid (the corridor stays dark until it is a sliver), the
-   text is drawn up into the ring and disappears under it, the ring (and its crescent) closes to a point with a last glint; the
-   amount, the rim and its bead go out first, the horizon retracts into the ring */
+/* exit: the glow dims, the walls take a short breath and shut like an eyelid onto the ring line, the text is drawn up into the
+   ring and disappears under it, the ring closes to a point with a last glint; the amount goes out first */
 :root[data-style="eclipse"] .alert-card.gone { animation: eclipse-out 0.45s linear forwards; }
 :root[data-style="eclipse"] .alert-card.gone .ecl-frame { animation: eclipse-shut 0.36s ease-out forwards; }
-:root[data-style="eclipse"] .alert-card.gone .ecl-aura { animation: eclipse-shut 0.36s ease-out forwards, eclipse-vanish 0.2s ease-in forwards; }
-:root[data-style="eclipse"] .alert-card.gone .evt-body { /* its top centre goes to the ring centre while it shrinks into it */
-  transform-origin: 50% 0; animation: eclipse-pull 0.3s cubic-bezier(0.45, 0, 0.55, 1) forwards;
-}
+:root[data-style="eclipse"] .alert-card.gone .ecl-glow { animation: eclipse-vanish 0.25s ease-in forwards; }
+:root[data-style="eclipse"] .alert-card.gone .evt-body { transform-origin: 50% 0; animation: eclipse-pull 0.3s cubic-bezier(0.45, 0, 0.55, 1) forwards; }
 :root[data-style="eclipse"] .alert-card.gone .evt-amount { animation: var(--ecl-in), eclipse-sink 0.14s ease-out forwards; }
 :root[data-style="eclipse"] .alert-card.gone .evt-icon { animation: eclipse-close 0.45s cubic-bezier(0.6, 0, 0.8, 0.4) forwards; }
 :root[data-style="eclipse"] .alert-card.gone .evt::before { animation: eclipse-glint 0.45s ease-out forwards; }
-:root[data-style="eclipse"] .alert-card.gone .evt::after { animation: var(--ecl-in), eclipse-retract 0.3s cubic-bezier(0.6, 0, 0.8, 0.4) forwards; }
-:root[data-style="eclipse"] .alert-card.gone :is(.ecl-rim, .ecl-bead) { animation: var(--ecl-in), eclipse-vanish 0.2s ease-in forwards; }
+:root[data-style="eclipse"] .alert-card.gone :is(.ecl-sun, .ecl-beam), :root[data-style="eclipse"] .alert-card.gone .evt::after { animation: none; opacity: 0; }
 
-@keyframes eclipse-beam-l {
+@keyframes eclipse-horizon { /* draws out thin, thickens to 2.4 x while it brightens, then goes out as the ring takes over */
+  0% { opacity: 0; transform: scale(0.15, 0.4); } 30% { opacity: 1; transform: scale(1, 1); } 55% { opacity: 1; transform: scale(1, 2.4); } 75% { opacity: 1; transform: scale(1, 1.4); } 100% { opacity: 0; transform: scale(1, 1); }
+}
+@keyframes eclipse-sun { /* the dome of light rises from a flat glow over the line, then gives way to the ring */
+  0% { opacity: 0; transform: scale(0.3, 0.05); } 30% { opacity: 0.8; transform: scale(0.8, 0.45); } 65% { opacity: 1; transform: scale(1, 1); } 100% { opacity: 0; transform: scale(1.1, 1.2); }
+}
+@keyframes eclipse-ring { 0%, 44% { opacity: 0; transform: scale(0.3); } 52% { opacity: 1; animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1); } 70% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes eclipse-glyph { from { opacity: 0; transform: scale(0.5); } }
+@keyframes eclipse-beam-l { /* in from the left, through the ring (70 %), out on the right */
   0% { opacity: 0; transform: rotate(9deg) translateX(-55%); filter: blur(0.2em); animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
   25% { opacity: 1; }
-  83.3% { opacity: 1; transform: rotate(9deg) translateX(0); filter: none; animation-timing-function: ease-out; }
-  100% { opacity: 0; transform: rotate(9deg) translateX(-6%); filter: none; }
+  70% { opacity: 1; transform: rotate(9deg) translateX(0); filter: none; animation-timing-function: ease-out; }
+  100% { opacity: 0; transform: rotate(9deg) translateX(60%); filter: none; }
 }
 @keyframes eclipse-beam-r {
   0% { opacity: 0; transform: rotate(-14deg) translateX(55%); filter: blur(0.2em); animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
   25% { opacity: 1; }
-  83.3% { opacity: 1; transform: rotate(-14deg) translateX(0); filter: none; animation-timing-function: ease-out; }
-  100% { opacity: 0; transform: rotate(-14deg) translateX(6%); filter: none; }
+  70% { opacity: 1; transform: rotate(-14deg) translateX(0); filter: none; animation-timing-function: ease-out; }
+  100% { opacity: 0; transform: rotate(-14deg) translateX(-60%); filter: none; }
 }
-@keyframes eclipse-plane { /* unfolds from its crease on the way in, folds back after the contact */
-  0% { opacity: 0.5; transform: scaleY(0.4); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
-  76% { opacity: 1; transform: none; }
-  83.3% { transform: none; animation-timing-function: ease-in; }
-  100% { transform: scaleY(0.2); }
-}
-@keyframes eclipse-flash { /* the star grows while the beams converge; the burst at 41.7 % is the contact (375 ms) */
-  0% { opacity: 0; transform: scale(0.1); }
-  7% { opacity: 0.8; transform: scale(0.12); }
-  41.7% { opacity: 1; transform: scale(0.4); animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1); }
-  47% { opacity: 1; transform: scale(1.1); }
-  100% { opacity: 0; transform: scale(1.35); }
-}
-@keyframes eclipse-ring {
-  0%, 44% { opacity: 0; transform: scale(0.3); }
-  50% { opacity: 1; animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1); }
-  68% { transform: scale(1.1); }
-  100% { opacity: 1; transform: scale(1); }
-}
-@keyframes eclipse-glyph { from { opacity: 0; transform: scale(0.5); } }
-@keyframes eclipse-ping { from { opacity: 0.8; transform: scale(1); } to { opacity: 0; transform: scale(2.2); } }
-@keyframes eclipse-horizon { 0% { opacity: 0; transform: scale(0, 2.4); } 25% { opacity: 1; } }
-@keyframes eclipse-open { 0% { transform: scale(0.8, 0); } 55% { transform: scale(0.98, 1.03); } 100% { transform: none; } }
-@keyframes eclipse-lit { from { opacity: 0.75; } }
-@keyframes eclipse-expose { 0% { opacity: 0; } 12% { opacity: 0.55; } 100% { opacity: 1; } }
-@keyframes eclipse-window { /* 0.06 → 1, eased like cubic-bezier(.3, .75, .25, 1) */
-  0% { opacity: 0; transform: scaleX(0.06); } 1% { transform: scaleX(0.084); } 2.4% { transform: scaleX(0.118); } 4.4% { transform: scaleX(0.165); }
-  7% { transform: scaleX(0.231); } 10.7% { transform: scaleX(0.324); } 15.7% { opacity: 1; transform: scaleX(0.454); } 23.4% { transform: scaleX(0.635); }
-  39.5% { transform: scaleX(0.859); } 55.5% { transform: scaleX(0.947); } 71.5% { transform: scaleX(0.984); } 100% { transform: scaleX(1); }
-}
-@keyframes eclipse-limb { /* the inverse of eclipse-window, at the same offsets */
-  0% { transform: scaleX(16.667); } 1% { transform: scaleX(11.89); } 2.4% { transform: scaleX(8.484); } 4.4% { transform: scaleX(6.055); }
-  7% { transform: scaleX(4.321); } 10.7% { transform: scaleX(3.086); } 15.7% { transform: scaleX(2.204); } 23.4% { transform: scaleX(1.574); }
-  39.5% { transform: scaleX(1.164); } 55.5% { transform: scaleX(1.056); } 71.5% { transform: scaleX(1.017); } 100% { transform: scaleX(1); }
-}
-@keyframes eclipse-bead { 0% { opacity: 0; transform: scale(0.1); } 8% { opacity: 1; transform: scale(0.5); } 30% { opacity: 1; transform: scale(1.7); } }
-@keyframes eclipse-streak { 0% { opacity: 0; transform: scaleX(0); } 25% { opacity: 1; transform: scaleX(1); } 100% { opacity: 0.35; transform: scaleX(0.4); } }
-@keyframes eclipse-orbit-in { from { opacity: 0; } }
-@keyframes eclipse-spin { to { transform: rotate(360deg); } }
+@keyframes eclipse-plane { 0% { opacity: 0.5; transform: scaleY(0.4); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); } 60% { opacity: 1; transform: none; } 70% { transform: none; animation-timing-function: ease-in; } 100% { transform: scaleY(0.2); } }
+@keyframes eclipse-flash { 0% { opacity: 0; transform: scale(0.15); } 29% { opacity: 1; transform: scale(0.4); animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1); } 40% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0; transform: scale(1.35); } }
+@keyframes eclipse-crescent { 0% { opacity: 1; transform: scale(1); } 60% { opacity: 0.8; } 100% { opacity: 0; transform: scale(12); } }
+@keyframes eclipse-draw { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes eclipse-expose { from { opacity: 0; } }
+@keyframes eclipse-breathe { to { opacity: 0.7; } }
 @keyframes eclipse-word { from { opacity: 0; transform: translateY(-0.5em) scale(1.06); filter: blur(0.2em) brightness(1.8); } 60% { filter: none; } }
 @keyframes eclipse-rise { from { opacity: 0; transform: translateY(0.4em); } }
 @keyframes eclipse-out { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes eclipse-shut { /* a breath, then the eyelid: opaque all the way, it closes onto the ring line */
-  17% { transform: scale(1.02, 1.07); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0.5); }
-  100% { transform: scale(0.9, 0); }
-}
-@keyframes eclipse-pull { /* up by the ring radius + the gap: the body's top centre lands on the ring centre; it fades on the way */
-  30% { opacity: 1; filter: blur(0); }
-  90% { opacity: 0; }
-  100% { opacity: 0; transform: translateY(calc(var(--ecl-ring) / -2 - var(--ecl-gap))) scale(0.12); filter: blur(0.1em); }
-}
+@keyframes eclipse-shut { 17% { transform: scale(1.02, 1.07); animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0.5); } 100% { transform: scale(0.9, 0); } }
+@keyframes eclipse-pull { 30% { opacity: 1; filter: blur(0); } 90% { opacity: 0; } 100% { opacity: 0; transform: translateY(calc(var(--ecl-ring) / -2 - var(--ecl-gap))) scale(0.12); filter: blur(0.1em); } }
 @keyframes eclipse-sink { to { opacity: 0; transform: translateY(-1em) scale(0.6); } }
 @keyframes eclipse-close { 0% { transform: scale(1); } 35% { transform: scale(1.12); } 100% { opacity: 0.6; transform: scale(0); } }
 @keyframes eclipse-glint { 0%, 50% { opacity: 0; transform: scale(0.15); } 75% { opacity: 0.9; transform: scale(0.32); } 100% { opacity: 0; transform: scale(0.2); } }
-@keyframes eclipse-retract { to { opacity: 0; transform: scaleX(0); } }
 @keyframes eclipse-vanish { to { opacity: 0; } }
-
 
 /* ---- glass: an upright frosted-glass capsule with an ice-white rim. A big soft warm light (--evt) slides in under it from the
    bottom-right, shows through the frost (soft diagonal streaks, a warm wash), the capsule morphs into the card, the light
