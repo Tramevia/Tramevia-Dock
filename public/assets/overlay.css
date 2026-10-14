@@ -2121,7 +2121,7 @@ html, body { height: 100%; overflow: hidden; }
   perspective: calc(var(--neon-p) * 1em); perspective-origin: 50% calc(var(--neon-cy) * 1em);
 }
 :root[data-style="neon"] .alert-card::after { /* the back light: red / orange, behind the upper right of the ring (on the stage's box) */
-  content: ""; position: absolute; z-index: -1; pointer-events: none; opacity: 0.85;
+  content: ""; position: absolute; z-index: -1; pointer-events: none; /* opacity: the flare, then the pulse (0.85 at rest) */
   left: calc(50% - var(--neon-wd) * var(--neon-fs) * 0.28); width: calc(var(--neon-wd) * var(--neon-fs) * 0.96);
   top: calc(var(--neon-h) * var(--neon-fs) * -0.48); height: calc(var(--neon-h) * var(--neon-fs) * 1.42);
   background: radial-gradient(closest-side, var(--neon-back), color-mix(in srgb, var(--neon-back2) 55%, transparent) 45%, transparent);
@@ -2146,7 +2146,8 @@ html, body { height: 100%; overflow: hidden; }
   font: 900 1em/1.25 Impact, "Bahnschrift Condensed", "Arial Narrow", sans-serif; font-synthesis: none; letter-spacing: 0.06em; text-indent: 0.06em; /* TRACK in decorate.js, centred */
   white-space: pre; text-align: center; transform-style: preserve-3d;
   transform: translate3d(calc(var(--px) * 1em), calc(var(--ry, 0) * 1em), calc(var(--pz) * 1em)) rotateY(calc(var(--a) * 1deg)) scaleY(var(--neon-sy)); /* from decorate.js */
-  color: var(--g); -webkit-text-stroke: 0.035em var(--g);
+  --neon-rim: color-mix(in srgb, var(--g) 60%, #fff); /* paler than the wall: the glint shows it through the face */
+  color: var(--neon-rim); -webkit-text-stroke: 0.035em var(--neon-rim);
   text-shadow: calc(var(--eu) * 1em) calc(var(--ev) * 1em) color-mix(in srgb, var(--g) 86%, var(--neon-side)),
     calc(var(--eu) * 2em) calc(var(--ev) * 2em) color-mix(in srgb, var(--g) 74%, var(--neon-side)),
     calc(var(--eu) * 3em) calc(var(--ev) * 3em) color-mix(in srgb, var(--g) 62%, var(--neon-side)),
@@ -2217,16 +2218,20 @@ html, body { height: 100%; overflow: hidden; }
    locks with the name facing the camera (1500). The lights sweep over the letters as they pass: each face's light map moves
    in step with the spin (same keyframes, same curves). The back light flares on the 4th note. A glint runs across the
    ring when it locks; the tubes of the flat text strike one after the other. */
-:root[data-style="neon"] .alert-card .neon-stage { animation: neon-fade 250ms ease-out backwards, neon-strike 520ms linear backwards; }
-:root[data-style="neon"] .alert-card::after { animation: neon-flare 1000ms backwards, neon-breathe 5s ease-in-out 1000ms infinite; } /* opacity, then transform: one property each */
-:root[data-style="neon"] .alert-card::before { animation: neon-fade 600ms ease-out 364ms backwards; } /* on with the strike */
+:root[data-style="neon"] .alert-card .neon-stage { animation: neon-flicker 7.3s linear 1300ms infinite, neon-strike 520ms linear backwards; } /* the fade-in is in the strike (filter: opacity()): a second
+   opacity animation on the stage, even finished, would keep the flicker off the compositor */
+:root[data-style="neon"] .alert-card::after { animation: neon-pulse 4.3s ease-in-out 1000ms infinite, neon-breathe 5s ease-in-out 1000ms infinite, neon-flare 1000ms backwards; } /* opacity, transform, filter: one property each */
+:root[data-style="neon"] .alert-card::before { animation: neon-fade 600ms ease-out 364ms backwards, neon-drift 9s ease-in-out 964ms infinite; } /* on with the strike, then drifts */
 :root[data-style="neon"] .alert-card .neon-tilt { animation: neon-tilt 1300ms backwards; }
 :root[data-style="neon"] .alert-card .neon-sway { animation: neon-sway 8s ease-in-out 1300ms infinite; }
 :root[data-style="neon"] .alert-card .neon-spin { animation: neon-spin 1500ms backwards; }
 :root[data-style="neon"] .alert-card .neon-spin.neon-r2 { animation-name: neon-spin-r2; }
-:root[data-style="neon"] .alert-card .neon-f::before { animation: neon-light 1200ms cubic-bezier(0.18, 0.5, 0.3, 1) backwards, neon-glint 700ms ease-in-out 1450ms backwards; }
-:root[data-style="neon"] .alert-card .neon-r2 .neon-f::before { animation-name: neon-light-r2, neon-glint; }
-:root[data-style="neon"] .alert-card .neon-name { animation: neon-ignite 700ms linear 560ms backwards; } /* the hero first */
+:root[data-style="neon"] .alert-card .neon-f::before { animation: neon-face 7.4s linear calc(var(--x) / var(--neon-c) * 2.4s - 5.007s) infinite, /* the hold's glint and wave, phased by position on the ring; all
+  started at 0 (a start during the hold would cost a style recalc) and all in the still part of the cycle through the entry (0-1.7 s); the front glints at 3.5 s, then every 7.4 s */
+  neon-light 1200ms cubic-bezier(0.18, 0.5, 0.3, 1) backwards, neon-glint 700ms ease-in-out 1450ms backwards; }
+:root[data-style="neon"] .alert-card .neon-r2 .neon-f::before { animation-name: neon-face, neon-light-r2, neon-glint; }
+:root[data-style="neon"] .alert-card .neon-f::after { animation: neon-buzz 6.1s linear calc(-1s - var(--x) * 1s) infinite; } /* each letter's glow buzzes at its own phase */
+:root[data-style="neon"] .alert-card .neon-name { animation: neon-breath 3.8s ease-in-out 1300ms infinite, neon-ignite-f 700ms linear 560ms backwards; } /* strikes first (560, as a filter), then breathes (opacity) */
 :root[data-style="neon"] .alert-card .evt-icon { animation: neon-ignite 700ms linear 850ms backwards; }
 :root[data-style="neon"] .alert-card .evt-title .w { animation: neon-ignite 700ms linear calc(950ms + var(--i) * 70ms) backwards; }
 :root[data-style="neon"] .alert-card .evt-text { animation: neon-ignite 700ms linear 1150ms backwards; }
@@ -2234,10 +2239,10 @@ html, body { height: 100%; overflow: hidden; }
 :root[data-style="neon"] .alert-card .evt-amount { animation: neon-ignite 700ms linear 1200ms backwards; }
 
 @keyframes neon-fade { from { opacity: 0; } }
-@keyframes neon-flare { /* swells, peaks on the 4th note, settles */
-  0% { opacity: 0; animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1); }
-  38% { opacity: 1; animation-timing-function: ease-in-out; }
-  100% { opacity: 0.85; }
+@keyframes neon-flare { /* swells, peaks on the 4th note, settles to the pulse's 0.85 (a filter: opacity is the pulse's) */
+  0% { filter: opacity(0); animation-timing-function: cubic-bezier(0.3, 0, 0.6, 1); }
+  38% { filter: opacity(1); animation-timing-function: ease-in-out; }
+  100% { filter: opacity(0.85); }
 }
 @keyframes neon-breathe { /* the back light swells and drifts behind the ring */
   0%, 100% { transform: none; }
@@ -2273,15 +2278,47 @@ html, body { height: 100%; overflow: hidden; }
 }
 /* the strike (364 ms, the chime's 4th note): the letters are dark silhouettes against the rising back light, then the
    tubes light up with one flicker (one dip only: no strobing) */
-@keyframes neon-strike { /* the ring is off (a dark silhouette), strikes at 364 ms, flickers once, stays on */
-  0%, 70% { filter: brightness(0.14) saturate(0.4); }
-  70.1%, 80% { filter: brightness(1.25) saturate(1); }
-  80.1%, 87% { filter: brightness(0.3) saturate(0.6); }
-  87.1%, 100% { filter: brightness(1) saturate(1); }
+@keyframes neon-strike { /* fades in over 250 ms as a dark silhouette (the ring is off), strikes at 364 ms, flickers once, stays on */
+  0% { filter: opacity(0) brightness(0.14) saturate(0.4); animation-timing-function: ease-out; }
+  48%, 70% { filter: opacity(1) brightness(0.14) saturate(0.4); }
+  70.1%, 80% { filter: opacity(1) brightness(1.25) saturate(1); }
+  80.1%, 87% { filter: opacity(1) brightness(0.3) saturate(0.6); }
+  87.1%, 100% { filter: opacity(1) brightness(1) saturate(1); }
 }
 @keyframes neon-ignite { /* a neon tube striking: off, on, one dip, on */
   0% { opacity: 0; } 30% { opacity: 1; } 42% { opacity: 0.3; } 58%, 100% { opacity: 1; }
 }
+@keyframes neon-ignite-f { /* the same as a filter, for the hero (its opacity breathes afterwards) */
+  0% { filter: opacity(0); } 30% { filter: opacity(1); } 42% { filter: opacity(0.3); } 58%, 100% { filter: opacity(1); }
+}
+
+/* ---- hold: life in the neon material. Opacity / transform only, every layer already composited: 0 style recalcs.
+   - the faces: a glint crosses the ring (each face dips to 30 % for 220 ms, the pale rim showing through the chrome; phased
+     by position, one turn in 2.4 s, so it runs left to right across the front in about 0.6 s, at 3.5 s then every 7.4 s), then
+     a pale wave (the chrome gives way to the rim a little, 2 s) drifts round the ring the same way; still for the rest of the cycle
+   - each letter's bloom buzzes faintly at its own phase; the whole sign dips now and then (both never under 94 / 91 %)
+   - the back light pulses, the key light and the cold fill drift, the hero's tube breathes (never under 86 %) */
+@keyframes neon-face { /* 7.4 s: the glint (220 ms, the gloss stays: floor 0.3), the wave (1 s down, 1 s up), then still for 5.2 s
+  (every face is in this part during the whole entry: see the delays) */
+  0% { opacity: 1; animation-timing-function: ease-in; }
+  1.1% { opacity: 0.3; animation-timing-function: ease-out; }
+  3% { opacity: 1; animation-timing-function: ease-in-out; }
+  16% { opacity: 0.68; animation-timing-function: ease-in-out; }
+  29.5%, 100% { opacity: 1; }
+}
+@keyframes neon-buzz {
+  0%, 100% { opacity: 1; } 7% { opacity: 0.95; } 9% { opacity: 1; } 31% { opacity: 0.96; } 33% { opacity: 1; } 34.5% { opacity: 0.94; }
+  36.5% { opacity: 1; } 70% { opacity: 0.97; } 74% { opacity: 1; }
+}
+@keyframes neon-flicker { /* the whole sign: four uneven dips in 7.3 s, none deeper than 9 %, at most two in any second */
+  0%, 100% { opacity: 1; } 11% { opacity: 1; } 12% { opacity: 0.93; } 13.5% { opacity: 1; } 14.5% { opacity: 0.91; } 16.5% { opacity: 1; }
+  47% { opacity: 1; } 48.5% { opacity: 0.92; } 51% { opacity: 1; } 79% { opacity: 1; } 80% { opacity: 0.94; } 82% { opacity: 1; }
+}
+@keyframes neon-pulse { 0%, 100% { opacity: 0.85; } 50% { opacity: 0.6; } }
+@keyframes neon-drift {
+  0%, 100% { transform: none; } 33% { transform: translate(2.5%, -1.5%) scale(1.04); } 66% { transform: translate(-1.5%, 1.5%) scale(0.98); }
+}
+@keyframes neon-breath { 0%, 100% { opacity: 1; } 50% { opacity: 0.86; } }
 
 /* ---- exit (450 ms): the entry backwards and faster. The ring whips round the other way, accelerating, while the camera
    cranes up and it falls away into the dark; the back light collapses, the tubes of the flat text go out (one dip), the
