@@ -1,245 +1,232 @@
 // Silk style of the alerts overlay (DECOR.silk in alert-card.js).
-// silk: a sphere woven of translucent silk sheets holds the event icon. A sheet is a band of very fine threads
-// across it (one SVG sub-path each), spaced so you see through it, plus its two hems. A few wide sheets fold over each other
-// with open space between them: where a sheet turns edge-on its threads bunch into a bright fold (the folds draw the
-// sphere's outline), where two sheets cross they make moiré. Thin wisps leave the top, taper to a point and curl like
-// smoke. The sheets whip in on spirals and wrap the icon; then one sheet sweeps across the card and stays as a silk swash
-// under the title. The entry replays each path's `d` through keyframes computed here once (WAAPI); at rest the paths are
-// static and only a few layers turn (CSS, transform only). Deterministic: no randomness.
-const R = 100; // sphere radius, SVG units
-const DEG = Math.PI / 180;
+// silk: ONE surface. A sphere whose skin is one lat/long mesh, deformed by a smooth field, drawn as translucent silk
+// SHEETS: three belts of that sphere (two hatched with its parallels, one with its meridians, so they cross with moiré), lines
+// only inside a belt (open black between the sheets), a crease just inside every sheet edge (the lines bunch into a bright
+// hem), three flame tongues at the top (a displacement that carries the skin up a curling centreline and pinches it to a
+// point: the parallels crossing a tongue's base become its hatching) and the ribbon under the title (a band of parallels
+// whose back half-turn is unrolled off the front of the sphere and runs right, twisting and waving, curling into a tail; its
+// first points are the band's own sphere points). One frame of the field is the same geometry rendered as 4 paths (the back
+// of the skin, its front parallels, its front meridians, the ribbon). The entry (the sheets slide round their own axes while
+// the whole skin shrinks in and closes, the tongues grow, the ribbon runs out) and the hold (the field loops) are `d`
+// keyframes computed once per page into a constructed stylesheet (CSS animations, nothing per alert). No randomness.
+const R = 1260; // sphere radius in path units (a tenth of a px at the default text size: the sphere is 9em = 252 px)
+const DEG = Math.PI / 180, TAU = 2 * Math.PI;
 const c01 = x => (x < 0 ? 0 : x > 1 ? 1 : x);
 const smooth = x => { x = c01(x); return x * x * (3 - 2 * x); };
-const out2 = p => 1 - (1 - p) ** 2;
+const bump = x => (x <= 0 || x >= 1 ? 0 : Math.sin(Math.PI * x));
+const out3 = p => 1 - (1 - p) ** 3;
+const norm = v => { const l = Math.hypot(...v); return v.map(x => x / l); };
 
-// Sheets. A sheet runs along a great circle of the sphere (local plane z = 0, θ in deg: 0 right, 90 down, 180 left, 270 up),
-// tilted by e (deg; 0 = facing us: the limb) and turned by r (deg, in the screen); θ0 → θ1 at rest. w: its width (radii).
-// f: [φ0, turns]: its cross-section turning along it (0 = lying on the sphere, 90 = standing out of it, where it sinks in so
-// its outer hem stays on the silhouette). sh: the slant of its threads; d: denser threads. t: [delay, travel] ms of its entry; p: the length of
-// the spiral it comes in on (rad). g: layer (0 back, 1 front, 2 limb and base, 3 wisps).
-// A wisp (fl: its length, radii) continues a short sheet off the top: it turns upward (leaning by lean, rad), sways, curls
-// (curl, rad), twists (tw half-turns: its hems cross) and tapers to a point; fw: its width at the base.
-// The sheets whip in one per note of the chime (0, 110, 224, 364 ms); the wisps rise last, from close by (short spirals).
-const ORB = [
-  { g: 0, e: 66, r: 16, a: [200, 340], w: 0.7, f: [15, 0.55], sh: 0.03, t: [60, 640], p: 2.2 }, // behind, dim
-  { g: 1, e: 54, r: -34, a: [14, 166], w: 0.62, f: [0, 0.75], sh: -0.03, t: [170, 560], p: 2.2 }, // across the front, diagonally,
-  { g: 1, e: 63, r: 126, a: [40, 140], w: 0.4, f: [160, 0.8], sh: 0.03, t: [260, 500], p: 2 }, //   and a narrower one the other way
-  { g: 2, e: 14, r: 0, a: [12, 168], w: 0.62, f: [-25, 0.25], sh: 0.03, d: 1.7, t: [0, 640] }, // the base: dense, bright, the event colour
-  { g: 2, e: -4, r: 0, a: [100, 236], w: 0.3, f: [0, 1.1], sh: 0.03, t: [110, 680] }, // the limb: edge-on (a crisp line),
-  { g: 2, e: 6, r: 0, a: [-82, 70], w: 0.28, f: [0, -1.1], sh: -0.03, t: [224, 600] }, //   twisting open here and there
-  { g: 3, e: 10, r: 0, a: [210, 236], w: 0.3, f: [20, 0.3], sh: 0.02, fl: 0.8, lean: -0.3, curl: -1.3, tw: 0.9, fw: 1.5, t: [364, 560], p: 1.1 },
-  { g: 3, e: -8, r: 0, a: [244, 264], w: 0.28, f: [60, 0.3], sh: 0.02, fl: 0.95, lean: 0.04, curl: 1.4, tw: 1.1, fw: 1.4, t: [420, 560], p: 1.1 },
-  { g: 3, e: 14, r: 0, a: [276, 294], w: 0.28, f: [120, 0.3], sh: 0.02, fl: 0.72, lean: 0.26, curl: 1.2, tw: 0.9, fw: 1.4, t: [470, 520], p: 1 },
-  { g: 3, e: -12, r: 0, a: [300, 318], w: 0.26, f: [30, 0.3], sh: 0.02, fl: 0.58, lean: 0.45, curl: -1.1, tw: 0.8, fw: 1.4, t: [500, 520], p: 1 },
+const NP = 96, NU = 60, NM = 150, NV = 44; // parallels and their samples, meridians and theirs (lines ~4 px apart at the front)
+const TILT = [-40 * DEG, 35 * DEG]; // the axis: tipped away from the viewer, then turned in the screen
+const BAND = [-0.2, 0.25]; // the ribbon's band: centre latitude, half width (rad)
+const RIB = { L: Math.PI, len: 4 * R, tail: 1.3 * R, y: 0, lam: 2.2 * R, amp: 0.26 * R, n: 110 }; // the band's half turn unrolled
+const T0 = 1300, LOOP = 4800, NL = 16; // entry length, the hold loop and its keyframes
+const ENTRY_T = [0, 33, 66, 100, 133, 166, 200, 233, 266, 300, 340, 380, 430, 480, 540, 600, 660, 730, 800, 880, 960, 1050, 1150, 1300];
+// the sheets: a belt of the sphere round axis d (|n·d − c| < hw), hatched by one family (0 parallels, 1 meridians); its
+// entry: it slides round its own axis by `slide` (rad) while it lands, its head (angle 0 round d) first, over t = [delay, travel]
+const SHEETS = [
+  { d: norm([0.6, 0.5, 0.62]), c: 0.15, hw: 0.3, fam: 0, t: [0, 720], slide: 2.6 }, // the broad diagonal sash
+  { d: norm([-0.7, 0.3, 0.65]), c: -0.1, hw: 0.24, fam: 1, t: [140, 680], slide: -2.3 }, // the crossing sheet (meridians)
+  { d: norm([0.1, 0.95, 0.3]), c: 0.75, hw: 0.32, fam: 0, t: [60, 640], slide: 1.9 }, // the base: a cap at the bottom front, the event colour
 ];
-const DENS = 34; // threads per radian of sheet: about 3.7 px apart at the default text size (style.css: the sphere is 9em)
-const GROUPS = 4;
-const HEM = 3; // a hem point every 3 threads
-const APP = 2.8; // rad: the spiral a sheet comes in on by default (its head starts this far before θ0)
-const NF = 40; // points on a wisp's centre line
-const ORB_T = [0, 33, 66, 100, 133, 166, 200, 233, 266, 300, 333, 366, 400, 440, 480, 530, 590, 660, 740, 830, 930, 1040];
+const EL = 0.35; // the tongues' bases lean toward the viewer (rad)
+const TONGUES = [ // screen angle from the top (deg), height (R), lean and curl (rad), base radius (chord, R), pinch, phase
+  { g: -40, A: 0.95, lean: -0.3, curl: -1.1, w: 0.2, pinch: 0.85, ph: 0 }, // a thin wisp
+  { g: -5, A: 1.5, lean: 0.05, curl: 0.9, w: 0.32, pinch: 0.66, ph: 2 }, // the tall tongue
+  { g: 31, A: 1.15, lean: 0.4, curl: 1.15, w: 0.25, pinch: 0.74, ph: 4 },
+].map(t => ({ ...t, c: [Math.sin(t.g * DEG) * Math.cos(EL), -Math.cos(t.g * DEG) * Math.cos(EL), Math.sin(EL)] }));
+for (const S of SHEETS) { const a = Math.abs(S.d[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0]; S.e1 = norm([a[1] * S.d[2] - a[2] * S.d[1], a[2] * S.d[0] - a[0] * S.d[2], a[0] * S.d[1] - a[1] * S.d[0]]); S.e2 = [S.d[1] * S.e1[2] - S.d[2] * S.e1[1], S.d[2] * S.e1[0] - S.d[0] * S.e1[2], S.d[0] * S.e1[1] - S.d[1] * S.e1[0]]; }
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const belt = (S, n) => S.hw - Math.abs(dot(n, S.d) - S.c); // > 0 inside the sheet
+const tongueAt = n => { let m = 0; for (const t of TONGUES) m = Math.max(m, 1 - Math.hypot(n[0] - t.c[0], n[1] - t.c[1], n[2] - t.c[2]) / t.w); return m; };
 
-for (const rb of ORB) {
-  const ce = Math.cos(rb.e * DEG), se = Math.sin(rb.e * DEG), cr = Math.cos(rb.r * DEG), sr = Math.sin(rb.r * DEG);
-  rb.rot = (x, y, z) => { [y, z] = [y * ce - z * se, y * se + z * ce]; return [x * cr - y * sr, x * sr + y * cr, z]; };
-  rb.span = Math.abs(rb.a[1] - rb.a[0]) * DEG;
-  rb.k = Math.round(DENS * (rb.span + (rb.fl || 0)) * (rb.d || 1)); // d: denser
-  rb.kh = Math.round((rb.k - 1) * (rb.span / (rb.span + (rb.fl || 0)))) + 1; // the threads on the sphere (then the wisp)
-  if (rb.fl) rb.F = wispLine(rb);
-}
-
-// A wisp's centre line, in the screen (rest geometry): it leaves the end of the sheet along it, turns upward, sways, curls.
-function wispLine(rb) {
-  const th = rb.a[1] * DEG, dir = Math.sign(rb.a[1] - rb.a[0]);
-  const [x1, y1, z1] = rb.rot(R * Math.cos(th), R * Math.sin(th), 0);
-  const [x2, y2] = rb.rot(R * Math.cos(th + dir * 0.01), R * Math.sin(th + dir * 0.01), 0);
-  const h0 = Math.atan2(y2 - y1, x2 - x1), turn = Math.atan2(Math.sin(-Math.PI / 2 + rb.lean - h0), Math.cos(-Math.PI / 2 + rb.lean - h0));
-  const pts = new Float64Array(2 * NF + 2), step = (rb.fl * R) / NF;
-  let x = x1, y = y1;
-  pts[0] = x; pts[1] = y;
-  for (let i = 1; i <= NF; i++) {
-    const f = (i - 0.5) / NF;
-    const h = h0 + turn * smooth(f / 0.3) + 0.22 * Math.sin(6 * f + rb.a[0]) + rb.curl * smooth((f - 0.35) / 0.65) ** 1.3;
-    x += Math.cos(h) * step; y += Math.sin(h) * step;
-    pts[2 * i] = x; pts[2 * i + 1] = y;
-  }
-  return { pts, z1, th };
-}
-
-// one sheet at time t (ms): its two hems, k points each, projected (x, y pairs)
-function orbHems(rb, t) {
-  const [t0] = rb.a, dir = Math.sign(rb.a[1] - t0), span = rb.span, fl = rb.fl || 0, len = span + fl, rot = rb.rot, F = rb.F;
-  const q = c01((t - rb.t[0]) / rb.t[1]), e = out2(q);
-  // the head runs along the rail (spiral, arc, wisp) from -p to len; the sheet lengthens behind it, wide and twisting in
-  // flight, and narrows to its own width as it lands (nothing shows before its delay: no length, no width)
-  const head = len - (1 - e) * (len + (rb.p ?? APP)), body = len * c01(4 * e) ** 0.6, spin = 3 * (1 - e) ** 2;
-  const open = e ** 0.35 * (1 + 1.8 * (1 - e) ** 2);
-  const n = rb.k, A = new Float64Array(2 * n), B = new Float64Array(2 * n);
-  const put = (H, j, x, y, z) => { const qz = 600 / (600 - z); H[2 * j] = x * qz; H[2 * j + 1] = y * qz; }; // slight perspective
-  for (let j = 0; j < n; j++) {
-    const s = j / (n - 1), u = head - (1 - s) * body;
-    const phi = rb.f[0] * DEG + rb.f[1] * Math.PI * s + 0.35 * Math.sin(1.6 * Math.PI * s + t0) + spin * (1 - s);
-    let hw = 0.5 * R * open * rb.w * (1 + 0.18 * Math.sin(1.7 * Math.PI * s + 2 * t0)) * c01(s / 0.18) ** 0.6; // half width
-    const sp = Math.sin(phi), cp = Math.cos(phi);
-    if (u > span) { // on the wisp: the cross-section turns to face us, twists (the hems cross) and tapers to a point
-      const f = c01((u - span) / fl), i = Math.min(NF - 1, Math.floor(f * NF)), fr = f * NF - i, P = F.pts;
-      const dx = P[2 * i + 2] - P[2 * i], dy = P[2 * i + 3] - P[2 * i + 1], dl = Math.hypot(dx, dy) || 1;
-      const cx = P[2 * i] + dx * fr, cy = P[2 * i + 1] + dy * fr;
-      const [bx, by, bz] = rot(sp * Math.cos(F.th) * hw, sp * Math.sin(F.th) * hw, cp * hw); // as it leaves the sphere
-      const k = smooth(f / 0.25), ps = phi + rb.tw * Math.PI * f, tw = hw * rb.fw * (1 - f) ** 0.9 * Math.cos(ps);
-      const hx = (1 - k) * bx - k * tw * (dy / dl), hy = (1 - k) * by + k * tw * (dx / dl), hz = (1 - k) * bz;
-      put(A, j, cx + hx, cy + hy, F.z1 + hz);
-      put(B, j, cx - hx, cy - hy, F.z1 - hz);
-    } else { // on the sphere: the hems sit on either side of the circle (β across it), or stand out of it (φ)
-      const th = t0 * DEG + dir * u, ct = Math.cos(th), st = Math.sin(th);
-      if (!fl) hw *= c01((1 - s) / 0.15) ** 0.6;
-      const rho = R * (u < 0 ? 1 + 0.16 * u * u : 1 + 0.03 * Math.sin(2.3 * u + t0)) * (1 + 0.25 * (1 - e) ** 2) - Math.abs(sp) * hw;
-      const ra = rho + sp * hw, rr = rho - sp * hw, be = (cp * hw) / R, cb = Math.cos(be), sb = Math.sin(be);
-      const [ax, ay, az] = rot(ra * cb * ct, ra * cb * st, ra * sb), [bx, by, bz] = rot(rr * cb * ct, rr * cb * st, -rr * sb);
-      put(A, j, ax, ay, az);
-      put(B, j, bx, by, bz);
+// ---- the mesh (once): every drawn sample's rest normal, its sheet (for the entry), its crease and its path / run
+const [ca, sa, cb, sb] = [Math.cos(TILT[0]), Math.sin(TILT[0]), Math.cos(TILT[1]), Math.sin(TILT[1])];
+const unit = (u, v) => { // the tilted unit sphere (x right, y down, z toward the viewer)
+  let x = Math.cos(v) * Math.cos(u), y = -Math.sin(v), z = Math.cos(v) * Math.sin(u);
+  [y, z] = [y * ca - z * sa, y * sa + z * ca];
+  return [x * cb - y * sb, x * sb + y * cb, z];
+};
+let MESH = null;
+function mesh() {
+  if (MESH) return MESH;
+  let up = 0, best = -1; // the exit: the lowest screen point of the band's centre parallel; the ribbon leaves it heading right
+  for (let i = 0; i < 720; i++) { const y = unit((i * TAU) / 720, BAND[0])[1]; if (y > best) { best = y; up = (i * TAU) / 720; } }
+  const sigma = unit(up + 0.01, BAND[0])[0] > unit(up, BAND[0])[0] ? 1 : -1;
+  const pts = [], lines = [], rib = []; // sphere samples { n, sh, al, cr }; runs { path, from, to }; ribbon samples { l, v, a }
+  // a sample: drawn by this family if it lies in one of the family's sheets (or, for parallels, on a tongue's base); its
+  // sheet for the entry is the belt it is deepest in; its crease peaks just inside the sheet's edge
+  const sample = (N, fam) => {
+    let sh = -1, deep = -1e9;
+    for (let k = 0; k < SHEETS.length; k++) { const b = belt(SHEETS[k], N); if (b > deep) { deep = b; sh = k; } }
+    const tm = fam === 0 ? tongueAt(N) : 0;
+    const famIn = SHEETS.some((S, k) => S.fam === fam && belt(S, N) > 0);
+    if (!(famIn || tm > 0) || (fam === 1 && tongueAt(N) > 0)) return null;
+    const S = SHEETS[sh], al = (Math.atan2(dot(N, S.e2), dot(N, S.e1)) + Math.PI) / TAU;
+    return { n: N, sh, al, cr: famIn ? bump(deep / 0.14) : 0 };
+  };
+  const emit = (cand, fam, pathOf) => { // runs of consecutive drawn samples of one path and one sheet (a sheet flies in as a unit)
+    let run = null;
+    for (const N of cand) {
+      const p = N && sample(N, fam), path = p ? pathOf(N) : -1;
+      const prev = run && pts[pts.length - 1];
+      if (!p || !run || run.path !== path || run.sh !== p.sh || Math.abs(prev.al - p.al) > 0.5) { if (run) run.to = pts.length; run = p ? { path, sh: p.sh, from: pts.length } : null; if (run) lines.push(run); } // also where the belt angle wraps: the two sides land at different times
+      if (p) pts.push(p);
     }
-  }
-  return [A, B];
-}
-
-// A sheet as two path strings: its threads (hem A at j to hem B at j + slant: the slant changes a little along it; each a
-// curve through the sheet's middle, so it follows the sheet's bend) and its two hems (a point every HEM threads). Past kh
-// the sheet is a wisp: no threads across it, but STRANDS long strands along it, from where it leaves the sphere to its tip,
-// at fixed fractions of its width: they converge at the tip and cross where it twists (smoke). Integer coordinates; deltas
-// between rounded points (no drift).
-const STRANDS_W = 9;
-function sheet(A, B, n, sh, ph, out, kh = n) {
-  for (let s = 0; s < STRANDS_W && kh < n; s++) {
-    const u = (s + 0.5) / STRANDS_W, P = j => [Math.round(A[2 * j] + (B[2 * j] - A[2 * j]) * u), Math.round(A[2 * j + 1] + (B[2 * j + 1] - A[2 * j + 1]) * u)];
-    let [x, y] = P(kh - 1);
-    out[0] += `M${x} ${y}l`;
-    for (let j = kh; j < n; j++) { const [X, Y] = P(j); out[0] += `${X - x} ${Y - y} `; x = X; y = Y; }
-  }
-  for (let j = 0; j < kh; j++) {
-    const i = Math.min(kh - 1, Math.max(0, j + Math.round(n * sh * (0.5 + Math.sin(1.6 * Math.PI * j / n + ph)))));
-    const m = (j + i) >> 1, x = Math.round(A[2 * j]), y = Math.round(A[2 * j + 1]);
-    const cx = Math.round(A[2 * m] + B[2 * m] - (A[2 * j] + B[2 * i]) / 2);
-    const cy = Math.round(A[2 * m + 1] + B[2 * m + 1] - (A[2 * j + 1] + B[2 * i + 1]) / 2);
-    out[0] += `M${x} ${y}q${cx - x} ${cy - y} ${Math.round(B[2 * i]) - x} ${Math.round(B[2 * i + 1]) - y}`;
-  }
-  for (const H of [A, B]) {
-    let x = Math.round(H[0]), y = Math.round(H[1]);
-    out[1] += `M${x} ${y}l`;
-    for (let j = HEM; j < kh + HEM - 1; j += HEM) {
-      const k = Math.min(j, kh - 1), X = Math.round(H[2 * k]), Y = Math.round(H[2 * k + 1]);
-      out[1] += `${X - x} ${Y - y} `;
-      x = X; y = Y;
+    if (run) run.to = pts.length;
+  };
+  const front = N => (N[2] > -0.3 ? 1 : 0); // 0 back, 1 front parallels, 2 front meridians, 3 ribbon
+  for (let j = 0; j < NP; j++) { // the parallels, bunching into denser sheets with sparser gaps
+    const v0 = -Math.PI / 2 + (Math.PI * (j + 0.5)) / NP, v = v0 + 0.09 * Math.sin(6 * v0 + 1) * Math.cos(v0), band = Math.abs(v - BAND[0]) < BAND[1];
+    const s0 = band ? RIB.L : 0, n = band ? Math.round((NU * (TAU - RIB.L)) / TAU) : NU; // a band parallel skips its ribbon half
+    const cand = []; // the samples: every base step, three times denser where this parallel crosses a tongue's base
+    for (let i = 0; i <= 9 * n; i++) {
+      const s = s0 + ((TAU - s0) * i) / (9 * n), N = unit(up + sigma * s, v);
+      if (i % 9 === 0 || (i % 3 === 0 && N[1] < -0.2 && tongueAt(N) > -0.15)) cand.push(N);
     }
+    emit(cand, 0, front);
+    if (!band) continue;
+    const last = pts[pts.length - 1];
+    if (!last || Math.abs(dot(last.n, cand[cand.length - 1]) - 1) > 1e-6) continue; // its end is not drawn: no ribbon from it
+    const a = pts.length - 1, from = rib.length; // the ribbon: this parallel's half turn, from its anchor outward
+    for (let i = 0; i <= RIB.n; i++) rib.push({ l: (RIB.len * i) / RIB.n, v, a });
+    lines.push({ path: 3, from, to: rib.length });
   }
+  for (let k = 0; k < NM; k++) { // the meridians: the crossing sheet's hatching
+    const u = up + (sigma * (k + 0.5) * TAU) / NM, cand = [];
+    for (let i = 0; i <= NV; i++) cand.push(unit(u, -Math.PI / 2 + (Math.PI * i) / NV));
+    emit(cand, 1, N => (N[2] > -0.3 ? 2 : 0));
+  }
+  // the ribbon's frame at the exit: across = d/dv of the sphere there, so the flat ribbon starts in the band's own plane
+  const e0 = unit(up, BAND[0] - 0.005), e1 = unit(up, BAND[0] + 0.005), A = [e1[0] - e0[0], e1[1] - e0[1], e1[2] - e0[2]], al = Math.hypot(...A);
+  return (MESH = { pts, lines: lines.filter(l => l.to - l.from > 1), rib, up, sigma, exitPsi: Math.atan2(A[2] / al, -A[1] / al) }); // a one-point run would be "M x y l": a parse error
 }
 
-// every keyframe of the orb: per layer, [threads, hems]
-const orbFrames = () => ORB_T.map(t => {
-  const out = Array.from({ length: GROUPS }, () => ['', '']);
-  for (const rb of ORB) { const [A, B] = orbHems(rb, t); sheet(A, B, rb.k, rb.sh, rb.a[0], out[rb.g], rb.kh); }
-  return out;
-});
-
-// The swash: silk flowing out of the orb under the title and past it, for the whole alert. It lives in a window (1000 × 480
-// units: y −320…160, the ribbon around y 60) stretched under the title, whose ends fade out (a mask, style.css). Each ribbon's
-// rest shape is periodic (strip a: period 500, strip b: 400): it is drawn over the window plus one period on its left, and
-// a CSS loop slides it right by exactly one period (2.4 s, 1.5 s) while it opens and turns edge-on again (scaleY): the
-// picture repeats exactly, so its waves, its folds (where it turns edge-on its threads bunch into a bright line) and their
-// colours travel along it forever with no seam. Strip b, narrower and faster, crosses strip a (moiré: the threads shimmer)
-// and carries a glint: its colour runs along it (the event colour, cold, a bright band, cold) once per period, so a light
-// runs along the silk. Past the title a tail curls up out of it and flutters (its own transform loop). A ribbon is one
-// path: threads + hems.
-// The entry sweep plays strip a's `d` once (14 keyframes): its head runs out of the orb to the end of the window, the sheet
-// behind it broad and lifted over the title, fluttering, then sinking into the rest shape (the strip at its start).
-const SW_T = [0, 50, 100, 150, 200, 250, 300, 350, 400, 460, 530, 610, 700, 800];
-const STRIPS = [ // P: period, k: threads per period, w: half width, a: wave height, ph: wave phase, f: twist phase (deg), y: centre
-  { P: 500, k: 110, w: 56, a: 40, ph: 0.4, f: 80, y: 60 },
-  { P: 400, k: 70, w: 30, a: 28, ph: 2.3, f: 200, y: 64 },
-];
-// a strip's hems at its threads (window x from −P to 1000; strip x = window x + P), at sweep progress q (1: at rest)
-function stripHems(st, q) {
-  const { P, k, w: W, a, ph, f, y: Y } = st, n = Math.round((k * (1000 + P)) / P) + 1;
-  const e = 1 - (1 - q) ** 3, head = 1000 * e, big = 1 - e ** 4; // big: how much of the sweep is left
-  const A = new Float64Array(2 * n), B = new Float64Array(2 * n);
-  for (let j = 0; j < n; j++) {
-    const x0 = -P + (j * P) / k; // its place at rest
-    let x = x0, lift = 0, flut = 0, wide = 0, lead = 1;
-    if (q < 1 && x0 >= 0) { // in the window, during the sweep: it runs behind the head
-      const s = x0 / 1000, gap = head - head * s, front = Math.exp(-gap / 260) * big;
-      x = head * s; lift = 150 * front; wide = 140 * front; flut = Math.exp(-gap / 140) * (1 - e * 0.85);
-      lead = (1 - big * (1 - c01((1 - s) / 0.1) ** 0.5)) * c01(e / 0.05); // a rounded leading edge; nothing at the start
+// ---- the field at time τ (ms): folds, tongues, the ribbon's wave; the entry (by t, ms) slides the sheets in
+const fold = (x, y, z, w) => 0.1 * Math.sin(2.3 * x + 1.6 * y + 0.9 * z + w + 0.3) * Math.sin(1.7 * z - 1.2 * y + 2.1 * x + 1.1)
+  + 0.07 * Math.sin(3.3 * y + 2.1 * z - 2 * w + 0.6) + 0.09 * Math.tanh(2.2 * Math.sin(2.6 * x - 1.9 * z + 1.3 * y + w + 2))
+  + 0.045 * Math.sin(4.4 * x + 3.1 * y - 2 * w);
+function tongueTables(w) { // each tongue's centreline (24 steps) at this time: it breathes, leans, curls and wavers like smoke
+  return TONGUES.map(t => {
+    const H = t.A * R * (1 + 0.12 * Math.sin(2 * w + t.ph)), lean = t.lean + 0.15 * Math.sin(3 * w + t.ph), curl = t.curl * (1 + 0.2 * Math.sin(2 * w + t.ph + 1));
+    const th0 = Math.atan2(t.c[1], t.c[0]), out = [0, 0, 0];
+    let x = 0, y = 0, z = 0;
+    for (let i = 0; i < 24; i++) {
+      const s = (i + 0.5) / 24, th = th0 + lean * smooth(s / 0.35) + curl * smooth((s - 0.3) / 0.7) ** 1.4 + 0.22 * Math.sin(7 * s + 2 * w + t.ph) * smooth(s / 0.3), k = 1 - smooth(s / 0.4);
+      x += (Math.cos(th) * H) / 24; y += (Math.sin(th) * H) / 24; z += (t.c[2] * k * H) / 24;
+      out.push(x, y, z);
     }
-    const th = (2 * Math.PI * x) / P, phi = f * DEG + th + 2.6 * flut; // one full turn per period: edge-on twice
-    const w = (W * (0.8 + 0.2 * Math.sin(th + 1.3)) + wide) * lead;
-    const cy = Y + a * Math.sin(th + ph) + 22 * flut * Math.sin((head - x) / 45 + ph) - lift;
-    const nx = 0.35 * Math.sin(phi) * w, ny = Math.cos(phi) * w, cx = x + P;
-    A[2 * j] = cx + nx; A[2 * j + 1] = cy + ny; B[2 * j] = cx - nx; B[2 * j + 1] = cy - ny;
-  }
-  return [A, B, n];
+    return out;
+  });
 }
-// a strip as one path: threads (A at j to B at j + 2, a curve through the middle) and both hems; periodic like its points
-function stripPath(st, q) {
-  const [A, B, n] = stripHems(st, q), R0 = Math.round;
-  let d = '';
-  for (let j = 0; j < n; j++) {
-    const i = Math.min(n - 1, j + 2), m = Math.min(n - 1, j + 1), x = R0(A[2 * j]), y = R0(A[2 * j + 1]);
-    const cx = R0(A[2 * m] + B[2 * m] - (A[2 * j] + B[2 * i]) / 2), cy = R0(A[2 * m + 1] + B[2 * m + 1] - (A[2 * j + 1] + B[2 * i + 1]) / 2);
-    d += `M${x} ${y}q${cx - x} ${cy - y} ${R0(B[2 * i]) - x} ${R0(B[2 * i + 1]) - y}`;
-  }
-  for (const H of [A, B]) {
-    let x = R0(H[0]), y = R0(H[1]);
-    d += `M${x} ${y}l`;
-    for (let j = 1; j < n; j++) { const X = R0(H[2 * j]), Y = R0(H[2 * j + 1]); d += `${X - x} ${Y - y} `; x = X; y = Y; }
-  }
-  return d;
-}
-// the tail (box 300 × 310: y −150…160, its base at 0, 60 on the ribbon's line): it leaves the ribbon to the right, lifts,
-// curls back over and tapers to a point; 10 strands along it that cross where it twists (smoke, like the wisps)
-function tailPath() {
-  const N = 40, S = 10, pts = [];
-  let x = 0, y = 60;
+function ribbonTable(w, ex) { // the ribbon's centreline from the exit point ex: rises to its height, waves, curls into a tail
+  const N = 100, C = new Float64Array(3 * (N + 1)), lt = RIB.len - RIB.tail, cT = (RIB.lam * w) / TAU; // the wave travels one λ per 2.4 s
+  const body = l => ex[1] + (RIB.y - ex[1]) * smooth(l / (2 * R)) + RIB.amp * smooth(l / (1.2 * R)) * Math.sin((TAU * (l - cT)) / RIB.lam + 0.4);
+  const curl = 2 + 0.5 * Math.sin(3 * w);
+  let x = ex[0], y = ex[1], h = 0;
   for (let i = 0; i <= N; i++) {
-    const f = i / N, hd = -0.7 * smooth(f / 0.5) - 1.9 * smooth((f - 0.4) / 0.6) ** 1.3; // heading: east, lifting, then up and back over
-    // it grows out of the ribbon from a point (no hatched block at its base), swells, and tapers to a point again
-    const w = 62 * (0.12 + 0.88 * smooth(f / 0.35)) * (0.8 + 0.5 * Math.sin(Math.PI * Math.min(1, f / 0.7))) * (1 - f) ** 0.7, tw = Math.cos(0.2 + 1.3 * Math.PI * f);
-    pts.push([x, y, -Math.sin(hd) * w * tw, Math.cos(hd) * w * tw]);
-    x += Math.cos(hd) * 8.5; y += Math.sin(hd) * 8.5;
+    const l = (RIB.len * i) / N;
+    if (l <= lt) { x = ex[0] + l * 0.98; y = body(l); h = Math.atan2(body(l + 1) - body(l - 1), 1.96); }
+    else { h -= (curl * (RIB.len / N)) / RIB.tail * 1.2 * ((l - lt) / RIB.tail) ** 0.2; x += Math.cos(h) * (RIB.len / N); y += Math.sin(h) * (RIB.len / N); }
+    C[3 * i] = x; C[3 * i + 1] = y; C[3 * i + 2] = h;
   }
-  let d = '';
-  for (let s = 0; s < S; s++) {
-    const u = (s + 0.5) / S - 0.5;
-    let [px, py] = [Math.round(pts[0][0] + u * pts[0][2]), Math.round(pts[0][1] + u * pts[0][3])];
-    d += `M${px} ${py}l`;
-    for (const [cx, cy, nx, ny] of pts.slice(1)) { const X = Math.round(cx + u * nx), Y = Math.round(cy + u * ny); d += `${X - px} ${Y - py} `; px = X; py = Y; }
+  return C;
+}
+const lerpT = (T, k, f) => { const i = Math.min(Math.floor(f * (T.length / k - 1)), T.length / k - 2), q = f * (T.length / k - 1) - i, o = []; for (let m = 0; m < k; m++) o.push(T[k * i + m] + (T[k * i + k + m] - T[k * i + m]) * q); return o; };
+const rotAxis = (p, d, a) => { // p turned by a round the unit axis d (Rodrigues)
+  const c = Math.cos(a), s = Math.sin(a), k = dot(d, p) * (1 - c);
+  return [p[0] * c + (d[1] * p[2] - d[2] * p[1]) * s + d[0] * k, p[1] * c + (d[2] * p[0] - d[0] * p[2]) * s + d[1] * k, p[2] * c + (d[0] * p[1] - d[1] * p[0]) * s + d[2] * k];
+};
+
+// every sample's projected position at (τ, t): [X, Y] of the sphere samples, then the ribbon's
+function place(tau, t) {
+  const M = mesh(), w = (TAU * tau) / LOOP, TT = tongueTables(w), fa = out3(c01((t - 560) / 450)) * (1 + 0.25 * bump((t - 620) / 500));
+  const n = M.pts.length, X = new Float64Array(n + M.rib.length), Y = new Float64Array(n + M.rib.length), Z = new Float64Array(n);
+  const proj = (k, x, y, z) => { const q = (6 * R) / (6 * R - z); X[k] = x * q; Y[k] = y * q; };
+  for (let k = 0; k < n; k++) {
+    const p = M.pts[k], [nx, ny, nz] = p.n;
+    let x = nx, y = ny, z = nz;
+    const rho = R * (1 + fold(nx, ny, nz, w) - 0.07 * p.cr); // the crease: a groove just inside the sheet's edge
+    x *= rho; y *= rho; z *= rho;
+    if (fa > 0 && ny < -0.2) for (let i = 0; i < TONGUES.length; i++) { // a tongue carries the skin up its centreline
+      const T = TONGUES[i], c = T.c, d = Math.hypot(nx - c[0], ny - c[1], nz - c[2]);
+      if (d < T.w) { // a plateau: every line crossing the base runs up to the tip, a flat fan: its depth pinched away, its width converging
+        const m = 1 - (d / T.w) ** 2.4, [gx, gy, gz] = lerpT(TT[i], 3, m), pull = T.pinch * m * fa;
+        x += gx * fa - (x - R * c[0]) * pull; y += gy * fa - (y - R * c[1]) * pull; z += gz * fa - (z - R * c[2]) * 0.95 * m * fa;
+      }
+    }
+    if (t < T0) { // the entry: the sample's sheet slides round its own axis, its head first, while the whole skin shrinks in and turns
+      const S = SHEETS[p.sh], e = out3(c01((t - S.t[0] - 0.45 * S.t[1] * p.al) / S.t[1]));
+      if (e < 1) {
+        const g = 1 - e, q = rotAxis(rotAxis([x, y, z], S.d, S.slide * g), [0, 0, 1], 1.1 * g), sc = 1 + 1.4 * g;
+        x = q[0] * sc; y = q[1] * sc; z = q[2] * sc;
+      }
+    }
+    Z[k] = z; proj(k, x, y, z);
+  }
+  // the ribbon: from the exit (the deformed sphere at the band's centre, where its lines leave) along the centreline
+  const ex = (() => { const [nx, ny, nz] = unit(M.up, BAND[0]), r = R * (1 + fold(nx, ny, nz, w)); return [nx * r, ny * r, nz * r]; })();
+  const C = ribbonTable(w, ex), cT = (RIB.lam * w) / TAU, prog = c01((t - 450) / 850); // how far the run out of the orb has got
+  for (let k = 0; k < M.rib.length; k++) {
+    const p = M.rib[k], f = p.l / RIB.len, [cx, cy, h] = lerpT(C, 3, f), ka = smooth(p.l / (0.6 * R));
+    const psi = M.exitPsi * (1 - ka) + ka * ((TAU * (p.l - cT)) / RIB.lam + 1.2), taper = (1 - smooth((p.l - (RIB.len - 1.1 * RIB.tail)) / (1.1 * RIB.tail))) ** 0.8;
+    const o = (p.v - BAND[0]) * R * (1 + 0.15 * smooth(p.l / R)) * taper, ox = Math.cos(psi) * o * Math.sin(h), oy = -Math.cos(psi) * o * Math.cos(h), oz = Math.sin(psi) * o;
+    const a = p.a, ax = M.pts[a].n, ar = R * (1 + fold(ax[0], ax[1], ax[2], w)); // this line's own sphere point: the ribbon starts exactly there
+    const kb = smooth(p.l / (0.5 * R)), dx = ax[0] * ar - ex[0], dy = ax[1] * ar - ex[1], dz = ax[2] * ar - ex[2];
+    let x = cx + dx * (1 - kb) + ox * kb, y = cy + dy * (1 - kb) + oy * kb, z = (dz * (1 - kb) + oz * kb) * (1 - 0.5 * smooth(f / 0.3));
+    if (t < T0) { // the entry: it runs out of the band's end (wherever that is now), tangent to the skin at first, lifted further out
+      const e = out3(c01((t - 450 - 550 * f) / 300));
+      const q = (6 * R) / (6 * R - Z[a]), sx = X[a] / q, sy = Y[a] / q;
+      x = sx + (x - sx) * e; y = sy + (y - sy) * e - 0.35 * R * bump(e) * f * prog; z = Z[a] + (z - Z[a]) * e;
+    }
+    proj(n + k, x, y, z);
+  }
+  return [X, Y];
+}
+// one frame as 4 path strings (integer units, deltas): every run is "M x y l dx dy …", the same commands in every frame
+function frame(tau, t) {
+  const M = mesh(), [X, Y] = place(tau, t), n = M.pts.length, d = ['', '', '', ''];
+  for (const run of M.lines) {
+    const off = run.path === 3 ? n : 0;
+    let x = Math.round(X[off + run.from]), y = Math.round(Y[off + run.from]), s = `M${x} ${y}l`;
+    for (let k = run.from + 1; k < run.to; k++) { const nx = Math.round(X[off + k]), ny = Math.round(Y[off + k]); s += `${nx - x} ${ny - y} `; x = nx; y = ny; }
+    d[run.path] += s;
   }
   return d;
+}
+
+// ---- the keyframes, once per page: the entry (24 frames to 1.3 s) and the loop (16 + 1 frames over 4.8 s) of each path
+let SKIN = null;
+function skin() {
+  if (SKIN) return SKIN;
+  const t0 = performance.now();
+  const entry = ENTRY_T.map(t => frame(t, t)), loop = [];
+  for (let i = 0; i < NL; i++) loop.push(frame(T0 + (LOOP * i) / NL, T0));
+  loop.push(loop[0]); // the seam: the field is periodic, the rounding may not be
+  let css = '';
+  for (let p = 0; p < 4; p++) {
+    css += `@keyframes silk-in-${p}{${ENTRY_T.map((t, i) => `${((100 * t) / T0).toFixed(3)}%{d:path("${entry[i][p]}")}`).join('')}}`;
+    css += `@keyframes silk-loop-${p}{${loop.map((f, i) => `${((100 * i) / NL).toFixed(3)}%{d:path("${f[p]}")}`).join('')}}`;
+  }
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(css);
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+  return (SKIN = { rest: loop[0], ms: performance.now() - t0, bytes: css.length });
 }
 
 let uid = 0;
 export default function decorate(card, event, { h, svg }) {
-  const id = `silk${++uid}`;
-  const of = orbFrames(), orbRest = of[of.length - 1];
-  const sweep = SW_T.map(t => stripPath(STRIPS[0], c01(t / SW_T[SW_T.length - 1])));
-  const stops = (cls, offsets) => offsets.map((o, i) => `<stop class="${cls}${i}" offset="${o}"/>`).join('');
-  // the gradients and the bloom live in the first layer's SVG. The orb's runs top to bottom in the layers' space; the
-  // swash's too, in the swash's units (so the strips can slide under it, and the tail gets it too): cold at the top, the
-  // event colour at the bottom, so the hems swap colours where the ribbon turns over. The bloom: the threads glow in their
-  // own colours, the glow's alpha raised to 1.5 and doubled, so a dense fold glows and an open sheet barely hazes
-  const defs = `<linearGradient id="${id}-o" gradientUnits="userSpaceOnUse" x1="0" y1="-200" x2="0" y2="105">${stops('silk-o', [0, 0.23, 0.43, 0.61, 0.79])}</linearGradient>
-    <linearGradient id="${id}-w" gradientUnits="userSpaceOnUse" x1="0" y1="-150" x2="0" y2="100">${stops('silk-w', [0, 0.5, 0.72, 0.9])}</linearGradient>
-    <linearGradient id="${id}-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${STRIPS[1].P}" y2="0" spreadMethod="repeat">${stops('silk-g', [0.1, 0.42, 0.5, 0.6])}</linearGradient>
-    <filter id="${id}-b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3.2"/><feComponentTransfer><feFuncA type="gamma" amplitude="1.9" exponent="1.5"/></feComponentTransfer><feComposite in="SourceGraphic" operator="over"/></filter>`;
-  const layers = ['silk-back', 'silk-front', 'silk-rim', 'silk-flame'].map((cls, g) => h(`i.silk-layer.${cls}`,
-    svg(`<svg viewBox="-170 -200 340 360" width="0" height="0" filter="url(#${id}-b)" aria-hidden="true">${g ? '' : defs}<path class="silk-r" stroke="url(#${id}-o)" d="${orbRest[g][0]}${orbRest[g][1]}"/></svg>`)));
-  const strip = (st, i, g, d) => svg(`<svg class="silk-strip silk-strip-${i}" viewBox="0 -320 ${1000 + st.P} 480" preserveAspectRatio="none" width="0" height="0" aria-hidden="true"><path class="silk-r" stroke="url(#${id}-${g})" d="${d}"/></svg>`);
-  const strips = [strip(STRIPS[0], 0, 'w', sweep[sweep.length - 1]), strip(STRIPS[1], 1, 'g', stripPath(STRIPS[1], 1))];
-  const tail = svg(`<svg class="silk-tail" viewBox="0 -150 300 310" width="0" height="0" aria-hidden="true"><path class="silk-r" stroke="url(#${id}-w)" d="${tailPath()}"/></svg>`);
-  card.querySelector('.evt-icon')?.append(h('i.silk-orb', ...layers)); // its ::after is the small dark core: over the sheets, under the glyph
-  card.querySelector('.evt-title')?.append(h('i.silk-swash', ...strips), tail);
-  // the entry: every path of the orb replays its keyframes, then strip a sweeps
-  const play = (el, frames, times, opts) => el.animate(
-    frames.map((d, i) => ({ offset: times[i] / times[times.length - 1], d: `path("${d}")` })), { duration: times[times.length - 1], ...opts });
-  layers.forEach((l, g) => play(l.querySelector('path'), of.map(f => f[g][0] + f[g][1]), ORB_T, {}));
-  play(strips[0].querySelector('path'), sweep, SW_T, { delay: 520, fill: 'backwards' });
+  const id = `silk${++uid}`, { rest } = skin(), M = mesh();
+  const ex = unit(M.up, BAND[0]);
+  const stops = [0, 0.26, 0.46, 0.64, 0.84].map((o, i) => `<stop class="silk-o${i}" offset="${o}"/>`).join('');
+  // one gradient for the whole skin, top to bottom (the tongues' tips fade out); the bloom: the lines glow in their own
+  // colours, the glow's alpha raised to 1.5 and doubled, so a dense hem glows and an open face barely hazes
+  const el = svg(`<svg class="silk-skin" viewBox="${-1.5 * R} ${-2.5 * R} ${7 * R} ${3.95 * R}" width="0" height="0" aria-hidden="true"><defs>
+    <linearGradient id="${id}-o" gradientUnits="userSpaceOnUse" x1="0" y1="${-2.4 * R}" x2="0" y2="${R}">${stops}</linearGradient>
+    <filter id="${id}-b" x="-10%" y="-20%" width="120%" height="140%"><feGaussianBlur stdDeviation="32"/><feComponentTransfer><feFuncA type="gamma" amplitude="1.9" exponent="1.5"/></feComponentTransfer><feComposite in="SourceGraphic" operator="over"/></filter></defs>
+    <g filter="url(#${id}-b)" stroke="url(#${id}-o)">${rest.map((d, p) => `<path class="silk-p silk-p${p}" d="${d}"/>`).join('')}</g></svg>`);
+  const ribbon = el.querySelectorAll('path')[3];
+  ribbon.style.setProperty('transform-origin', `${Math.round(ex[0] * R)}px ${Math.round(ex[1] * R)}px`); // the exit: the ribbon whips back into it
+  card.querySelector('.evt-icon')?.append(h('i.silk-orb', el)); // its ::after is the small dark core: over the skin, under the glyph
 }
