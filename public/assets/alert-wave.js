@@ -1,18 +1,21 @@
 // Wave style of the alerts overlay (DECOR.wave in alert-card.js).
 // wave: a breaking wave of white particles (after a monochrome particle-fluid piece: it billows up from the bottom left,
-// surges, crashes, tears into tendrils and spray, and disperses into dust). The alert sits under a lopsided splash: a
-// billowing mass rises behind the icon, its crest throws over the text in a thick curling lip torn into tendrils and spray,
-// its base breaks into foam and low spray. The text forms out of the dust, and leaves as dust.
-// Particles are round-capped sub-paths of a few SVG paths (a path paints its sub-paths as one shape, so overlapping
-// particles only add up across paths). The entry replays the live paths' `d` through keyframes computed here once
-// (WAAPI): every particle follows its own path and each sub-path runs from halfway since the last keyframe to where it is
-// now, so fast particles draw their own motion-blur streak. The rest is denser: static paths condense in as the wave
-// settles. The exit is CSS (`d: var(--wave-x1 / -x2)`, set here), run by `.gone`.
+// surges, crashes, tears into tendrils and spray, and disperses into dust). One fluid body: every particle lives in one
+// flow field (a spine from the base under the icon, up its left, over it, along the crest to a lip curling down), placed by
+// (u along, v across) and drawn as round-capped sub-paths of a few SVG paths that differ only in weight. The entry replays
+// the paths' `d` through keyframes computed here once (WAAPI): each sub-path runs from halfway since the last keyframe to
+// now, so fast particles draw their own motion-blur streak. The hold is the same body flowing through one periodic field
+// (12 pre-baked `d` keyframes in CSS custom properties, looped by the CSS), plus spray leaving the lip along that field.
+// The exit is CSS (`d: var(--wave-x1 / -x2)`, set here), run by `.gone`.
 // The card is measured once it is in the page (a microtask after decorate), so the wave fits its real size and the room
 // around it (em), whatever the source size and position.
-const Q = 100; // path units per em (integer coordinates)
+const Q = 50; // path units per em (integer coordinates: a 0.02 em grid, shorter keyframe strings)
 const BOX = { l: 3, r: 2.4, t: 2.8, b: 2.4 }; // the particle box overhangs the card (em), as in the CSS (.wave-fx)
-const END = 1480; // ms: every particle is at rest (the foam by 1200)
+const END = 1480; // ms: the spray is at rest; the body by REST
+const REST = 1200;
+const NK = 8, LOOP = 4000, T_BODY = 1200, T_SPRAY = 1480; // the hold: keyframes per period, the period and the loop delays, as in the CSS
+// stroke width and opacity per path, as in the CSS (the entry keyframes scale them with the streaks)
+const WEIGHT = { core: [2.3, 0.96], dense: [3.2, 0.85], grain: [2.3, 0.72], haze: [5, 0.3], spray: [2.2, 0.85], text: [2.1, 0] };
 const TAU = Math.PI * 2;
 const hash = (i, s = 0) => { // 0..1, deterministic (an integer mix of the index and the stream)
   let x = Math.imul(i ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(s + 0x632be5ab, 0xc2b2ae35);
@@ -24,8 +27,9 @@ const smooth = x => { x = c01(x); return x * x * (3 - 2 * x); };
 const bump = x => (x <= 0 || x >= 1 ? 0 : Math.sin(Math.PI * x));
 const lerp = (a, b, f) => a + (b - a) * f;
 const steps = (a, b, dt) => { const out = []; for (let t = a; t < b; t += dt) out.push(t); return out; };
-const FOAM_T = [...steps(0, 1000, 50), ...steps(1000, 1200, 66), 1200]; // keyframes: a streak is half the last step
-const SPRAY_T = [...steps(560, 1120, 40), ...steps(1120, END, 80), END];
+const FOAM_T = [...steps(0, 500, 100), ...steps(500, 1000, 50), 1000, 1100, REST]; // keyframes (coarser while it billows): a streak is half the last step
+const SPRAY_T = [0, 250, 400, 500, ...steps(560, 1120, 40), ...steps(1120, END, 90), END]; // riding (fading in) until it breaks off
+const DENSE_T = [400, 500, 600, 700, 800, 900, 1000, REST]; // the dense sheets: they thicken the surge and the crash (fading in while they move with the field)
 const TEXT_T = [...steps(700, 1300, 50), 1300]; // the letters' dust: thrown out with the spray, then settling into the glyphs
 
 // ---- the spine: control points moving through poses. Sampled every STEP ms as M points evenly spaced along its length,
@@ -91,13 +95,13 @@ function shape(W, H, { x: ix, y: iy, r }, room) {
 }
 
 // ---- where particles sit at rest, in the sheet's coordinates (X: em along the spine, v across: |v| <= 1 is the sheet,
-// v > 0 faces the curl, which is lit; lumpy lobes bulge on the outer side). The fluid stretches everything along its flow:
-//   core: tiny near-white dots packed into a few smooth luminous sheets (drawn by an importance sampler)
-//   body: soft fibres under the sheets (blurred: their glow)
-//   speck: sparse fine dust, thicker in the churning base; back: dim particles behind, for depth; smoke: puffs outside
-//   lace: filament fragments that follow the flow, wobble, taper and fork; tendril: strands torn off the crest's edge
-// The icon's surroundings stay dark (the eye) and nothing lands on the text (keep).
-const half = u => (u < 0.08 ? lerp(1.3, 1.65, u / 0.08) : u < 0.3 ? lerp(1.65, 1.3, (u - 0.08) / 0.22) : u < 0.45 ? lerp(1.15, 0.95, (u - 0.3) / 0.15) : u < 0.88 ? lerp(0.95, 0.55, (u - 0.45) / 0.43) : lerp(0.55, 0.3, (u - 0.88) / 0.12));
+// v > 0 faces the curl, which is lit; lumpy lobes bulge on the outer side). The fluid stretches everything along its flow.
+// Kinds only decide where in the field a particle is likelier (every kind is the same field):
+//   core: tiny near-white dots packed into the luminous sheets (an importance sampler); rim: the lobes' lit edges
+//   speck: sparse dust, thicker in the churning base
+//   back: dim particles behind, for depth; smoke: puffs outside; lace: filaments along the flow; tendril: strands torn off
+//   the crest's edge. The icon's surroundings stay dark (the eye) and nothing lands on the text (keep).
+const half = u => (u < 0.08 ? lerp(1.3, 1.65, u / 0.08) : u < 0.3 ? lerp(1.65, 1.35, (u - 0.08) / 0.22) : u < 0.45 ? lerp(1.3, 1.1, (u - 0.3) / 0.15) : u < 0.88 ? lerp(1.1, 0.7, (u - 0.45) / 0.43) : lerp(0.7, 0.35, (u - 0.88) / 0.12));
 const lobe = u => 1 + 0.9 * Math.max(0, Math.sin(u * 27 + 1.3)) ** 2 * (u < 0.45 ? 1 : 0.6) + 0.35 * Math.max(0, Math.sin(u * 61 + 0.4)) ** 3; // bulges of the outer side
 const sheetAt = (X, v) => c01(0.32 + 0.85 * Math.sin(0.46 * X + 1.7 * v + 0.3) * Math.sin(0.29 * X - 1.1 * v + 1.7) + 0.18 * Math.sin(1.15 * X + 2.9 * v + 2.2));
 const lit = v => 0.3 + 0.7 * c01((v + 1) / 2) ** 1.3, edge = v => 1 - smooth((Math.abs(v) - 0.85) / 0.3);
@@ -110,7 +114,7 @@ function pickers(S, pows) { // samplers of (u, v) where the sheets are bright: c
 function picker(g, w, pow) {
   const c = new Float64Array(NU * NV);
   let acc = 0;
-  for (let k = 0; k < c.length; k++) c[k] = acc += g[k] ** pow * w[k];
+  for (let k = 0; k < c.length; k++) c[k] = acc += (g[k] ** pow + 0.05) * w[k]; // a floor: some foam everywhere on the sheet
   return i => {
     const x = hash(i, 1) * acc;
     let a = 0, b = c.length - 1;
@@ -118,8 +122,8 @@ function picker(g, w, pow) {
     return [(((a / NV) | 0) + hash(i, 2)) / NU, -1.15 + ((a % NV) + hash(i, 3)) * 2.3 / NV];
   };
 }
-let id = 0, uid = 0, seed = 0; // seed: from the user name, so every alert gets its own folds, lace and tendrils
-function foam(ctx, kind, n, live, out = []) {
+let id = 0, seed = 0; // seed: from the user name, so every alert gets its own folds, lace and tendrils
+function foam(ctx, kind, n, out = []) {
   const { S } = ctx, pick = ctx.pick[kind], o = [0, 0, 0, 0];
   for (let j = 0, tries = 0; j < n && tries < n * 20; id++, tries++) {
     let u, v;
@@ -134,15 +138,8 @@ function foam(ctx, kind, n, live, out = []) {
     const q = place(ctx, u, v, id, o);
     if (!q) continue;
     j++;
-    q.kind = kind;
-    if (kind === 'body') q.fib = 0.4 + 0.45 * hash(id, 5); // a soft streak along the flow
-    else if (kind === 'core' && !live) q.fib = 0.04 + 0.12 * hash(id, 5); // the sheets' striations
-    if (live) {
-      const X = u * S.L, a = X - Math.round(X / 1.6) * 1.6, b = q.v * q.th; // offset from its billow's centre (along, across; em)
-      Object.assign(q, { lag: 20 + 90 * c01(0.5 + 0.5 * Math.sin(10.2 * u + 2.3 * v + 0.6)) + 18 * hash(id, 10),
-        flow: 0.02 + 0.05 * c01(0.5 + 0.5 * Math.sin(X * 0.8 - v * 1.9)) + 0.015 * hash(id, 11),
-        ta: (kind === 'smoke' ? 1.5 : 0.7) + u * 0.6, ph: phases(id, u, v), ra: a, rb: b, rg: Math.exp(-((a * a + b * b) / 0.45)) });
-    }
+    if (kind === 'core') q.fib = 0.04 + 0.12 * hash(id, 5); // the sheets' striations
+    if (kind === 'smoke') q.ta = 1.5 + u * 0.6;
     out.push(q);
   }
   return out;
@@ -159,7 +156,7 @@ function lace(ctx, n, out = []) { // filament fragments along the flow
       let v = c + 0.22 * Math.sin(0.8 * X + w1) + 0.07 * Math.sin(2.9 * X + w2) + (hash(id, 2) - 0.5) * 0.06;
       if (u > fork && hash(id, 3) < 0.5) v += (u - fork) * S.L * 0.18; // the other branch drifts off
       const q = place(ctx, u, v, id, o);
-      if (q) { q.kind = 'lace'; out.push(q); }
+      if (q) out.push(q);
     }
   }
   return out;
@@ -174,18 +171,22 @@ function tendrils(ctx, n, out = []) { // strands torn off the crest's outer edge
       if (hash(id, 1) < s ** 1.6 * 0.85) continue; // thinning out to its end
       const u = u0 - (s * len * (0.35 + 0.25 * hash(k, 50))) / S.L, v = -1 - (s * len) / th + (bend * s * s * len) / th * 0.4 + 0.05 * Math.sin(9 * s + w);
       const q = place(ctx, u, v, id, o);
-      if (q) { q.kind = 'tendril'; out.push(q); }
+      if (q) out.push(q);
     }
   }
   return out;
 }
-function place(ctx, u, v, i, o) { // a particle's rest position on the sheet, or null where it may not be
+function place(ctx, u, v, i, o) { // a particle's rest position on the sheet, or null where it may not be; its entry parameters
   at(ctx.S, u, END, o);
   const th = half(u) * (v < 0 ? lobe(u) : 1), X = u * ctx.S.L;
   const wx = 0.14 * Math.sin(0.7 * X + 2.9 * v + 1.3) + (hash(i, 8) - 0.5) * 0.03, wy = 0.14 * Math.sin(0.9 * X - 2.1 * v + 0.4) + (hash(i, 9) - 0.5) * 0.03;
   const x = o[0] + o[2] * v * th + wx, y = o[1] + o[3] * v * th + wy;
   if (hash(i, 7) > ctx.keep(x, y)) return null;
-  return { u, v, th, wx, wy, tx: o[3], ty: -o[2], fib: 0 };
+  const a = X - Math.round(X / 1.6) * 1.6, b = v * th; // offset from its billow's centre (along, across; em)
+  return { kind: 'foam', u, v, th, wx, wy, tx: o[3], ty: -o[2], fib: 0, X,
+    lag: 20 + 90 * c01(0.5 + 0.5 * Math.sin(10.2 * u + 2.3 * v + 0.6)) + 18 * hash(i, 10),
+    flow: 0.02 + 0.05 * c01(0.5 + 0.5 * Math.sin(X * 0.8 - v * 1.9)) + 0.015 * hash(i, 11),
+    ta: 0.7 + u * 0.6, ph: phases(i, u, v), ra: a, rb: b, rg: Math.exp(-((a * a + b * b) / 0.45)) };
 }
 // spray: particles ride the crest's end (lip) or the base (base) until they break off, then are thrown in tendrils (the
 // particles of a tendril leave one after the other along the same arc), braking into dust. The lip tears from its tip back;
@@ -194,7 +195,7 @@ const SPRAY = {
   lip: { strands: 18, u: [0.62, 0.38], v: 1.1, td: [690, 520], ang: [-1.0, 1.6], dist: [2, 5], sag: [0.2, 0.5] },
   base: { strands: 10, u: [0, 0.12], v: 1.2, td: [650, 260], ang: [-0.12, 0.62], dist: [1.6, 5], sag: [0.45, 0.7] },
 };
-function spray(n, live, from, out = []) {
+function spray(n, from, out = []) {
   const c = SPRAY[from];
   for (let j = 0; j < n; j++, id++) {
     const k = (j % c.strands) + seed + (from === 'base' ? 300 : 0), q = (j / c.strands) | 0, loose = hash(id, 1) < 0.25, h = s => hash(id, s);
@@ -204,7 +205,7 @@ function spray(n, live, from, out = []) {
       ang: c.ang[0] + c.ang[1] * hash(k, 14) + (loose ? 0.8 * (h(5) - 0.5) : 0), // a fan (y down)
       dist: (c.dist[0] + c.dist[1] * hash(k, 15)) * (1 - 0.75 * c01(q / 34)) * (0.92 + 0.16 * h(6)) * (loose ? 0.6 + 0.9 * h(7) : 1),
       dur: 650 + 550 * h(8), side: (h(9) - 0.5) * 0.12 + 0.9 * (hash(k, 16) - 0.5) * c01(q / 34), sag: c.sag[0] + c.sag[1] * hash(k, 17),
-      ta: 1.4, ph: live ? phases(id, 0.9, 0) : null });
+      ta: 1.4, ph: phases(id, 0.9, 0) });
   }
   return out;
 }
@@ -259,7 +260,7 @@ function dustAt(list, t, out) {
   return out;
 }
 
-// turbulence: six travelling waves; a particle's phases are fixed (it follows its sheet), the time part is shared
+// turbulence (entry): six travelling waves; a particle's phases are fixed (it follows its sheet), the time part is shared
 const FREQ = [0.0021, -0.0033, 0.0052, 0.0027, -0.0041, 0.0058];
 const KU = [6.1, 13.7, 27.3, 5.3, 12.1, 25.9], KV = [2.3, -3.1, 6.7, -1.9, 2.7, -5.9], WT = [0.55, 0.3, 0.15, 0.55, 0.3, 0.15];
 const PH = [0.4, 1.9, 4.1, 2.2, 0.7, 5.3];
@@ -279,9 +280,9 @@ function evaluator(S, tb) {
     xy[0] += k * (WT[0] * (ph[0] * cs[0] + ph[1] * cs[1]) + WT[1] * (ph[2] * cs[2] + ph[3] * cs[3]) + WT[2] * (ph[4] * cs[4] + ph[5] * cs[5]));
     xy[1] += k * (WT[3] * (ph[6] * cs[6] + ph[7] * cs[7]) + WT[4] * (ph[8] * cs[8] + ph[9] * cs[9]) + WT[5] * (ph[10] * cs[10] + ph[11] * cs[11]));
   }
-  function foamAt(list, t, out) { // positions (path units) at time t; rest when t >= 1200
+  function foamAt(list, t, out) { // positions (path units) at time t; rest when t >= REST
     trig(t);
-    const a = amp(t), rest = t >= 1200;
+    const a = amp(t), rest = t >= REST;
     for (let j = 0; j < list.length; j++) {
       const p = list[j], tt = rest ? END : Math.max(0, t - p.lag * (1 - smooth((t - 800) / 380)));
       at(S, rest ? p.u : p.u - p.flow * (1 - smooth(tt / 1000)), tt, o);
@@ -324,10 +325,63 @@ function evaluator(S, tb) {
   return { foamAt, sprayAt };
 }
 
+// ---- the hold: the whole body flows through one periodic field, seamless over LOOP. Each particle's displacement is a sum of
+// three harmonics (a swell, the main roll, grain) whose phases run along the spine (-K·X: waves travelling toward the lip,
+// neighbours in step, so the sheets ripple and the foam rolls along) and lag across it (rolling, not sliding); zero at
+// phase 0, so the rest pose is the loop's first frame. Larger toward the lip and in the churning base, faster on the lit side.
+const LK = [TAU / 9, TAU / 4.5, TAU / 3], LM = [0.6, 1.1, 1.8], LW = [0.35, 0.6, 0.12], LP = [0.3, 2.1, 4.4];
+function enliven(p, i, X, v, au, av) { // X: em along the flow, v: across (any coherent coordinate pair)
+  const lp = new Float64Array(12);
+  for (let n = 0; n < 3; n++) {
+    const a = LP[n] - LK[n] * X + LM[n] * v + 0.4 * (hash(i, 30 + n) - 0.5), b = a + 1.3 + 0.5 * v;
+    lp[2 * n] = Math.cos(a); lp[2 * n + 1] = Math.sin(a); lp[6 + 2 * n] = Math.cos(b); lp[7 + 2 * n] = Math.sin(b);
+  }
+  p.lp = lp; p.au = au; p.av = av;
+}
+function loopAt(list, tau, out) {
+  const w = TAU * tau, cs = [Math.cos(w) - 1, Math.sin(w), Math.cos(2 * w) - 1, Math.sin(2 * w), Math.cos(3 * w) - 1, Math.sin(3 * w)];
+  for (let j = 0; j < list.length; j++) {
+    const p = list[j], lp = p.lp;
+    let du = 0, dv = 0; // sin(nw + a) - sin a = sin a (cos nw - 1) + cos a sin nw
+    for (let n = 0; n < 3; n++) { du += LW[n] * (lp[2 * n + 1] * cs[2 * n] + lp[2 * n] * cs[2 * n + 1]); dv += LW[n] * (lp[7 + 2 * n] * cs[2 * n] + lp[6 + 2 * n] * cs[2 * n + 1]); }
+    du *= p.au; dv *= p.av;
+    out[2 * j] = Math.round((p.x0 + p.tx * du - p.ty * dv) * Q); out[2 * j + 1] = Math.round((p.y0 + p.ty * du + p.tx * dv) * Q);
+  }
+  return out;
+}
+// spray keeps leaving the lip along the field: three cohorts of particles, each a loop of its own period (the CSS staggers
+// them by a third): a particle rides the lip, breaks off at its moment, is thrown along the lip's own direction (curling
+// down and back) fanning a little, brakes and sags, and is faded out by the CSS before the loop takes it back to the lip.
+function puffs(S, n, s0) {
+  const out = [], o = [0, 0, 0, 0];
+  for (let j = 0; j < n; j++) {
+    const h = s => hash(j + s0, s), u = 0.74 + 0.26 * h(1) ** 0.7, v = (h(2) * 2 - 1) * 1.1 * half(u);
+    at(S, u, END, o);
+    const a = Math.atan2(-o[2], o[3]) + (h(3) - 0.5) * 0.7, d = 0.7 + 1.9 * h(4) ** 1.3; // along the tangent (toward the lip's end), a narrow fan
+    const p = { kind: 'puff', fib: 0, x0: o[0] + o[2] * v, y0: o[1] + o[3] * v, tx: o[3], ty: -o[2], t0: 0.32 * h(5), cx: Math.cos(a) * d, sy: Math.sin(a) * d, sag: 0.3 + 0.7 * h(6), dur: 0.5 + 0.3 * h(7) };
+    enliven(p, j + s0, u * S.L, v, 0.14 + 0.25 * smooth((u - 0.45) / 0.55), 0.09);
+    out.push(p);
+  }
+  return out;
+}
+function puffAt(list, tau, out) {
+  loopAt(list, tau, out); // riding the lip through the field
+  for (let j = 0; j < list.length; j++) {
+    const p = list[j], s = c01((tau - p.t0) / p.dur), e = 1 - (1 - s) ** 2.4;
+    out[2 * j] += Math.round(p.cx * e * Q); out[2 * j + 1] += Math.round((p.sy * e + p.sag * e * e) * Q);
+  }
+  return out;
+}
+
 // sub-paths: each from tail to head (a streak), a resting fibre centred on its particle along the flow
-const streaks = (prev, head) => { // from halfway since the last keyframe (a short shutter) to now
+const CAP = 0.18 * Q; // a streak is never longer than this (em): fast particles blur a little, they do not hatch
+const streaks = (prev, head) => { // the last fifth of the way since the last keyframe (a short shutter) to now
   let d = '';
-  for (let k = 0; k < head.length; k += 2) { const dx = (head[k] - prev[k]) >> 1, dy = (head[k + 1] - prev[k + 1]) >> 1; d += `M${head[k] - dx} ${head[k + 1] - dy}l${dx} ${dy}`; }
+  for (let k = 0; k < head.length; k += 2) {
+    let dx = (head[k] - prev[k]) * 0.22, dy = (head[k + 1] - prev[k + 1]) * 0.22;
+    const l = Math.abs(dx) + Math.abs(dy);
+    if (l > CAP) { dx *= CAP / l; dy *= CAP / l; }
+    dx = Math.round(dx); dy = Math.round(dy); d += `M${head[k] - dx} ${head[k + 1] - dy}l${dx} ${dy}`; }
   return d;
 };
 function fibres(list, pos) {
@@ -349,7 +403,9 @@ export default function decorate(card, event, { h, svg }) {
 }
 
 function build(card, fx, h, svg, alertSeed) {
-  const fs = parseFloat(getComputedStyle(card).fontSize) || 28;
+  const t0 = performance.now(), cs = getComputedStyle(card);
+  const fs = parseFloat(cs.fontSize) || 28, alertMs = parseFloat(cs.getPropertyValue('--alert-ms')) || 6000;
+  const phase = delay => (alertMs > delay ? ((alertMs - delay) % LOOP) / LOOP : 0); // where the loop is when .gone lands
   const W = card.offsetWidth / fs, H = card.offsetHeight / fs, box = card.getBoundingClientRect();
   const room = { l: box.left / fs, t: box.top / fs, b: (innerHeight - box.bottom) / fs };
   const evt = card.querySelector('.evt'), icon = card.querySelector('.evt-icon'), body = card.querySelector('.evt-body') || evt;
@@ -358,195 +414,84 @@ function build(card, fx, h, svg, alertSeed) {
   const [bx, by, bw, bh] = off(body), tb = { x0: bx - 0.25, y0: by - 0.2, x1: bx + bw + 0.25, y1: by + bh + 0.2 };
   const S = shape(W, H, eye, room);
   const { foamAt, sprayAt } = evaluator(S, tb);
-  const ctx = { S, pick: pickers(S, { core: 6, body: 3 }),
+  const ctx = { S, pick: pickers(S, { core: 4.5 }),
     keep: (x, y) => { // the eye stays dark, the text clear
       const de = Math.hypot(x - eye.x, y - eye.y) - eye.r, dx = Math.max(tb.x0 - x, x - tb.x1, 0), dy = Math.max(tb.y0 - y, y - tb.y1, 0);
       return smooth((de - 0.1) / 0.6) * (dx || dy ? smooth(Math.hypot(dx, dy) / 0.35) : 0);
     } };
   seed = alertSeed; id = alertSeed * 101;
-  const L = { // live: animated through the entry
-    core: foam(ctx, 'core', 540, true, foam(ctx, 'rim', 150, true)), speck: foam(ctx, 'speck', 440, true, foam(ctx, 'smoke', 70, true)),
-    spray: spray(140, true, 'base', spray(400, true, 'lip')), text: dust(glyphs(card, fs, 720), S),
+  // the body: one field, four weights (the lists are what each path draws)
+  const L = {
+    core: foam(ctx, 'core', 1450, foam(ctx, 'rim', 150)),
+    dense: foam(ctx, 'core', 1450),
+    grain: tendrils(ctx, 7, lace(ctx, 7, foam(ctx, 'speck', 260))),
+    haze: foam(ctx, 'back', 220, foam(ctx, 'smoke', 110)),
+    spray: spray(110, 'base', spray(250, 'lip')),
+    text: dust(glyphs(card, fs, 380), S),
   };
-  const R = { // the dense rest: carried in by the wave as it settles
-    core: foam(ctx, 'core', 1500), body: foam(ctx, 'body', 800), speck: foam(ctx, 'speck', 700),
-    back: foam(ctx, 'back', 700), smoke: foam(ctx, 'smoke', 380), lace: lace(ctx, 20), tendril: tendrils(ctx, 22, foam(ctx, 'rim', 480)), spray: spray(200, false, 'base', spray(400, false, 'lip')),
-  };
-
   const vb = `${-BOX.l * Q} ${-BOX.t * Q} ${Math.round((W + BOX.l + BOX.r) * Q)} ${Math.round((H + BOX.t + BOX.b) * Q)}`;
-  const layer = (cls, paths) => svg(`<svg class="${cls}" viewBox="${vb}" preserveAspectRatio="none" aria-hidden="true">${paths}</svg>`);
   const evalOf = list => (list[0].kind === 'spray' ? sprayAt : list[0].kind === 'text' ? dustAt : foamAt);
-  const kindOf = p => (p.kind === 'spray' || p.kind === 'text' ? p.kind : 'foam');
-  const every = (list, n) => list.filter((_, i) => i % n === 0);
-  const restD = list => ['foam', 'spray', 'text'].map(k => { // at rest (a path may mix foam and spray: each set by its own evaluator)
-    const l = list.filter(p => kindOf(p) === k);
-    return l.length ? fibres(l, evalOf(l)(l, 1e5, new Int32Array(l.length * 2))) : '';
-  }).join('');
-  const restPath = (list, cls) => `<path class="${cls}" d="${restD(list)}"/>`;
-  // the dense rest is carried in by the wave: each particle starts where the wave's spine held it at its stretch's arrival
-  // time, turned back a little round the curl (the inner foam more), and moves to its place (two `d` keyframes, easing out)
-  const o4 = [0, 0, 0, 0];
-  const arrival = (l, tA) => {
-    const out = new Int32Array(l.length * 2);
-    l.forEach((p, j) => {
-      at(S, p.u, tA, o4);
-      const x = o4[0] + o4[2] * p.v * p.th + p.wx, y = o4[1] + o4[3] * p.v * p.th + p.wy, dx = x - eye.x, dy = y - eye.y;
-      const f = -0.5 * Math.exp(-Math.hypot(dx, dy) / 3.2), c = Math.cos(f), s = Math.sin(f);
-      out[2 * j] = Math.round((eye.x + dx * c - dy * s) * Q); out[2 * j + 1] = Math.round((eye.y + dx * s + dy * c) * Q);
+  const keys = {}; // per path: its entry keyframes [times, positions], its rest positions
+  for (const [k, list] of Object.entries(L)) {
+    if (!list.length) { delete L[k]; continue; }
+    const T = { spray: SPRAY_T, text: TEXT_T, dense: DENSE_T }[k === 'dense' ? k : list[0].kind] || FOAM_T, fn = evalOf(list);
+    const pos = T.map(t => fn(list, t, new Int32Array(list.length * 2))), rest = pos[pos.length - 1];
+    keys[k] = { T, pos, rest };
+    if (k !== 'text') list.forEach((p, j) => { // the rest pose is the loop's first frame
+      p.x0 = rest[2 * j] / Q; p.y0 = rest[2 * j + 1] / Q;
+      if (p.kind === 'spray') { p.tx = 1; p.ty = 0; enliven(p, j, p.x0, p.y0 * 0.5, 0.12, 0.08); } // the thrown dust drifts
+      else enliven(p, j, p.X, p.v, (0.1 + 0.25 * smooth((p.u - 0.45) / 0.55) + 0.08 * (1 - smooth(p.u / 0.15))) * (1 + 0.3 * p.v), 0.6 * (0.1 + 0.25 * smooth((p.u - 0.45) / 0.55)));
     });
-    return out;
-  };
-  const arriving = []; // per riding path: where it starts, its rest, when
-  const riding = (list, cls, tA, attrs = '') => {
-    const parts = ['foam', 'spray'].map(k => list.filter(p => kindOf(p) === k)).filter(l => l.length);
-    const rest = parts.map(l => fibres(l, evalOf(l)(l, 1e5, new Int32Array(l.length * 2)))).join('');
-    const from = parts.map(l => fibres(l, l[0].kind === 'spray' ? sprayAt(l, tA, new Int32Array(l.length * 2)) : arrival(l, tA))).join('');
-    arriving.push([from, rest, tA]);
-    return `<path class="${cls}"${attrs} data-ride="${arriving.length - 1}" d="${rest}"/>`;
-  };
-  // the dense rest in two stretches: the base, the mass and over the eye ride in from 640 ms, the crest with its lip,
-  // tendrils and spray from 800 ms (the border dithered, so no seam shows)
-  const seg = p => (p.kind === 'spray' ? (p.u < 0.2 ? 0 : 1) : p.u + 0.1 * (hash(Math.round(p.u * 1e4 + p.v * 977), 3) - 0.5) < 0.42 ? 0 : 1);
-  const T0 = [640, 800], part = (list, n) => list.filter((p, i) => seg(p) === n && (n === 0 || p.kind !== 'core' || i % 5 > 1)); // the crest's static sheets thinner: its conveyor carries the light
-  const stretch = n => layer(`wave-seg wave-s${n}`, [[[...R.back, ...R.smoke], 'wave-haze'], [[...R.core, ...R.tendril], 'wave-core'], [[...R.speck, ...R.lace, ...R.spray], 'wave-grain']]
-    .map(([list, cls]) => { const l = part(list, n); return l.length ? riding(l, cls, T0[n]) : ''; }).join(''));
-  const glow = layer('wave-glow', [0, 1].map(n => riding(part(R.body, n), `wave-body wave-g${n}`, T0[n])).join('')); // the sheets' soft light (blurred by the CSS)
-  // the dark: a light support under the foam (it rides in with it) and a mist hugging the text lines and the icon, made of
-  // dark dust that arrives with the letters' dust (every other one, and a ring round the icon)
-  const ringPts = [];
-  for (let k = 0; k < 14; k++) ringPts.push(eye.x + Math.cos((k * TAU) / 14) * eye.r * 0.6, eye.y + Math.sin((k * TAU) / 14) * eye.r * 0.6);
-  L.mist = [...every(L.text, 2), ...dust(ringPts, S)];
-  fx.append(
-    layer('wave-shade', riding([...every(R.core, 9), ...every(R.speck, 4), ...every(R.back, 3), ...every(R.smoke, 4)], 'wave-shadow', 700)),
-    glow, stretch(0), stretch(1),
-    layer('wave-live', restPath(L.mist, 'wave-mist') + restPath(L.core, 'wave-core')
-      + restPath(L.speck, 'wave-grain') + restPath(L.spray, 'wave-spray') + (L.text.length ? restPath(L.text, 'wave-text') : '')),
-  );
-  for (const pe of fx.querySelectorAll('[data-ride]')) {
-    const [from, rest, tA] = arriving[pe.dataset.ride];
-    pe.removeAttribute('data-ride');
-    pe.animate([{ d: `path("${from}")` }, { d: `path("${rest}")` }], { duration: END + 60 - tA, delay: tA, easing: 'cubic-bezier(0.25, 0.7, 0.35, 1)', fill: 'backwards' });
   }
-  const live = fx.querySelectorAll('.wave-live path');
-  [L.mist, L.core, L.speck, L.spray, L.text].forEach((list, n) => {
-    if (!list.length) return;
-    const T = { spray: SPRAY_T, text: TEXT_T }[list[0].kind] || FOAM_T, fn = evalOf(list), mist = n === 0, a = T[0], b = T[T.length - 1];
-    const pos = T.map(t => fn(list, t, new Int32Array(list.length * 2)));
-    const st = getComputedStyle(live[n]), o = Number(st.opacity), w = parseFloat(st.strokeWidth) || 5;
-    const keys = T.map((t, k) => {
-      const head = pos[k], prev = pos[Math.max(0, k - 1)], d = `path("${k === T.length - 1 ? fibres(list, head) : streaks(prev, head)}")`;
-      if (mist) return { offset: (t - a) / (b - a), d }; // the dark dust: its CSS sets its weight
-      let len = 0; // mean streak length (sampled): a streak is fainter and finer than a dot, its light spread along its path
-      for (let i = 0; i < head.length; i += 22) len += Math.abs(head[i] - prev[i]) + Math.abs(head[i + 1] - prev[i + 1]);
-      const f = 1 / (1 + len / Math.ceil(head.length / 22) / 2 / 18);
-      return { offset: (t - a) / (b - a), d, strokeWidth: (w * (0.65 + 0.35 * f)).toFixed(2), ...(list[0].kind === 'text' ? {} : { opacity: (o * (0.5 + 0.5 * f)).toFixed(3) }) }; // the letters' dust: its CSS fades it
+  const cohorts = [0, 1, 2].map(k => puffs(S, 90, 1000 * k + seed));
+  const path = (cls, d) => `<path class="${cls}" d="${d}"/>`;
+  fx.append(svg(`<svg class="wave-live" viewBox="${vb}" preserveAspectRatio="none" aria-hidden="true">${
+    Object.entries(L).map(([k, list]) => path(`wave-${k}`, fibres(list, keys[k].rest))).join('')
+  }${cohorts.map((l, k) => path(`wave-puff wave-p${k}`, fibres(l, puffAt(l, 0, new Int32Array(l.length * 2))))).join('')}</svg>`));
+  const paths = fx.querySelectorAll('path');
+  Object.entries(L).forEach(([k, list], n) => {
+    const { T, pos } = keys[k], pe = paths[n], a = T[0], b = T[T.length - 1];
+    const [w, o] = WEIGHT[k];
+    const frames = T.map((t, i) => {
+      const head = pos[i], prev = pos[Math.max(0, i - 1)], d = `path("${i === T.length - 1 ? fibres(list, head) : streaks(prev, head)}")`;
+      let len = 0; // mean streak length (sampled, as drawn: capped): a streak is fainter and finer than a dot, its light spread along it
+      for (let q = 0; q < head.length; q += 22) len += Math.min(CAP, 0.22 * (Math.abs(head[q] - prev[q]) + Math.abs(head[q + 1] - prev[q + 1])));
+      const f = 1 / (1 + len / Math.ceil(head.length / 22) / 9);
+      const vis = k === 'spray' ? smooth((t - 200) / 360) : k === 'dense' ? smooth((t - 400) / 150) : 1; // the spray fades in as it rides the surge; the dense sheets with it
+      return { offset: (t - a) / (b - a), d, strokeWidth: (w * (0.65 + 0.35 * f)).toFixed(2), ...(k === 'text' ? {} : { opacity: (o * vis * (0.5 + 0.5 * f)).toFixed(3) }) }; // the letters' dust: its CSS fades it
     });
-    live[n].animate(keys, { duration: b - a, delay: a, easing: 'linear', fill: 'backwards' });
-    if (!mist) gust(live[n], pos[pos.length - 1], n);
+    pe.animate(frames, { duration: b - a, delay: a, easing: 'linear', fill: 'backwards' });
+    if (k !== 'text') loop(pe, list, loopAt);
+    gust(pe, list, k === 'text' ? keys[k].rest : played(list, phase(k === 'spray' ? T_SPRAY : T_BODY)), n);
   });
-  // the exit (CSS, on .gone): a gust from the left blows the live particles and the letters' dust away, the left side first;
-  // two keyframes (150 and 450 ms), each particle a streak along its last 30 ms
-  function gust(pe, rest, n) {
-    const blowAt = (k, tau, xy) => {
-      const x = rest[k] / Q, y = rest[k + 1] / Q, h1 = hash(k + n * 9999, 60), h2 = hash(k + n * 9999, 61), d = 140 * c01((x + BOX.l) / (W + BOX.l));
-      const s = c01((tau - d) / (450 - d));
-      xy[0] = Math.round((x + (2.2 + 3.6 * h1) * s ** 1.7 + 0.3 * s * Math.sin(3 * y + 7 * s + 6 * h2)) * Q);
-      xy[1] = Math.round((y - (0.25 + 1.2 * h2) * s ** 1.4 + 0.25 * s * Math.sin(2.3 * x + 6 * s)) * Q);
-    };
-    const a = [0, 0], b = [0, 0];
-    for (const [key, tau] of [['--wave-x1', 150], ['--wave-x2', 450]]) {
+  cohorts.forEach((l, k) => loop(paths[paths.length - 3 + k], l, puffAt)); // the cohorts fade at the exit (CSS): no gust
+  function played(list, ph) { // the pose the CSS shows at this phase: a straight chord between the two baked keyframes round it
+    const i = Math.floor(ph * NK), f = ph * NK - i, n = list.length * 2;
+    const a = loopAt(list, i / NK, new Int32Array(n)), b = loopAt(list, (i + 1) / NK, new Int32Array(n));
+    for (let j = 0; j < n; j++) a[j] = Math.round(a[j] + (b[j] - a[j]) * f);
+    return a;
+  }
+  function loop(pe, list, fn) { // the hold's keyframes (the CSS plays them for ever: @keyframes wave-flow)
+    const buf = new Int32Array(list.length * 2);
+    for (let i = 1; i < NK; i++) pe.style.setProperty(`--wave-k${i}`, `path("${fibres(list, fn(list, i / NK, buf))}")`);
+  }
+  // the exit (CSS, on .gone): from the pose the loop is in when the alert ends (--wave-x0), a gust from the left blows every
+  // particle away, the left side first; two more keyframes (150 and 450 ms), each particle a streak along its last 30 ms
+  function gust(pe, list, rest, n) {
+    pe.style.setProperty('--wave-x0', `path("${fibres(list, rest)}")`);
+    const prev = rest.slice();
+    for (const [key, tau, sh] of [['--wave-x1', 150, 0.2], ['--wave-x2', 450, 0.1]]) { // a streak: the last 30 ms of the stretch since the previous keyframe
       let d = '';
-      for (let k = 0; k < rest.length; k += 2) { blowAt(k, tau - 30, a); blowAt(k, tau, b); d += `M${a[0]} ${a[1]}l${b[0] - a[0]} ${b[1] - a[1]}`; }
+      for (let k = 0; k < rest.length; k += 2) {
+        const x = rest[k] / Q, y = rest[k + 1] / Q, h1 = hash(k + n * 9999, 60), h2 = hash(k + n * 9999, 61), dl = 140 * c01((x + BOX.l) / (W + BOX.l));
+        const s = c01((tau - dl) / (450 - dl));
+        const bx = Math.round((x + (2.2 + 3.6 * h1) * s ** 1.7 + 0.3 * s * Math.sin(3 * y + 7 * s + 6 * h2)) * Q), by = Math.round((y - (0.25 + 1.2 * h2) * s ** 1.4 + 0.25 * s * Math.sin(2.3 * x + 6 * s)) * Q);
+        const dx = Math.round((bx - prev[k]) * sh), dy = Math.round((by - prev[k + 1]) * sh);
+        d += `M${bx - dx} ${by - dy}l${dx} ${dy}`;
+        prev[k] = bx; prev[k + 1] = by;
+      }
       pe.style.setProperty(key, `path("${d}")`);
     }
   }
-
-  // ---- the hold: the wave never stops. Pre-drawn particle layers move for ever (transform and opacity only):
-  //   curl: foam rolls round the eye along the wave's flow (up the left, over the top, into the crest), in three rings of
-  //     sheet fragments turning at different speeds (the inner ones faster: the foam shears like a fluid, it does not turn
-  //     like a disc), a dim counter-current under them;
-  //   crest: a conveyor of streaks runs along the crest to the lip (one tile scrolls; seamless);
-  //   spray: puffs keep tearing off the lip (three staggered loops), steam leaves the crest's top edge (two loops), low spray
-  //     leaves the base, dust drifts off.
-  // The curl and the crest are masked by the wave's own outline (a blurred band along the spine, holes at the text and the
-  // icon): the material flows through the shape, the shape stays.
-  const fw = W + BOX.l + BOX.r, fh = H + BOX.t + BOX.b, pct = (x, y) => [`${(((x + BOX.l) / fw) * 100).toFixed(2)}%`, `${(((y + BOX.t) / fh) * 100).toFixed(2)}%`];
-  const dots = pts => { let d = ''; for (let k = 0; k < pts.length; k += 4) d += `M${Math.round(pts[k] * Q)} ${Math.round(pts[k + 1] * Q)}l${Math.round(pts[k + 2] * Q)} ${Math.round(pts[k + 3] * Q)}`; return d; };
-  const arcs = (n, r0, r1, frags, s0) => { // sheet fragments on circles round the eye: tapered, clumped, fibres along the turn
-    const pts = [];
-    for (let f = 0; f < frags; f++) {
-      const rho = Math.sqrt(lerp(r0 * r0, r1 * r1, hash(f, s0))), a0 = TAU * hash(f, s0 + 1), span = 0.35 + 0.8 * hash(f, s0 + 2), wid = 0.05 + 0.2 * hash(f, s0 + 3);
-      const m = Math.round((n / frags) * (0.4 + 1.2 * hash(f, s0 + 4))), ph = TAU * hash(f, s0 + 5), cl = 3 + 5 * hash(f, s0 + 6);
-      for (let k = 0; k < m; k++) {
-        const i = k + f * 1000, s = hash(i, s0 + 7), a = a0 + span * s;
-        if (hash(i, s0 + 8) > (0.15 + 0.85 * bump(s) ** 0.5) * (0.45 + 0.55 * Math.sin(cl * s * Math.PI + ph) ** 2)) continue; // tapered ends, clumps
-        const rr = rho + (hash(i, s0 + 9) - 0.5) * wid * (0.4 + bump(s)) + 0.06 * Math.sin(a * 5 + f), fib = 0.04 + 0.14 * hash(i, s0 + 10);
-        pts.push(eye.x + rr * Math.cos(a), eye.y + rr * Math.sin(a), -Math.sin(a) * fib, Math.cos(a) * fib);
-      }
-    }
-    return dots(pts);
-  };
-  const A = [0, 0, 0, 0], B = [0, 0, 0, 0];
-  at(S, 0.42, END, A); at(S, 0.88, END, B);
-  const cl = Math.hypot(B[0] - A[0], B[1] - A[1]) || 1, cx = (B[0] - A[0]) / cl, cy = (B[1] - A[1]) / cl, P = 2.4;
-  const strip = []; // the conveyor: one tile of streak fragments, repeated every P along the crest
-  for (let f = 0; f < 24; f++) {
-    const s0 = P * hash(f, 70), len = 0.4 + 1.1 * hash(f, 71), w0 = (hash(f, 72) * 2 - 1) * 1.1, m = 14 + Math.round(30 * hash(f, 73));
-    for (let k = 0; k < m; k++) {
-      const i = k + f * 100, s = hash(i, 74), along = s0 + len * s, w = w0 + (hash(i, 75) - 0.5) * 0.18 * (0.4 + bump(s)) + 0.1 * Math.sin(along * 3 + f), fib = 0.06 + 0.18 * hash(i, 76);
-      if (hash(i, 77) > 0.2 + 0.8 * bump(s) ** 0.5) continue;
-      for (let t = -1; t * P < cl + P; t++) strip.push(A[0] + (along + t * P) * cx - w * cy, A[1] + (along + t * P) * cy + w * cx, cx * fib, cy * fib);
-    }
-  }
-  const lip = [0, 0, 0, 0];
-  at(S, 0.95, END, lip);
-  const fan = (at0, n, a0, a1, reach, s0) => { // a puff of streaks flung from a point, fanning between two angles
-    const pts = [];
-    for (let k = 0; k < n; k++) {
-      const a = lerp(a0, a1, hash(k, s0)), r = 0.05 + reach * hash(k, s0 + 1) ** 1.5, f = 0.05 + 0.2 * hash(k, s0 + 2);
-      pts.push(at0[0] + r * Math.cos(a), at0[1] + r * Math.sin(a), Math.cos(a) * f, Math.sin(a) * f);
-    }
-    return dots(pts);
-  };
-  const steam = s0 => { // particles along the crest's top (outer) edge
-    const pts = [];
-    for (let k = 0; k < 260; k++) {
-      const u = 0.4 + 0.55 * hash(k, s0), v = -1 - 0.45 * hash(k, s0 + 1) ** 1.4, f = 0.04 + 0.12 * hash(k, s0 + 2);
-      at(S, u, END, A);
-      const th = half(u) * lobe(u);
-      pts.push(A[0] + A[2] * v * th, A[1] + A[3] * v * th, -A[2] * f, -A[3] * f);
-    }
-    return dots(pts);
-  };
-  // the band the flow stays in: the spine at rest, as thick as the foam (more on the lobes' side), blurred; text and icon cut out
-  const side = [[], []];
-  for (let m = 0; m <= 40; m++) {
-    const u = m / 40;
-    at(S, u, END, A);
-    side[0].push(`${Math.round((A[0] + A[2] * half(u) * 1.1) * Q)},${Math.round((A[1] + A[3] * half(u) * 1.1) * Q)}`);
-    side[1].unshift(`${Math.round((A[0] - A[2] * half(u) * lobe(u) * 1.15) * Q)},${Math.round((A[1] - A[3] * half(u) * lobe(u) * 1.15) * Q)}`);
-  }
-  const mask = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" preserveAspectRatio="none"><filter id="b"><feGaussianBlur stdDeviation="22"/></filter>`
-    + `<mask id="m"><rect x="${-BOX.l * Q}" y="${-BOX.t * Q}" width="${Math.round(fw * Q)}" height="${Math.round(fh * Q)}" fill="#fff"/>`
-    + `<rect x="${Math.round(tb.x0 * Q)}" y="${Math.round(tb.y0 * Q)}" width="${Math.round((tb.x1 - tb.x0) * Q)}" height="${Math.round((tb.y1 - tb.y0) * Q)}" fill="#000"/>`
-    + `<circle cx="${Math.round(eye.x * Q)}" cy="${Math.round(eye.y * Q)}" r="${Math.round((eye.r + 0.15) * Q)}" fill="#000"/></mask>`
-    + `<g mask="url(#m)"><path d="M${side[0].join('L')}L${side[1].join('L')}Z" fill="#fff" filter="url(#b)"/></g></svg>`;
-  const r = eye.r;
-  const flow = h('i.wave-flow',
-    layer('wave-ring wave-rc', `<path class="wave-haze" d="${arcs(900, r + 0.5, r + 3.3, 22, 120)}"/>`), // the counter-current, dim
-    layer('wave-ring wave-ri', `<path class="wave-core" d="${arcs(1800, r + 0.3, r + 1.7, 18, 80)}"/>`), // inner, fast
-    layer('wave-ring wave-rm', `<path class="wave-core" d="${arcs(1800, r + 1.3, r + 3.1, 20, 100)}"/>`), // outer, slower
-    layer('wave-strip', `<path class="wave-core" d="${dots(strip)}"/>`));
-  const url = `url("data:image/svg+xml,${encodeURIComponent(mask)}")`;
-  flow.style.setProperty('-webkit-mask-image', url); flow.style.setProperty('mask-image', url);
-  const [ox, oy] = pct(eye.x, eye.y), [lx, ly] = pct(lip[0], lip[1]);
-  for (const [k, v] of [['--wave-ox', ox], ['--wave-oy', oy], ['--wave-lx', lx], ['--wave-ly', ly],
-    ['--wave-px', `${(P * cx).toFixed(3)}em`], ['--wave-py', `${(P * cy).toFixed(3)}em`]]) fx.style.setProperty(k, v);
-  const drifting = k => { // dust drifting off the wave (spray dust and smoke), half of it per steam layer
-    const l = [...every(R.spray, 5), ...every(R.smoke, 6)].filter((_, i) => (i & 1) === k);
-    return l.length ? restD(l) : '';
-  };
-  fx.append(flow, h('i.wave-sprays',
-    ...[0, 1].map(k => layer(`wave-loop wave-l${k}`, `<path class="wave-grain" d="${fan(lip, 300, -1.25 + 0.2 * k, 0.55 + 0.15 * k, 2.1, 100 + 10 * k)}"/>`)),
-    ...[0, 1].map(k => layer(`wave-steam wave-t${k}`, `<path class="wave-grain" d="${steam(140 + 10 * k) + drifting(k)}"/>`))));
+  card.dataset.waveMs = (performance.now() - t0).toFixed(1);
 }

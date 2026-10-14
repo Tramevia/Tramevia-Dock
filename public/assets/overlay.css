@@ -1419,12 +1419,13 @@ html, body { height: 100%; overflow: hidden; }
 @keyframes switch-breathe { to { opacity: 0.55; } }
 @keyframes switch-out { 0%, 35% { opacity: 1; } 100% { opacity: 0; } }
 
-/* ---- wave: a breaking wave of white particles (after a monochrome particle-fluid piece). The alert sits under a lopsided
-   splash: a billowing mass rises behind the icon, its crest throws over the text in a thick curling lip torn into tendrils
-   and spray, its base breaks into foam and low spray. White on the reference's black; --evt only on the name.
-   Particles, the dark under the wave and the mist behind the text: decorate.js. */
+/* ---- wave: a breaking wave of white particles (after a monochrome particle-fluid piece). One fluid body: a billowing mass
+   rises behind the icon, its crest throws over the text in a curling lip torn into tendrils and spray, its base breaks into
+   foam. Every particle is in one flow field (decorate.js): the paths differ only in weight. White on the reference's black;
+   --evt only on the name. The hold is the same body flowing through a looping field (8 baked keyframes, --wave-k1..7),
+   and spray leaving the lip along it. */
 :root[data-style="wave"] .alert-card { isolation: isolate; margin-block: 1em; }
-:root[data-style="wave"] .alert-card .evt { z-index: 1; align-items: center; gap: 0.75em; padding: 1em 1.2em 0.95em 1em; color: #f4f5f8; text-shadow: 0 0 0.2em rgb(0 0 0 / 55%); }
+:root[data-style="wave"] .alert-card .evt { z-index: 1; align-items: center; gap: 0.75em; padding: 1em 1.2em 0.95em 1em; color: #f4f5f8; text-shadow: 0 0 0.2em rgb(0 0 0 / 70%), 0 0.04em 0.5em rgb(0 0 0 / 55%); }
 :root[data-style="wave"] .alert-card .evt-icon { width: 2em; height: 2em; background: none; color: #fff; }
 :root[data-style="wave"] .alert-card .evt-icon svg { width: 1.25em; height: 1.25em; filter: drop-shadow(0 0 0.15em rgb(0 0 0 / 70%)); }
 /* The title shrinks (down to 0.8em) so its longest piece fits a line of the text column: about 19em wide (13.5em beside an
@@ -1443,98 +1444,64 @@ html, body { height: 100%; overflow: hidden; }
   :root[data-style="wave"] .alert-card .evt-amount { margin-left: 2.2em; font-size: 1.1em; }
 }
 
-/* particles: the box overhangs the card as decorate.js expects (BOX). Sizes are in path units (100 per em). */
+/* particles: the box overhangs the card as decorate.js expects (BOX). Sizes are in path units (50 per em). One SVG, a path
+   per weight: core and dense (tiny, packed, near-white: the luminous sheets; dense joins as the wave settles), grain (dust, lace, tendrils), haze (dim, behind), spray (the entry's spray, drifting dust afterwards), text (the letters'
+   dust), puff x3 (the hold's spray). */
 :root[data-style="wave"] .alert-card .wave-fx { position: absolute; z-index: 0; left: -3em; right: -2.4em; top: -2.8em; bottom: -2.4em; pointer-events: none; }
-:root[data-style="wave"] .wave-fx svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; will-change: transform; }
+:root[data-style="wave"] .wave-fx svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; will-change: transform; animation: wave-rise 450ms ease-in backwards; }
 :root[data-style="wave"] .wave-fx path { fill: none; stroke: #fff; stroke-linecap: round; }
-:root[data-style="wave"] .wave-core { stroke-width: 3.6; opacity: 0.96; }   /* the luminous sheets: tiny, packed, near-white */
-:root[data-style="wave"] .wave-body { stroke-width: 14; opacity: 0.36; }     /* their glow (blurred fibres) */
-:root[data-style="wave"] .wave-grain { stroke-width: 4; opacity: 0.62; }    /* fine dust, lace, tendrils */
-:root[data-style="wave"] .wave-haze { stroke-width: 5; opacity: 0.4; }      /* the dim particles behind, smoke, spray dust */
-:root[data-style="wave"] .wave-live .wave-core { stroke-width: 4.4; }
-:root[data-style="wave"] .wave-live .wave-grain { stroke-width: 4.8; opacity: 0.75; }
-:root[data-style="wave"] .wave-spray { stroke-width: 4.4; opacity: 0.85; animation: wave-lip 640ms step-end backwards; }
-@keyframes wave-lip { from { opacity: 0; } 85% { opacity: 1; } }
-:root[data-style="wave"] .wave-live { animation: wave-rise 450ms ease-in backwards; }
+:root[data-style="wave"] .wave-core { stroke-width: 2.3; opacity: 0.96; }
+:root[data-style="wave"] .wave-dense { stroke-width: 3.2; opacity: 0.85; }
+:root[data-style="wave"] .wave-grain { stroke-width: 2.3; opacity: 0.72; }
+:root[data-style="wave"] .wave-haze { stroke-width: 5; opacity: 0.3; }
+:root[data-style="wave"] .wave-spray, :root[data-style="wave"] .wave-puff { stroke-width: 2.2; opacity: 0.85; }
+:root[data-style="wave"] .wave-text { stroke-width: 2.1; opacity: 0; }
 @keyframes wave-rise { from { opacity: 0.25; } }
 
-/* the dark: a light support under the foam (it rides in with it), and a mist hugging the text lines and the icon: dark dust
-   that arrives with the letters' dust (two widths stacked, so it is soft without a blur) */
-:root[data-style="wave"] .wave-fx .wave-shadow { stroke: #000; stroke-width: 64; opacity: 0.48; }
-:root[data-style="wave"] .wave-shade { filter: blur(0.3em); animation: wave-condense 300ms ease-out 700ms backwards; }
-:root[data-style="wave"] .wave-fx .wave-mist { stroke: #000; stroke-width: 70; opacity: 0.34; animation: wave-mist 1520ms linear backwards; }
-@keyframes wave-mist { 0%, 45% { opacity: 0; } }
-
-/* the dense rest rides in on the wave (decorate.js moves every particle from where the wave held it): base and mass from
-   640 ms, crest and lip from 800 ms; each stretch comes up as it starts moving */
-:root[data-style="wave"] .wave-seg { animation: wave-condense 280ms ease-out 640ms backwards; }
-:root[data-style="wave"] .wave-s1 { animation-delay: 800ms; }
-:root[data-style="wave"] .wave-glow { filter: blur(0.07em); }
-:root[data-style="wave"] .wave-glow .wave-body { animation: wave-condense 280ms ease-out 640ms backwards; }
-:root[data-style="wave"] .wave-glow .wave-g1 { animation-delay: 800ms; }
-@keyframes wave-condense { from { opacity: 0; } }
-
-/* ---- the hold: the wave never stops (decorate.js draws the layers once; here they move for ever, transform and opacity
-   only). Foam rolls round the curl along the wave's flow (three rings of sheet fragments: the inner faster, a dim
-   counter-current), a conveyor runs along the crest to the lip, spray keeps tearing off the lip and the base, steam leaves the
-   crest's edge, dust drifts. Curl and crest are masked by the wave's own outline: the material flows through the shape. */
-:root[data-style="wave"] .wave-flow { position: absolute; inset: 0; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; animation: wave-condense 600ms ease-out 900ms backwards; }
-:root[data-style="wave"] .wave-ring { transform-origin: var(--wave-ox) var(--wave-oy); }
-:root[data-style="wave"] .wave-ri { animation: wave-turn 6.5s linear infinite; }
-:root[data-style="wave"] .wave-rm { animation: wave-turn 10s linear -3s infinite; }
-:root[data-style="wave"] .wave-rc { animation: wave-turn 16s linear infinite reverse; }
-:root[data-style="wave"] .wave-strip { animation: wave-convey 2.2s linear infinite; }
-:root[data-style="wave"] .wave-sprays { position: absolute; inset: 0; animation: wave-condense 600ms ease-out 1100ms backwards; }
-:root[data-style="wave"] .wave-loop { transform-origin: var(--wave-lx) var(--wave-ly); opacity: 0; animation: wave-loop 2.1s cubic-bezier(0.2, 0.6, 0.4, 1) infinite; }
-:root[data-style="wave"] .wave-l1 { animation-delay: -1.05s; animation-name: wave-loop-b; }
-:root[data-style="wave"] .wave-steam { opacity: 0; animation: wave-steam 3.2s ease-out infinite; }
-:root[data-style="wave"] .wave-t1 { animation-delay: -1.6s; }
-@keyframes wave-turn { to { transform: rotate(360deg); } }
-@keyframes wave-convey { to { transform: translate(var(--wave-px), var(--wave-py)); } }
-@keyframes wave-loop { 0% { transform: scale(0.3); opacity: 0; } 12% { opacity: 1; } 100% { transform: translate(2.8em, -0.8em) scale(1.8); opacity: 0; } }
-@keyframes wave-loop-b { 0% { transform: rotate(12deg) scale(0.3); opacity: 0; } 12% { opacity: 0.9; } 100% { transform: translate(2.5em, 0.35em) rotate(12deg) scale(1.7); opacity: 0; } }
-@keyframes wave-steam { 0% { transform: translate(-0.2em, 0.15em); opacity: 0; } 25%, 55% { opacity: 0.8; } 100% { transform: translate(0.7em, -0.75em); opacity: 0; } } /* torn off the edge, drifting downwind */
+/* the hold: the whole body flows through one looping field (the keyframes are baked by decorate.js; 0% and 100% are the
+   rest pose, the path's own d). The spray of the entry joins it as drifting dust once at rest (1480). Three cohorts of
+   spray keep leaving the lip: each runs the same loop a third apart and is faded out before its loop takes it back. */
+:root[data-style="wave"] .wave-live :is(.wave-core, .wave-dense, .wave-grain, .wave-haze) { animation: wave-flow 4s linear 1200ms infinite; }
+:root[data-style="wave"] .wave-spray { animation: wave-flow 4s linear 1480ms infinite; }
+:root[data-style="wave"] .wave-puff { animation: wave-flow 4s linear 1480ms infinite, wave-puff 4s linear 1480ms infinite backwards; }
+:root[data-style="wave"] .wave-p1 { animation-delay: 2813ms, 2813ms; }
+:root[data-style="wave"] .wave-p2 { animation-delay: 4147ms, 4147ms; }
+@keyframes wave-flow {
+  12.5% { d: var(--wave-k1); } 25% { d: var(--wave-k2); } 37.5% { d: var(--wave-k3); } 50% { d: var(--wave-k4); }
+  62.5% { d: var(--wave-k5); } 75% { d: var(--wave-k6); } 87.5% { d: var(--wave-k7); }
+}
+@keyframes wave-puff { 0% { opacity: 0; } 10% { opacity: 0.85; } 62% { opacity: 0.85; } 82%, 100% { opacity: 0; } }
 
 /* the text forms out of the dust (decorate.js draws the letters' dust): the words take over from it, left to right */
-:root[data-style="wave"] .wave-text { stroke-width: 4.2; opacity: 0; animation: wave-letters 1520ms linear; }
+:root[data-style="wave"] .wave-text { animation: wave-letters 1520ms linear; }
 @keyframes wave-letters { 0%, 45% { opacity: 0; } 49% { opacity: 0.95; } 78% { opacity: 0.95; } 100% { opacity: 0; } }
 :root[data-style="wave"] .alert-card .evt-title .w { animation: wave-word 420ms ease-out calc(1080ms + var(--i) * 45ms) backwards; }
 :root[data-style="wave"] .alert-card :is(.evt-icon, .evt-meta, .evt-text, .evt-amount) { animation: wave-word 420ms ease-out 1180ms backwards; }
 @keyframes wave-word { from { opacity: 0; filter: blur(0.12em); } }
 
-
 /* ---- exit (450 ms): the alert disintegrates into dust blown away. The text hands over to its dust at once; a gust from
-   the left blows the live particles and the letters' dust away (d keyframes from decorate.js); the dense foam drifts off and
-   fades, the dark goes last. */
+   the left blows every particle away (d keyframes from decorate.js: --wave-x0 is the pose the loop is in at --alert-ms, so
+   the handover is seamless); the hold's spray goes out. */
 :root[data-style="wave"] .alert-card.gone { animation: wave-out 450ms linear forwards; }
 :root[data-style="wave"] .alert-card.gone .evt > * { animation: wave-vanish 110ms ease-in forwards; }
 :root[data-style="wave"] .alert-card.gone .wave-live path { animation: wave-blow 450ms cubic-bezier(0.4, 0, 0.8, 0.6) forwards; }
 :root[data-style="wave"] .alert-card.gone .wave-live .wave-text { animation: wave-blow-text 450ms cubic-bezier(0.4, 0, 0.8, 0.6) forwards; }
-:root[data-style="wave"] .alert-card.gone :is(.wave-seg, .wave-glow, .wave-flow, .wave-sprays) { animation: wave-scatter 330ms ease-in forwards; }
-:root[data-style="wave"] .alert-card.gone .wave-shade { animation: wave-vanish 420ms ease-in 30ms forwards; }
-:root[data-style="wave"] .alert-card.gone .wave-live .wave-mist { animation: wave-vanish 260ms ease-in forwards; }
+:root[data-style="wave"] .alert-card.gone .wave-live .wave-puff { animation: wave-vanish 120ms ease-in forwards; }
 @keyframes wave-out { 0%, 75% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes wave-vanish { to { opacity: 0; } }
-@keyframes wave-blow { 33.3% { d: var(--wave-x1); } 100% { d: var(--wave-x2); opacity: 0; } }
-@keyframes wave-blow-text { 0% { opacity: 0.95; } 33.3% { d: var(--wave-x1); opacity: 0.95; } 100% { d: var(--wave-x2); opacity: 0; } }
-@keyframes wave-scatter { to { opacity: 0; transform: translate(1.4em, -0.35em); } }
+@keyframes wave-blow { 0% { d: var(--wave-x0); } 33.3% { d: var(--wave-x1); } 100% { d: var(--wave-x2); opacity: 0; } }
+@keyframes wave-blow-text { 0% { d: var(--wave-x0); opacity: 0.95; } 33.3% { d: var(--wave-x1); opacity: 0.95; } 100% { d: var(--wave-x2); opacity: 0; } }
 
-/* ---- themes. dark (default): the reference itself, white particles on black. light: its negative, ink particles on paper
-   (the dark turns to paper). transparent: the particles on the scene with lighter darks. */
+/* ---- themes. dark (default): the reference itself, white particles on black. light: its negative, ink particles on paper.
+   transparent: the particles on the scene; the text gets a thin dark outline. */
 :root[data-style="wave"][data-overlay="light"] .wave-fx path { stroke: #15171d; }
-:root[data-style="wave"][data-overlay="light"] .wave-fx .wave-shadow { stroke: #fbfbfd; opacity: 0.6; }
-:root[data-style="wave"][data-overlay="light"] .wave-fx .wave-mist { stroke: #fbfbfd; }
-:root[data-style="wave"][data-overlay="light"] .wave-body { opacity: 0.25; }
-:root[data-style="wave"][data-overlay="light"] .wave-haze { opacity: 0.4; }
-:root[data-style="wave"][data-overlay="light"] .alert-card .evt { color: #16181f; text-shadow: 0 0 0.2em rgb(255 255 255 / 70%); }
+:root[data-style="wave"][data-overlay="light"] .alert-card .evt { color: #16181f; text-shadow: 0 0 0.2em rgb(255 255 255 / 80%), 0 0.04em 0.5em rgb(255 255 255 / 60%); }
 :root[data-style="wave"][data-overlay="light"] .alert-card .evt-icon { color: #16181f; }
 :root[data-style="wave"][data-overlay="light"] .alert-card .evt-icon svg { filter: none; }
 :root[data-style="wave"][data-overlay="light"] .alert-card .evt-user { color: color-mix(in srgb, var(--evt) 72%, #000); }
 :root[data-style="wave"][data-overlay="light"] .alert-card .evt-meta { color: #4f5563; }
 :root[data-style="wave"][data-overlay="light"] .alert-card .evt-amount { color: #16181f; }
 
-:root[data-style="wave"][data-overlay="transparent"] .wave-fx .wave-shadow { opacity: 0.4; }
-:root[data-style="wave"][data-overlay="transparent"] .wave-fx .wave-mist { opacity: 0.3; }
 :root[data-style="wave"][data-overlay="transparent"] .alert-card .evt {
   --o: 0.045em; --oc: rgb(0 0 0 / 70%);
   text-shadow: var(--o) 0 0 var(--oc), calc(-1 * var(--o)) 0 0 var(--oc), 0 var(--o) 0 var(--oc), 0 calc(-1 * var(--o)) 0 var(--oc), 0 0.05em 0.35em rgb(0 0 0 / 60%);
