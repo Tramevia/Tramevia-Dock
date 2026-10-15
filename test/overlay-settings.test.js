@@ -128,7 +128,7 @@ test('alerts: id=alerts, position, duration, categories', () => {
   assert.equal(overlayFromQuery(q('id=alerts&position=bottom&alertSeconds=99'), {}).settings.position, 'bottom');
   assert.equal(overlayFromQuery(q('id=alerts&alertSeconds=99'), {}).settings.alertSeconds, 60);
   assert.equal(overlayFromQuery(q('id=alerts&position=left'), {}).settings.position, 'top');
-  assert.equal(overlayFromQuery(q('id=alerts&style=eclipse&volume=250'), {}).settings.style, 'eclipse');
+  assert.equal(overlayFromQuery(q('id=alerts&style=eclipse&volume=250'), {}, true).settings.style, 'eclipse'); // supporter code
   assert.equal(overlayFromQuery(q('id=alerts&style=eclipse&volume=250'), {}).settings.volume, 100);
   assert.equal(cleanOverlay({ style: 'huge', volume: -5 }, DEFAULTS.alerts).style, 'card');
   assert.equal(cleanOverlay({ style: 'huge', volume: -5 }, DEFAULTS.alerts).volume, 0);

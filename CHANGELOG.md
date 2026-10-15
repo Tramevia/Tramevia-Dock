@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Support the project**: a *Support the project* button (GitHub Sponsors) in the dashboard header and in Settings → About. Sponsors get a supporter code that unlocks new alert styles early; paste it in Settings → About.
+- **Early access for new alert styles**: Card and Big text are free; the eight other styles are for supporters until November 30, then free for everyone. Locked styles show a lock in the builder.
 - **One page per OBS dock**: a dock in OBS no longer shows the tabs to the other pages. Each dock (Chat, Community, Stream info, Dashboard) stays on its own page, so your dock lines are not all the same.
 - **Deploy on Railway**: a one-click button in the README and the cloud guide. You only fill in a password; Railway sets up the volume, the domain, the healthcheck and nightly updates.
 - **Viewers overlay**: a fourth overlay (OBS → Overlay → *Viewers*) shows your total live viewers across Twitch, Kick, YouTube and TikTok as an orb of glowing particles. Every rise animates in green (+x), every drop in red (−x); one platform poll gives one net change, never a burst. Settings: theme, where the number sits (inside the orb, left or right), text size, platforms and accounts counted. A **Test a change** button shows a rise and then a drop in the preview and in OBS.

@@ -47,7 +47,9 @@
    - GHCR has `X.Y.Z`, `X.Y`, `X` and `latest`.
 7. Smoke test on a zip install of the previous version: About → **Check now** → **Install now**.
    It should restart, reconnect, and show "Updated to X.Y.Z".
-8. On a MAJOR version: update compose.yaml (`:X`) and the README update notes.
+8. When the release brings new alert styles: set their date in `EARLY` (public/assets/overlay-settings.js) to the release
+   day + 28 days (supporters only until then), and check the date in the CHANGELOG entry.
+8b. On a MAJOR version: update compose.yaml (`:X`) and the README update notes.
 9. On a MINOR or MAJOR version: Railway → Templates → Tramevia Dock → Edit → service source image
    → `ghcr.io/tramevia/tramevia-dock:X.Y.Z` → save, so new deployers start on the current version.
 

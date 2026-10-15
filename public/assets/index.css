@@ -224,6 +224,9 @@
 .set-row .segmented { flex-wrap: wrap; }
 .about-links { display: flex; flex-direction: column; gap: 6px; }
 .about-links a { display: inline-flex; align-items: center; gap: 6px; width: fit-content; }
+.support-box { padding-top: 12px; border-top: 1px solid var(--border); }
+.support-box form input { flex: 1 1 200px; min-width: 0; font-family: var(--mono, monospace); }
+.early-note p { flex: 1 1 240px; margin: 0; }
 
 /* ---------- 6. Updates (About card + home banner) ---------- */
 .about-head { flex: 1 1 180px; min-width: 0; }

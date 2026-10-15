@@ -14,6 +14,7 @@ import { createAuth } from './auth.js';
 import { createHub } from './hub.js';
 import { createAccounts } from './accounts.js';
 import { createOverlays } from './overlays.js';
+import { createSupporter } from './supporter.js';
 import { OVERLAY_IDS, alertCategory } from '../public/assets/overlay-settings.js';
 import { request, ApiError } from './net.js';
 import { adapters, platformMeta, PLATFORMS } from './platforms/index.js';
@@ -94,7 +95,8 @@ const ctx = {
   emitDelete: d => hub.publish('chat:delete', d),
 };
 ctx.accounts = createAccounts(ctx);
-ctx.overlays = createOverlays({ settings, hub });
+ctx.supporter = createSupporter({ settings });
+ctx.overlays = createOverlays({ settings, hub, unlocked: ctx.supporter.unlocked });
 
 function adapterFor(account) {
   return adapters.get(account.demo ? 'demo' : account.platform);
@@ -134,6 +136,7 @@ router.get('/api/state', ({ access }) => {
       : accounts.map(({ id, platform, login, displayName, avatar, stats }) => ({ id, platform, login, displayName, avatar, stats })),
     ui: settings.get('ui', {}),
     overlays: ctx.overlays.all(), overlaysSaved: ctx.overlays.saved(),
+    unlocked: ctx.supporter.unlocked(), supporter: access === 'admin' ? ctx.supporter.info() : null,
   };
 }, { access: 'read' });
 
@@ -167,6 +170,15 @@ router.put('/api/overlays/:id', ({ params, body }) => {
   return { id, settings: ctx.overlays.save(id, body) };
 });
 router.delete('/api/overlays/:id', ({ params }) => { const id = overlayId(params.id); return { id, settings: ctx.overlays.reset(id) }; });
+// Supporter code: unlocks the alert styles still in early access (src/supporter.js).
+router.put('/api/supporter', ({ body }) => {
+  const info = ctx.supporter.set(body?.code);
+  if (!info) throw new HttpError(400, ctx.t('Ce code soutien n’est pas valide.', 'This supporter code is not valid.'), 'invalid_code');
+  if (info.expired) throw new HttpError(400, ctx.t('Ce code soutien a expiré.', 'This supporter code has expired.'), 'expired_code');
+  ctx.overlays.republish();
+  return { supporter: info };
+});
+router.delete('/api/supporter', () => { ctx.supporter.clear(); ctx.overlays.republish(); return { supporter: null }; });
 // Test alert: a sample event sent only to alerts overlays (topic alert:test, never the docks, never stored). Picks a category the user kept on.
 const SAMPLE_ALERTS = [
   { type: 'follow' }, { type: 'sub', tier: '1000' }, { type: 'giftsub', count: 5, tier: '1000' }, { type: 'cheer', amount: 500, text: 'Cheer500 GG !' },
@@ -460,7 +472,7 @@ server.on('upgrade', (req, socket, head) => {
       accounts: level === 'admin' ? ctx.accounts.list().map(ctx.accounts.describe)
         : ctx.accounts.list().map(a => ({ id: a.id, platform: a.platform, login: a.login, displayName: a.displayName, avatar: a.avatar, stats: ctx.accounts.stats(a.id) })),
       ui: settings.get('ui', {}),
-      overlays: ctx.overlays.all(), overlaysSaved: ctx.overlays.saved(),
+      overlays: ctx.overlays.all(), overlaysSaved: ctx.overlays.saved(), unlocked: ctx.supporter.unlocked(),
     }), () => auth.access(req, url));
   } catch {
     socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');

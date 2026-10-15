@@ -12,6 +12,11 @@ export const THEMES = ['transparent', 'dark', 'light'];
 export const POSITIONS = ['top', 'center', 'bottom'];
 export const ALIGNS = ['left', 'center', 'right']; // chat: left | right (anything else = left) · viewers: the number beside or inside the orb
 export const STYLES = ['card', 'text', 'impact', 'eclipse', 'glass', 'switch', 'wave', 'prism', 'silk', 'neon']; // alerts: glass card · big kinetic text · impact (physical, product shot) · eclipse (lines of light) · glass (frosted glass lit from behind) · switch (a clay rocker switch that lights up) · wave (a breaking wave of white particles) · prism (glass bars like an equalizer) · silk (a sphere of silk sheets) · neon (the name on a ring of neon letters)
+/** Early access: style → first day (UTC) it is free for everyone. Until then only a supporter code unlocks it (src/supporter.js).
+ *  Set at each release that brings new styles (RELEASING.md). */
+export const EARLY = Object.fromEntries(['impact', 'eclipse', 'glass', 'switch', 'wave', 'prism', 'silk', 'neon'].map(s => [s, '2026-11-30']));
+/** True when `style` is still in early access and this install has no valid supporter code. */
+export const isLocked = (style, unlocked, now = Date.now()) => !unlocked && Boolean(EARLY[style]) && now < Date.parse(EARLY[style]);
 /** [min, max] of every number (the overlay page clamps URL values to the same ranges). */
 export const RANGES = { max: [1, 100], fade: [0, 3600], size: [8, 120], featureSeconds: [0, 3600], alertSeconds: [1, 60], volume: [0, 100] };
 const LIST_MAX = 50;
@@ -67,9 +72,10 @@ export function cleanOverlay(input, base = SAVED_BASE) {
 /**
  * Settings the overlay page runs with.
  * query: URLSearchParams of the page. saved: { chat, featured } from the server (only used when the URL has a valid id).
+ * unlocked: the install has a supporter code (else a `style` param naming an early-access style falls back to card).
  * Returns { id, featured, alerts, viewers, settings, onlyPlatforms, onlyAccounts }: id null = legacy URL; only* = inclusion lists from the URL.
  */
-export function overlayFromQuery(query, saved) {
+export function overlayFromQuery(query, saved, unlocked = false) {
   const id = OVERLAY_IDS.includes(query.get('id')) ? query.get('id') : null;
   const base = id ? cleanOverlay(saved?.[id], DEFAULTS[id]) : { ...LEGACY };
   const has = k => query.get(k) !== null && query.get(k) !== '';
@@ -84,6 +90,7 @@ export function overlayFromQuery(query, saved) {
   if (query.has('align')) s.align = ALIGNS.includes(query.get('align')) ? query.get('align') : 'left';
   if (POSITIONS.includes(query.get('position'))) s.position = query.get('position');
   if (STYLES.includes(query.get('style'))) s.style = query.get('style');
+  if (isLocked(s.style, unlocked)) s.style = 'card';
   const csv = k => (query.get(k) || '').split(',').map(x => x.trim()).filter(Boolean);
   const alerts = id === 'alerts', viewers = id === 'viewers';
   const featured = !alerts && !viewers && (has('mode') ? query.get('mode') === 'featured' : id === 'featured');

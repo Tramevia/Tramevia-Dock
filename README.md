@@ -24,12 +24,12 @@
   <a href="#tutorial"><b>Tutorial</b></a> ·
   <a href="#features"><b>Features</b></a> ·
   <a href="#faq"><b>FAQ</b></a> ·
-  <a href="#support"><b>💜 Tip</b></a>
+  <a href="#support"><b>💜 Support</b></a>
 </p>
 
 <p align="center">
-  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/Leave%20a%20tip-Streamlabs-80f5d2?style=for-the-badge&logo=streamlabs&logoColor=black" height="36" alt="Leave a tip on Streamlabs"></a><br>
-  <sub><b>Free, no ads, no subscription.</b> If Tramevia Dock helps your streams, a tip keeps it going 💜</sub>
+  <a href="https://github.com/sponsors/Tramevia"><img src="https://img.shields.io/badge/Support%20the%20project-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" height="36" alt="Support the project on GitHub Sponsors"></a><br>
+  <sub><b>Free, no ads, no subscription.</b> If Tramevia Dock helps your streams, sponsoring it keeps it going 💜</sub>
 </p>
 
 ![The four Tramevia Dock panels side by side, as they look inside OBS: the unified chat, the event feed, the community list and the stream info editor](docs/assets/screenshots/en/docks.png)
@@ -472,10 +472,12 @@ Found a vulnerability? Please read [SECURITY.md](SECURITY.md) instead of opening
 
 > [!TIP]
 > **Tramevia Dock is free and will stay free: no ads, no subscription.**
-> It's made by a streamer, for streamers. If it saves you time before each live, a tip helps keep the project going and growing.
+> It's made by a streamer, for streamers. If it saves you time before each live, sponsoring it helps keep the project going and growing.
+>
+> **Sponsors get early access:** a supporter code unlocks new alert styles a few weeks before everyone else (paste it in Settings → About). Every style then becomes free for all.
 
 <p align="center">
-  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/Leave%20a%20tip-Streamlabs-80f5d2?style=for-the-badge&logo=streamlabs&logoColor=black" height="48" alt="Leave a tip on Streamlabs"></a>
+  <a href="https://github.com/sponsors/Tramevia"><img src="https://img.shields.io/badge/Support%20the%20project-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" height="48" alt="Support the project on GitHub Sponsors"></a>
 </p>
 
 <p align="center"><sub>No budget? Starring ⭐ this repository, telling another streamer about it or reporting a bug helps a lot too.</sub></p>

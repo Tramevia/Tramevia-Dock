@@ -136,13 +136,24 @@ kbd { border: 1px solid var(--border-strong); border-bottom-width: 2px; padding:
 .conn-dot.off { background: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
 /* Compact header in narrow OBS docks: icons only */
 @media (max-width: 520px) {
-  .brand span, .nav a span { display: none; }
+  .brand span, .nav a span, .support-head span { display: none; }
   .nav a { padding: 7px 9px; }
 }
 .dock-mode .brand span { display: none; }
 /* Each OBS dock is one page (its own dock line), so no tabs and no link away from it */
 .dock-mode .nav { display: none; }
 .dock-mode .brand { pointer-events: none; }
+
+/* Support button: a soft halo that breathes. Only the halo's opacity moves (compositor, no repaint); still for reduced motion. */
+.support { position: relative; isolation: isolate; border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+.support svg { color: #ff5c8a; }
+.support::before {
+  content: ""; position: absolute; inset: -2px; z-index: -1; border-radius: inherit; pointer-events: none;
+  box-shadow: 0 0 12px 1px color-mix(in srgb, var(--accent) 60%, transparent); opacity: 0.3; animation: support-glow 3.2s ease-in-out infinite;
+}
+@keyframes support-glow { 50% { opacity: 0.95; } }
+@media (prefers-reduced-motion: reduce) { .support::before { animation: none; opacity: 0.6; } }
+.dock-mode .support-head { display: none; } /* OBS docks stay uncluttered */
 
 /* ---------- Surfaces ---------- */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }

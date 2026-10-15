@@ -19,12 +19,12 @@
 </p>
 
 <p align="center">
-  <a href="#etape-1"><b>Installer</b></a> · <a href="#tuto"><b>Tuto</b></a> · <a href="#fonctionnalites"><b>Fonctionnalités</b></a> · <a href="#faq"><b>FAQ</b></a> · <a href="#soutenir"><b>💜 Tip</b></a>
+  <a href="#etape-1"><b>Installer</b></a> · <a href="#tuto"><b>Tuto</b></a> · <a href="#fonctionnalites"><b>Fonctionnalités</b></a> · <a href="#faq"><b>FAQ</b></a> · <a href="#soutenir"><b>💜 Soutenir</b></a>
 </p>
 
 <p align="center">
-  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/Laisser%20un%20tip-Streamlabs-80f5d2?style=for-the-badge&logo=streamlabs&logoColor=black" height="36" alt="Laisser un tip sur Streamlabs"></a><br>
-  <sub><b>Gratuit, sans pub, sans abonnement.</b> Si Tramevia Dock t’aide pour tes lives, un tip le fait vivre 💜</sub>
+  <a href="https://github.com/sponsors/Tramevia"><img src="https://img.shields.io/badge/Soutenir%20le%20projet-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" height="36" alt="Soutenir le projet sur GitHub Sponsors"></a><br>
+  <sub><b>Gratuit, sans pub, sans abonnement.</b> Si Tramevia Dock t’aide pour tes lives, le soutenir le fait vivre 💜</sub>
 </p>
 
 <p align="center">
@@ -491,10 +491,12 @@ D’autres questions ? La [FAQ et dépannage](docs/fr/faq.md) reprend les messa
 
 > [!TIP]
 > **Tramevia Dock est gratuit et le restera : pas de pub, pas d’abonnement.**
-> Il est fait par un streamer, pour les streamers. S’il te fait gagner du temps avant chaque live, un tip aide le projet à vivre et à grandir.
+> Il est fait par un streamer, pour les streamers. S’il te fait gagner du temps avant chaque live, le soutenir aide le projet à vivre et à grandir.
+>
+> **Les soutiens ont l’accès anticipé :** un code soutien débloque les nouveaux styles d’alertes quelques semaines avant tout le monde (à coller dans Paramètres → À propos). Chaque style devient ensuite gratuit pour tous.
 
 <p align="center">
-  <a href="https://streamlabs.com/otelooow/tip"><img src="https://img.shields.io/badge/Laisser%20un%20tip-Streamlabs-80f5d2?style=for-the-badge&logo=streamlabs&logoColor=black" height="48" alt="Laisser un tip sur Streamlabs"></a>
+  <a href="https://github.com/sponsors/Tramevia"><img src="https://img.shields.io/badge/Soutenir%20le%20projet-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" height="48" alt="Soutenir le projet sur GitHub Sponsors"></a>
 </p>
 
 <p align="center"><sub>Pas de budget ? Mettre une étoile ⭐ au dépôt, en parler à un autre streamer ou signaler un bug aide beaucoup aussi.</sub></p>

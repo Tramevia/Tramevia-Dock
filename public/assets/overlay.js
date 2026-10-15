@@ -24,6 +24,7 @@ const list = h('div.ov-list', { attrs: { 'aria-live': 'off' } });
 const credit = h('div.ov-credit', 'Chat via Tramevia Dock'); // opt-in, off by default
 let app = null;
 let saved = null; // { chat, featured } from the server (saved URLs only)
+let unlocked = false; // supporter code on the server: a ?style= naming an early-access style is honoured
 let C = overlayFromQuery(query, null); // { id, featured, settings: S, onlyPlatforms, onlyAccounts }
 let S = C.settings;
 let opts = {};
@@ -182,7 +183,7 @@ function reconfigure(overlays, rebuild) {
   if (!C.id || !overlays) return;
   const style = S.style;
   saved = overlays;
-  C = overlayFromQuery(query, saved);
+  C = overlayFromQuery(query, saved, unlocked);
   apply();
   if (!rebuild) return;
   clearTimeout(featureTimer);
@@ -201,6 +202,7 @@ let afterHello = false;
 function onFrame({ t: type, d }) {
   const replayed = afterHello;
   afterHello = type === 'hello';
+  if ((type === 'hello' || type === 'overlay') && typeof d?.unlocked === 'boolean') unlocked = d.unlocked;
   if (type === 'hello') {
     reconfigure(d.overlays, false);
     if (C.viewers) { keepStats(d.accounts); showViewers(); return; }
@@ -243,6 +245,7 @@ boot({
     app = el;
     app.classList.add('ov');
     app.append(list);
+    unlocked = Boolean(state.unlocked);
     if (C.id) reconfigure(state.overlays || {}, false); else apply();
     if (C.viewers) { keepStats(state.accounts); showViewers(); }
   },

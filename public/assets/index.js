@@ -1,9 +1,9 @@
 // Tramevia Dock — dashboard (home + onboarding): overview, accounts, setup wizards, OBS docks & overlay builder, settings.
 import {
   boot, h, api, t, addI18n, lang, setLang, applyTheme, openAuth, copy, copyField, toast, busy,
-  confirmDialog, fmt, icon, platformIcon, store, withKey, accessKey, query, $, $$,
+  confirmDialog, fmt, icon, platformIcon, store, withKey, accessKey, query, $, $$, supportButton,
 } from '/assets/core.js';
-import { OVERLAY_IDS, ALERT_TYPES, STYLES, DEFAULTS as OV_DEFAULTS, cleanOverlay } from '/assets/overlay-settings.js';
+import { OVERLAY_IDS, ALERT_TYPES, STYLES, EARLY, isLocked, DEFAULTS as OV_DEFAULTS, cleanOverlay } from '/assets/overlay-settings.js';
 
 addI18n({
   fr: {
@@ -196,6 +196,12 @@ addI18n({
     'home.about.title': 'À propos', 'home.about.version': 'Version {v}',
     'home.about.desc': 'Logiciel libre et auto-hébergé : tes identifiants restent sur ton serveur.',
     'home.about.repo': 'Code source sur GitHub', 'home.about.docs': 'Documentation', 'home.about.issues': 'Signaler un problème',
+    'home.sup.title': 'Soutenir Tramevia Dock', 'home.sup.desc': 'Tramevia Dock est gratuit et le restera. En le soutenant sur GitHub Sponsors, tu reçois un code soutien : il débloque les nouveaux styles d’alertes avant tout le monde.',
+    'home.sup.code': 'Code soutien', 'home.sup.activate': 'Activer', 'home.sup.remove': 'Retirer le code',
+    'home.sup.active': 'Code soutien actif. Merci {name} !', 'home.sup.activeUntil': 'Code soutien actif jusqu’au {date}. Merci {name} !',
+    'home.sup.expired': 'Ton code soutien a expiré le {date}.', 'home.sup.ok': 'Code activé : les styles en accès anticipé sont débloqués.', 'home.sup.removed': 'Code soutien retiré.',
+    'home.ovl.early': 'Accès anticipé : {styles} sont réservés aux soutiens, puis gratuits pour tous le {date}.',
+    'home.ovl.locked': '{style} est réservé aux soutiens jusqu’au {date}. Ajoute ton code soutien dans Paramètres → À propos.',
     'home.upd.upToDate': 'à jour', 'home.upd.availableShort': 'mise à jour {v} disponible',
     'home.upd.checked': 'dernière vérification {ago}', 'home.upd.never': 'pas encore vérifiée',
     'home.upd.check': 'Vérifier maintenant', 'home.upd.upToDateToast': 'Tramevia Dock est à jour.',
@@ -412,6 +418,12 @@ addI18n({
     'home.about.title': 'About', 'home.about.version': 'Version {v}',
     'home.about.desc': 'Free and self-hosted software: your credentials stay on your server.',
     'home.about.repo': 'Source code on GitHub', 'home.about.docs': 'Documentation', 'home.about.issues': 'Report a problem',
+    'home.sup.title': 'Support Tramevia Dock', 'home.sup.desc': 'Tramevia Dock is free and will stay free. Support it on GitHub Sponsors and you get a supporter code: it unlocks new alert styles before everyone else.',
+    'home.sup.code': 'Supporter code', 'home.sup.activate': 'Activate', 'home.sup.remove': 'Remove the code',
+    'home.sup.active': 'Supporter code active. Thank you {name}!', 'home.sup.activeUntil': 'Supporter code active until {date}. Thank you {name}!',
+    'home.sup.expired': 'Your supporter code expired on {date}.', 'home.sup.ok': 'Code activated: early-access styles are unlocked.', 'home.sup.removed': 'Supporter code removed.',
+    'home.ovl.early': 'Early access: {styles} are for supporters, then free for everyone on {date}.',
+    'home.ovl.locked': '{style} is for supporters until {date}. Add your supporter code in Settings → About.',
     'home.upd.upToDate': 'up to date', 'home.upd.availableShort': 'update {v} available',
     'home.upd.checked': 'last checked {ago}', 'home.upd.never': 'not checked yet',
     'home.upd.check': 'Check now', 'home.upd.upToDateToast': 'Tramevia Dock is up to date.',
@@ -1231,6 +1243,15 @@ function renderOverlayForm() {
   }, iconEl, label);
   const choice = (key, values, rerender = false, name = key) => h('div.field', h('span.label', t(`home.ovl.${name}`)),
     segmented(t(`home.ovl.${name}`), values.map(v => [v, t(`home.ovl.${name}.${v}`)]), o[key], v => { set(key, v); if (rerender) renderOverlayForm(); }, `ov:${key}`));
+  // Early-access styles: shown with a lock; picking one explains how to unlock it instead of saving it.
+  const locked = STYLES.filter(v => isLocked(v, S.state.unlocked));
+  const styleName = v => t(`home.ovl.style.${v}`);
+  const styleChoice = () => h('div.field', h('span.label', t('home.ovl.style')),
+    segmented(t('home.ovl.style'), STYLES.map(v => [v, locked.includes(v) ? [icon('lock', 12), ' ', styleName(v)] : styleName(v)]), o.style, v => {
+      if (!locked.includes(v)) return set('style', v);
+      renderOverlayForm(); // puts the pressed state back on the saved style
+      ovStatus(t('home.ovl.locked', { style: styleName(v), date: day(EARLY[v]) }));
+    }, 'ov:style'));
   // Bubbles and outline only change something on the transparent theme (dark/light always draw cards).
   const textOnly = o.theme === 'transparent';
 
@@ -1245,8 +1266,10 @@ function renderOverlayForm() {
     h('div.stack.tight', h('span.label', t('home.ovl.url', { name: t(`home.ovl.mode.${id}`) })), secretField(overlayUrl(id, S.state.publicUrl), 'ov:url'),
       h('p.small.muted', t('home.ovl.how')), h('p.tiny.muted', icon('shield', 12), ' ', t('home.ovl.readonly'))),
     h('div.row.ov-choices', choice('theme', ['transparent', 'dark', 'light'], true),
-      alerts ? [choice('position', ['top', 'center', 'bottom']), choice('style', STYLES)]
+      alerts ? [choice('position', ['top', 'center', 'bottom']), styleChoice()]
         : viewers ? choice('align', ['left', 'center', 'right'], false, 'number') : choice('align', ['left', 'right'])),
+    alerts && locked.length && h('div.row.early-note', h('p.small.muted', icon('lock', 12), ' ',
+      t('home.ovl.early', { styles: locked.map(styleName).join(', '), date: day(EARLY[locked[0]]) })), supportButton()),
     !viewers && h('p.small.muted', t(`home.ovl.themeHint.${o.theme}`)),
     h('div.ov-fields',
       alerts ? [num('alertSeconds', 1, 60), num('volume', 0, 100)] : featured ? num('featureSeconds', 0, 300) : viewers ? null : [num('max', 1, 100), num('fade', 0, 600)],
@@ -1319,12 +1342,46 @@ function renderSettings() {
           h('div.about-head', h('strong', 'Tramevia Dock'), h('p.small.muted', versionLine())),
           S.update && checkButton()),
         h('p.small.muted', t('home.about.desc')),
+        supportBox(),
         S.update && updateSettings(),
         h('div.about-links',
           extLink(REPO, icon('external', 14), ' ', t('home.about.repo')),
           extLink(`${REPO}#readme`, icon('external', 14), ' ', t('home.about.docs')),
           extLink(`${REPO}/issues`, icon('external', 14), ' ', t('home.about.issues')))))));
 }
+
+/** About card: the support button and the supporter code that unlocks early-access alert styles. */
+function supportBox() {
+  const sup = S.state.supporter;
+  if (sup && !sup.expired) {
+    return h('div.stack.tight.support-box', h('strong', t('home.sup.title')),
+      h('p.small', icon('check', 14), ' ', t(sup.until ? 'home.sup.activeUntil' : 'home.sup.active', { name: sup.name, date: sup.until && day(sup.until) })),
+      h('div.row.tight', supportButton(),
+        h('button.btn.sm.ghost', { type: 'button', dataset: { focus: 'sup:remove' }, onclick: e => setSupporter(null, e.currentTarget) }, t('home.sup.remove'))));
+  }
+  const input = h('input', { id: 'sup-code', type: 'text', autocomplete: 'off', spellcheck: false, placeholder: 'TD1-…', dataset: { focus: 'sup:code' } });
+  return h('div.stack.tight.support-box', h('strong', t('home.sup.title')), h('p.small.muted', t('home.sup.desc')),
+    h('div', supportButton()),
+    sup?.expired && h('p.small.muted', t('home.sup.expired', { date: day(sup.until) })),
+    h('form.row.tight', { onsubmit: e => { e.preventDefault(); setSupporter(input.value, e.submitter); } },
+      h('label.sr-only', { htmlFor: input.id }, t('home.sup.code')), input,
+      h('button.btn.sm', { type: 'submit', dataset: { focus: 'sup:activate' } }, t('home.sup.activate'))));
+}
+
+/** Adds (code) or removes (null) the supporter code, then redraws what depends on it. Errors are toasted by busy(). */
+async function setSupporter(code, button) {
+  await busy(button, async () => {
+    const r = await api('/api/supporter', code === null ? { method: 'DELETE' } : { method: 'PUT', body: { code } });
+    S.state.supporter = r.supporter;
+    S.state.unlocked = Boolean(r.supporter && !r.supporter.expired);
+    toast(t(code === null ? 'home.sup.removed' : 'home.sup.ok'), 'ok', 5000);
+    renderSettings();
+    renderOverlayForm();
+  });
+}
+
+/** 2026-11-30 → "30 novembre" / "November 30" (dates are UTC days). */
+const day = d => new Date(`${d}T00:00:00Z`).toLocaleDateString(lang(), { day: 'numeric', month: 'long', timeZone: 'UTC' });
 
 async function rotateKey(what, button) {
   const ok = await confirmDialog({ title: t(`home.sec.${what}Title`), body: t(`home.sec.${what}Body`), confirm: what === 'sessions' ? t('home.sec.signOut') : t('home.sec.rotate'), danger: true });
