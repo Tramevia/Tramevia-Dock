@@ -140,6 +140,9 @@ kbd { border: 1px solid var(--border-strong); border-bottom-width: 2px; padding:
   .nav a { padding: 7px 9px; }
 }
 .dock-mode .brand span { display: none; }
+/* Each OBS dock is one page (its own dock line), so no tabs and no link away from it */
+.dock-mode .nav { display: none; }
+.dock-mode .brand { pointer-events: none; }
 
 /* ---------- Surfaces ---------- */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; }
