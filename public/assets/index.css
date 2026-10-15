@@ -226,6 +226,8 @@
 .about-links a { display: inline-flex; align-items: center; gap: 6px; width: fit-content; }
 .support-box { padding-top: 12px; border-top: 1px solid var(--border); }
 .support-box form input { flex: 1 1 200px; min-width: 0; font-family: var(--mono, monospace); }
+.early-note .soon { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.early-note .soon img { width: 16px; height: 16px; }
 .early-note p { flex: 1 1 240px; margin: 0; }
 
 /* ---------- 6. Updates (About card + home banner) ---------- */

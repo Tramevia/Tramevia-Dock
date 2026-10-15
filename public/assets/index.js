@@ -3,7 +3,7 @@ import {
   boot, h, api, t, addI18n, lang, setLang, applyTheme, openAuth, copy, copyField, toast, busy,
   confirmDialog, fmt, icon, platformIcon, store, withKey, accessKey, query, $, $$, supportButton,
 } from '/assets/core.js';
-import { OVERLAY_IDS, ALERT_TYPES, STYLES, EARLY, isLocked, DEFAULTS as OV_DEFAULTS, cleanOverlay } from '/assets/overlay-settings.js';
+import { OVERLAY_IDS, ALERT_TYPES, STYLES, isLocked, DEFAULTS as OV_DEFAULTS, cleanOverlay } from '/assets/overlay-settings.js';
 
 addI18n({
   fr: {
@@ -147,7 +147,8 @@ addI18n({
     'home.obs.done': 'J’ai ajouté mes docks', 'home.obs.doneState': 'Docks ajoutés', 'home.obs.doneToast': 'Parfait, tout est prêt !',
     'home.ovl.title': 'Overlay de chat',
     'home.ovl.sub': 'Affiche ton chat sur le stream. Tes réglages sont enregistrés ici et s’appliquent en direct.',
-    'home.ovl.how': 'Dans OBS : Sources → + → Navigateur → colle l’adresse, largeur 400, hauteur 600. Chaque overlay a sa propre adresse : une source Navigateur pour chacun. Colle-la une seule fois, ensuite tes changements s’appliquent en direct. Une ancienne adresse qui contient des réglages marche toujours, mais ne suit plus le tableau de bord.',
+    'home.ovl.scene': ' (la taille de ta scène)',
+    'home.ovl.how': 'Dans OBS : Sources → + → Navigateur → colle l’adresse, largeur {w}, hauteur {h}{scene}. Chaque overlay a sa propre adresse : une source Navigateur pour chacun. Colle-la une seule fois, ensuite tes changements s’appliquent en direct. Une ancienne adresse qui contient des réglages marche toujours, mais ne suit plus le tableau de bord.',
     'home.ovl.readonly': 'Cette adresse utilise la clé overlay, en lecture seule : elle ne permet aucune action sur tes comptes.',
     'home.ovl.mode': 'Overlay à régler', 'home.ovl.mode.chat': 'Chat', 'home.ovl.mode.featured': 'Message mis en avant', 'home.ovl.mode.alerts': 'Alertes', 'home.ovl.mode.viewers': 'Spectateurs',
     'home.ovl.hint.chat': 'Affiche les messages de tes chats.', 'home.ovl.hint.featured': 'Affiche seulement le message que tu mets en avant depuis le dock Chat.',
@@ -200,8 +201,8 @@ addI18n({
     'home.sup.code': 'Code soutien', 'home.sup.activate': 'Activer', 'home.sup.remove': 'Retirer le code',
     'home.sup.active': 'Code soutien actif. Merci {name} !', 'home.sup.activeUntil': 'Code soutien actif jusqu’au {date}. Merci {name} !',
     'home.sup.expired': 'Ton code soutien a expiré le {date}.', 'home.sup.ok': 'Code activé : les styles en accès anticipé sont débloqués.', 'home.sup.removed': 'Code soutien retiré.',
-    'home.ovl.early': 'Accès anticipé (Soon) : {styles} sont réservés aux soutiens, puis gratuits pour tous le {date}.',
-    'home.ovl.locked': '{style} est réservé aux soutiens (Soon) jusqu’au {date}. Ajoute ton code soutien dans Paramètres → À propos.',
+    'home.ovl.early': 'Accès anticipé (Soon) : {styles} sont réservés aux soutiens, puis gratuits pour tous. Date de déblocage :',
+    'home.ovl.locked': '{style} est réservé aux soutiens (Soon), puis gratuit pour tous : Soon 😎. Ajoute ton code soutien dans Paramètres → À propos.',
     'home.upd.upToDate': 'à jour', 'home.upd.availableShort': 'mise à jour {v} disponible',
     'home.upd.checked': 'dernière vérification {ago}', 'home.upd.never': 'pas encore vérifiée',
     'home.upd.check': 'Vérifier maintenant', 'home.upd.upToDateToast': 'Tramevia Dock est à jour.',
@@ -369,7 +370,8 @@ addI18n({
     'home.obs.done': 'I added my docks', 'home.obs.doneState': 'Docks added', 'home.obs.doneToast': 'Great, you are all set!',
     'home.ovl.title': 'Chat overlay',
     'home.ovl.sub': 'Shows your chat on stream. Your settings are saved here and apply live.',
-    'home.ovl.how': 'In OBS: Sources → + → Browser → paste the address, width 400, height 600. Each overlay has its own address: one Browser source for each. Paste it once, then your changes apply live. An older address that carries settings keeps working but no longer follows the dashboard.',
+    'home.ovl.scene': ' (your scene size)',
+    'home.ovl.how': 'In OBS: Sources → + → Browser → paste the address, width {w}, height {h}{scene}. Each overlay has its own address: one Browser source for each. Paste it once, then your changes apply live. An older address that carries settings keeps working but no longer follows the dashboard.',
     'home.ovl.readonly': 'This address uses the read-only overlay key: it cannot act on your accounts.',
     'home.ovl.mode': 'Overlay to edit', 'home.ovl.mode.chat': 'Chat', 'home.ovl.mode.featured': 'Featured message', 'home.ovl.mode.alerts': 'Alerts', 'home.ovl.mode.viewers': 'Viewers',
     'home.ovl.hint.chat': 'Shows the messages from your chats.', 'home.ovl.hint.featured': 'Shows only the message you feature from the Chat dock.',
@@ -422,8 +424,8 @@ addI18n({
     'home.sup.code': 'Supporter code', 'home.sup.activate': 'Activate', 'home.sup.remove': 'Remove the code',
     'home.sup.active': 'Supporter code active. Thank you {name}!', 'home.sup.activeUntil': 'Supporter code active until {date}. Thank you {name}!',
     'home.sup.expired': 'Your supporter code expired on {date}.', 'home.sup.ok': 'Code activated: early-access styles are unlocked.', 'home.sup.removed': 'Supporter code removed.',
-    'home.ovl.early': 'Early access (Soon): {styles} are for supporters, then free for everyone on {date}.',
-    'home.ovl.locked': '{style} is for supporters (Soon) until {date}. Add your supporter code in Settings → About.',
+    'home.ovl.early': 'Early access (Soon): {styles} are for supporters, then free for everyone. Unlock date:',
+    'home.ovl.locked': '{style} is for supporters (Soon), then free for everyone: Soon 😎. Add your supporter code in Settings → About.',
     'home.upd.upToDate': 'up to date', 'home.upd.availableShort': 'update {v} available',
     'home.upd.checked': 'last checked {ago}', 'home.upd.never': 'not checked yet',
     'home.upd.check': 'Check now', 'home.upd.upToDateToast': 'Tramevia Dock is up to date.',
@@ -1250,7 +1252,7 @@ function renderOverlayForm() {
     segmented(t('home.ovl.style'), STYLES.map(v => [v, locked.includes(v) ? [icon('lock', 12), ' ', styleName(v)] : styleName(v)]), o.style, v => {
       if (!locked.includes(v)) return set('style', v);
       renderOverlayForm(); // puts the pressed state back on the saved style
-      ovStatus(t('home.ovl.locked', { style: styleName(v), date: day(EARLY[v]) }));
+      ovStatus(t('home.ovl.locked', { style: styleName(v) }));
     }, 'ov:style'));
   // Bubbles and outline only change something on the transparent theme (dark/light always draw cards).
   const textOnly = o.theme === 'transparent';
@@ -1264,12 +1266,13 @@ function renderOverlayForm() {
       segmented(t('home.ovl.mode'), OVERLAY_IDS.map(v => [v, t(`home.ovl.mode.${v}`)]), id, v => { ovId = v; renderOverlayForm(); }, 'ov:mode')),
     h('p.small.muted', t(`home.ovl.hint.${id}`)),
     h('div.stack.tight', h('span.label', t('home.ovl.url', { name: t(`home.ovl.mode.${id}`) })), secretField(overlayUrl(id, S.state.publicUrl), 'ov:url'),
-      h('p.small.muted', t('home.ovl.how')), h('p.tiny.muted', icon('shield', 12), ' ', t('home.ovl.readonly'))),
+      h('p.small.muted', t('home.ovl.how', { w: alerts ? 1920 : 400, h: alerts ? 1080 : viewers ? 400 : 600, scene: alerts ? t('home.ovl.scene') : '' })), h('p.tiny.muted', icon('shield', 12), ' ', t('home.ovl.readonly'))),
     h('div.row.ov-choices', choice('theme', ['transparent', 'dark', 'light'], true),
       alerts ? [choice('position', ['top', 'center', 'bottom']), styleChoice()]
         : viewers ? choice('align', ['left', 'center', 'right'], false, 'number') : choice('align', ['left', 'right'])),
     alerts && locked.length && h('div.row.early-note', h('p.small.muted', icon('lock', 12), ' ',
-      t('home.ovl.early', { styles: locked.map(styleName).join(', '), date: day(EARLY[locked[0]]) })), supportButton()),
+      t('home.ovl.early', { styles: locked.map(styleName).join(', ') }), ' ',
+      h('span.soon', h('img', { src: '/assets/logo.svg', alt: 'Tramevia' }), 'Soon', h('span', { attrs: { 'aria-hidden': 'true' } }, '😎'))), supportButton()),
     !viewers && h('p.small.muted', t(`home.ovl.themeHint.${o.theme}`)),
     h('div.ov-fields',
       alerts ? [num('alertSeconds', 1, 60), num('volume', 0, 100)] : featured ? num('featureSeconds', 0, 300) : viewers ? null : [num('max', 1, 100), num('fade', 0, 600)],
