@@ -95,13 +95,11 @@ Pour le désactiver, retire la ligne et lance `docker compose --profile autoupda
 
 [Railway](https://railway.com) fait tourner l’image de Tramevia Dock pour toi, avec HTTPS, une adresse publique et des mises à jour automatiques. C’est un service payant : il te faut l’offre **Hobby** (vérifie ses tarifs actuels). L’essai gratuit limite les connexions sortantes, ce qui peut bloquer Twitch et Kick.
 
-<!-- RAILWAY_BUTTON : remplacer ce commentaire par les lignes ci-dessous quand le modèle Railway existe (RELEASING.md, mise en place unique, étape 7), et retirer la note juste en dessous.
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/<CODE>?utm_medium=integration&utm_source=button&utm_campaign=tramevia-dock)
-Il faut l’offre Hobby de Railway. Tu ne remplis qu’un mot de passe ; les mises à jour s’installent toutes seules la nuit (heure UTC). Tu peux changer le créneau dans Settings → Source → Auto Updates.
--->
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/tramevia-dock?utm_medium=integration&utm_source=button&utm_campaign=tramevia-dock)
 
-> [!NOTE]
-> Un bouton **Deploy on Railway** (déploiement en un clic) arrive avec la première version publique. D’ici là, suis les étapes ci-dessous (une dizaine de minutes).
+Il faut l’offre Hobby de Railway. Tu ne remplis qu’un mot de passe ; les mises à jour s’installent toutes seules la nuit (heure UTC). Tu peux changer le créneau dans Settings → Source → Auto Updates. Passe ensuite directement à l’étape 7 ci-dessous.
+
+Tu préfères tout faire à la main ? Suis toutes les étapes ci-dessous (une dizaine de minutes).
 
 1. **Crée le service.** Dans Railway : **New Project → Deploy a Docker Image**, puis saisis `ghcr.io/tramevia/tramevia-dock:` suivi du numéro de la dernière version indiqué sur la page [Releases](https://github.com/Tramevia/Tramevia-Dock/releases), par exemple `ghcr.io/tramevia/tramevia-dock:1.0.0`. Mets un numéro complet (pas `:1` ni `:latest`) : les mises à jour automatiques de Railway en ont besoin.
 2. **Renseigne les variables** (onglet *Variables* du service) :
@@ -117,7 +115,7 @@ Il faut l’offre Hobby de Railway. Tu ne remplis qu’un mot de passe ; les mi
 3. **Ajoute un volume.** Clic droit sur le service → **Attach Volume**, avec le point de montage **`/data`**. Sans lui, tes comptes et tes réglages disparaissent à chaque redéploiement.
 4. **Obtiens une adresse publique.** Dans **Settings → Networking** du service, clique sur **Generate Domain** avec le port cible **8787**. Tu obtiens une adresse du type `https://ton-app.up.railway.app`. Applique ensuite tes changements avec **Deploy** (ou redéploie le service) : Tramevia Dock lit son adresse Railway au démarrage, et d’ici là il répond « Host not allowed » sur cette adresse.
 5. **Healthcheck et instances.** Dans **Settings → Deploy**, mets le chemin de healthcheck sur **`/healthz`**. Garde **une seule instance** : Tramevia Dock garde ses données dans un seul fichier SQLite et ses connexions en direct en mémoire. Laisse **Serverless** (mise en veille de l’app) **désactivé** : la veille couperait tes connexions au chat.
-6. **Active les mises à jour automatiques.** Dans **Settings → Source → Configure Auto Updates**, choisis **Minor updates and patches** et un créneau où tu ne streames pas (**Night**, c’est de 2 h à 6 h UTC ; tu peux aussi choisir un créneau personnalisé).
+6. **Active les mises à jour automatiques.** Dans **Settings → Source → Configure Auto Updates**, choisis **Update to the latest tag** et un créneau où tu ne streames pas (**Overnight**, c’est de 2 h à 6 h UTC ; tu peux aussi choisir un créneau personnalisé).
 7. **Configure.** Ouvre ton adresse Railway, connecte-toi avec `ADMIN_PASSWORD` et suis l’assistant. Les adresses de redirection qu’il affiche doivent commencer par ton domaine Railway (si elles affichent encore `localhost`, redéploie le service ou définis `PUBLIC_URL`) : ajoute-les à ton app Twitch et à ton client Google, et configure Kick comme expliqué dans [Plateformes → Kick](platforms.md#kick), avec **Enable Webhooks** et l’adresse `https://ton-app.up.railway.app/webhooks/kick`.
 8. **Ajoute à OBS.** Copie les adresses des docks et de l’overlay depuis la section **OBS** : elles pointent maintenant vers ton adresse Railway.
 

@@ -100,13 +100,11 @@ To turn it off, remove the line and run `docker compose --profile autoupdate rm 
 
 [Railway](https://railway.com) runs the Tramevia Dock image for you, with HTTPS, a public address and automatic updates. It is a paid service: you need the **Hobby** plan (check its current pricing). The free trial restricts outgoing connections, which can break Twitch and Kick.
 
-<!-- RAILWAY_BUTTON: replace this comment with the lines below once the Railway template exists (RELEASING.md, one-time setup step 7), and remove the note under it.
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/<CODE>?utm_medium=integration&utm_source=button&utm_campaign=tramevia-dock)
-Needs a Railway Hobby plan. You only fill in a password; updates install automatically at night (UTC). Change the window in Settings → Source → Auto Updates.
--->
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/tramevia-dock?utm_medium=integration&utm_source=button&utm_campaign=tramevia-dock)
 
-> [!NOTE]
-> A one-click **Deploy on Railway** button arrives with the first public release. Until then, set it up by hand with the steps below (about 10 minutes).
+Needs a Railway Hobby plan. You only fill in a password; updates install automatically at night (UTC). Change the window in Settings → Source → Auto Updates. Then go straight to step 7 below.
+
+Prefer to set it up by hand? Follow all the steps below (about 10 minutes).
 
 1. **Create the service.** In Railway: **New Project → Deploy a Docker Image**, and enter `ghcr.io/tramevia/tramevia-dock:` followed by the latest version number from the [Releases page](https://github.com/Tramevia/Tramevia-Dock/releases), for example `ghcr.io/tramevia/tramevia-dock:1.0.0`. Use a full version number (not `:1` or `:latest`): Railway's automatic updates need it.
 2. **Set the variables** (service → *Variables*):
@@ -122,7 +120,7 @@ Needs a Railway Hobby plan. You only fill in a password; updates install automat
 3. **Add a volume.** Right-click the service → **Attach Volume**, with the mount path **`/data`**. Without it, your accounts and settings are lost at every redeploy.
 4. **Get a public address.** Service **Settings → Networking → Generate Domain**, with the target port **8787**. You get something like `https://your-app.up.railway.app`. Then apply your changes with **Deploy** (or redeploy the service): Tramevia Dock reads its Railway address at startup, and until then it answers "Host not allowed" on that address.
 5. **Healthcheck and scaling.** Service **Settings → Deploy**: set the healthcheck path to **`/healthz`**. Keep **one replica** (Tramevia Dock keeps its data in a single SQLite file and its live connections in memory). Leave **Serverless** (app sleeping) **off**: it would cut your chat connections.
-6. **Turn on automatic updates.** Service **Settings → Source → Configure Auto Updates**: choose **Minor updates and patches**, and a window when you don't stream (**Night** is 02:00–06:00 UTC, or pick a custom window).
+6. **Turn on automatic updates.** Service **Settings → Source → Configure Auto Updates**: choose **Update to the latest tag**, and a window when you don't stream (**Overnight** is 02:00–06:00 UTC, or pick a custom window).
 7. **Set up.** Open your Railway address, sign in with `ADMIN_PASSWORD` and follow the wizard. The redirect addresses it shows must start with your Railway domain (if they still show `localhost`, redeploy the service or set `PUBLIC_URL`): add them to your Twitch app and your Google client (they accept several), and set up Kick as described in [Platforms → Kick](platforms.md#kick), including **Enable Webhooks** with `https://your-app.up.railway.app/webhooks/kick`.
 8. **Add to OBS.** Copy the dock and overlay addresses from the **OBS** section: they now point to your Railway address.
 

@@ -353,16 +353,15 @@ Tu peux faire tourner Tramevia Dock sur un serveur, sur [Railway](https://railwa
 
 - `ADMIN_PASSWORD` est obligatoire (12 caractères minimum).
 - Sur un serveur ou sur Railway, il faut un volume persistant sur `/data` et du HTTPS devant.
-- Sur Railway (offre Hobby, payante) : déploie l’image Docker `ghcr.io/tramevia/tramevia-dock`, ajoute **`RAILWAY_RUN_UID=0`** et active ses **Auto Updates** : les nouvelles versions s’installent alors toutes seules la nuit. Un bouton **Deploy on Railway** (déploiement en un clic) arrive avec la première version publique.
+- Sur Railway (offre Hobby, payante) : déploie l’image Docker `ghcr.io/tramevia/tramevia-dock`, ajoute **`RAILWAY_RUN_UID=0`** et active ses **Auto Updates** : les nouvelles versions s’installent alors toutes seules la nuit. Ou laisse le bouton **Deploy on Railway** ci-dessous tout faire en un clic.
 - Les adresses de redirection commencent par ton adresse publique : ajoute-les à tes apps.
 - Une installation en ligne est indépendante de ton installation locale : elle a ses propres comptes et réglages.
 
 Le pas-à-pas (Railway, reverse proxy, tunnel, sauvegardes) : [guide de l’hébergement en ligne](docs/fr/cloud.md).
 
-<!-- RAILWAY_BUTTON : remplacer ce commentaire par les lignes ci-dessous quand le modèle Railway existe (RELEASING.md, mise en place unique, étape 7), et retirer la phrase « arrive avec la première version publique » plus haut.
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/<CODE>?utm_medium=integration&utm_source=button&utm_campaign=tramevia-dock)
-Il faut l’offre Hobby de Railway. Tu ne remplis qu’un mot de passe ; les mises à jour s’installent toutes seules la nuit (heure UTC). Tu peux changer le créneau dans Settings → Source → Auto Updates.
--->
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/tramevia-dock?utm_medium=integration&utm_source=button&utm_campaign=tramevia-dock)
+
+Il faut l’offre Hobby de Railway. Tu ne remplis qu’un mot de passe ; les mises à jour s’installent toutes seules la nuit (heure UTC). Tu peux changer le créneau dans Settings → Source → Auto Updates.
 
 </details>
 

@@ -319,15 +319,14 @@ Your data is kept in a Docker volume named `tramevia-data`. To update: `docker c
 
 Running Tramevia Dock online lets you open it from anywhere, keeps it running when your PC is off, and unlocks Kick's official webhooks.
 
-- On [Railway](https://railway.com) (Hobby plan, paid): deploy the Docker image `ghcr.io/tramevia/tramevia-dock`, attach a volume at **`/data`**, set **`ADMIN_PASSWORD`** and **`RAILWAY_RUN_UID=0`**, generate a public domain, and turn on Railway's **Auto Updates**: new versions then install by themselves at night. A one-click **Deploy on Railway** button arrives with the first public release.
+- On [Railway](https://railway.com) (Hobby plan, paid): deploy the Docker image `ghcr.io/tramevia/tramevia-dock`, attach a volume at **`/data`**, set **`ADMIN_PASSWORD`** and **`RAILWAY_RUN_UID=0`**, generate a public domain, and turn on Railway's **Auto Updates**: new versions then install by themselves at night. Or let the **Deploy on Railway** button below do all of it in one click.
 - Any host that runs a Docker image with a persistent volume at `/data` and HTTPS in front works too.
 
 Online, `ADMIN_PASSWORD` (12 characters or more) is mandatory, and the redirect addresses you register on each platform change. Full guide: [Cloud and Docker](docs/en/cloud.md).
 
-<!-- RAILWAY_BUTTON: replace this comment with the lines below once the Railway template exists (RELEASING.md, one-time setup step 7), and remove the "button arrives" sentence above.
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/<CODE>?utm_medium=integration&utm_source=button&utm_campaign=tramevia-dock)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/tramevia-dock?utm_medium=integration&utm_source=button&utm_campaign=tramevia-dock)
+
 Needs a Railway Hobby plan. You only fill in a password; updates install automatically at night (UTC). Change the window in Settings → Source → Auto Updates.
--->
 
 </details>
 
