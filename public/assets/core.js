@@ -112,7 +112,7 @@ export function applyI18n(root = document) {
 
 addI18n({
   fr: {
-    'nav.home': 'Tableau de bord', 'nav.chat': 'Chat', 'nav.community': 'Communauté', 'nav.stream': 'Infos du live', 'nav.support': 'Soutenir le projet',
+    'nav.home': 'Tableau de bord', 'nav.chat': 'Chat', 'nav.community': 'Communauté', 'nav.stream': 'Infos du live', 'nav.support': 'Soutenir le projet (Soon)',
     'login.title': 'Tramevia Dock', 'login.subtitle': 'Saisis le mot de passe administrateur (ADMIN_PASSWORD).',
     'login.password': 'Mot de passe', 'login.submit': 'Se connecter', 'login.error': 'Mot de passe incorrect.',
     'common.save': 'Enregistrer', 'common.cancel': 'Annuler', 'common.close': 'Fermer', 'common.copy': 'Copier',
@@ -128,7 +128,7 @@ addI18n({
     'err.forbidden': 'Action non autorisée avec cette clé (lecture seule).',
   },
   en: {
-    'nav.home': 'Dashboard', 'nav.chat': 'Chat', 'nav.community': 'Community', 'nav.stream': 'Stream info', 'nav.support': 'Support the project',
+    'nav.home': 'Dashboard', 'nav.chat': 'Chat', 'nav.community': 'Community', 'nav.stream': 'Stream info', 'nav.support': 'Support the project (Soon)',
     'login.title': 'Tramevia Dock', 'login.subtitle': 'Enter the admin password (ADMIN_PASSWORD).',
     'login.password': 'Password', 'login.submit': 'Sign in', 'login.error': 'Wrong password.',
     'common.save': 'Save', 'common.cancel': 'Cancel', 'common.close': 'Close', 'common.copy': 'Copy',

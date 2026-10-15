@@ -24,11 +24,11 @@
   <a href="#tutorial"><b>Tutorial</b></a> ·
   <a href="#features"><b>Features</b></a> ·
   <a href="#faq"><b>FAQ</b></a> ·
-  <a href="#support"><b>💜 Support</b></a>
+  <a href="#support"><b>💜 Support (Soon)</b></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/sponsors/Tramevia"><img src="https://img.shields.io/badge/Support%20the%20project-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" height="36" alt="Support the project on GitHub Sponsors"></a><br>
+  <a href="https://github.com/sponsors/Tramevia"><img src="https://img.shields.io/badge/Support%20the%20project%20(Soon)-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" height="36" alt="Support the project on GitHub Sponsors (Soon)"></a><br>
   <sub><b>Free, no ads, no subscription.</b> If Tramevia Dock helps your streams, sponsoring it keeps it going 💜</sub>
 </p>
 
@@ -468,16 +468,16 @@ Found a vulnerability? Please read [SECURITY.md](SECURITY.md) instead of opening
 
 <a id="support"></a>
 
-## 💜 Support Tramevia Dock
+## 💜 Support Tramevia Dock (Soon)
 
 > [!TIP]
 > **Tramevia Dock is free and will stay free: no ads, no subscription.**
 > It's made by a streamer, for streamers. If it saves you time before each live, sponsoring it helps keep the project going and growing.
 >
-> **Sponsors get early access:** a supporter code unlocks new alert styles a few weeks before everyone else (paste it in Settings → About). Every style then becomes free for all.
+> **Sponsors get early access (Soon):** a supporter code unlocks new alert styles a few weeks before everyone else (paste it in Settings → About). Every style then becomes free for all.
 
 <p align="center">
-  <a href="https://github.com/sponsors/Tramevia"><img src="https://img.shields.io/badge/Support%20the%20project-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" height="48" alt="Support the project on GitHub Sponsors"></a>
+  <a href="https://github.com/sponsors/Tramevia"><img src="https://img.shields.io/badge/Support%20the%20project%20(Soon)-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" height="48" alt="Support the project on GitHub Sponsors (Soon)"></a>
 </p>
 
 <p align="center"><sub>No budget? Starring ⭐ this repository, telling another streamer about it or reporting a bug helps a lot too.</sub></p>
