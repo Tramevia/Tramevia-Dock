@@ -185,7 +185,9 @@ html, body { height: 100%; overflow: hidden; }
 @keyframes alert-word-blur { from { opacity: 0; transform: translateY(0.5em); filter: blur(0.25em); } }
 @keyframes alert-marker { to { transform: scaleX(1); } }
 @keyframes alert-rise { from { opacity: 0; transform: translateY(0.5em); } }
-@keyframes alert-pop { from { opacity: 0; transform: scale(0.4); } 70% { transform: scale(1.12); } }
+/* scale, not transform, and an explicit end: a finished animation still holds its property, so a transform pop would push text's icon tilt
+   (and card's whole tilt, through the implicit end frame) back onto the main thread for the whole hold */
+@keyframes alert-pop { from { opacity: 0; scale: 0.4; } 70% { scale: 1.12; } to { opacity: 1; scale: 1; } }
 @keyframes alert-burst { from { opacity: 1; transform: scale(0.3); } to { opacity: 0; transform: scale(2.8); } }
 @keyframes alert-shine { from { background-position: 150% 0; } to { background-position: -150% 0; } }
 @keyframes alert-dash {
@@ -1968,7 +1970,7 @@ html, body { height: 100%; overflow: hidden; }
 
 @keyframes silk-in { from { opacity: 0; } }
 @keyframes silk-back-in { 0%, 55% { opacity: 0.78; } }
-@keyframes silk-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+@keyframes silk-breathe { 0%, 100% { filter: opacity(1); } 50% { filter: opacity(0.7); } } /* filter, not opacity: silk-glow already animates opacity, which would keep this loop on the main thread */
 @keyframes silk-sway { 25% { transform: rotate(2.5deg); } 75% { transform: rotate(-2.5deg); } }
 @keyframes silk-waver { 30% { transform: rotate(1.5deg) skewX(1deg); } 70% { transform: rotate(-1.2deg) skewX(-1.5deg); } }
 @keyframes silk-flap { /* scaleY = cos, skewX = 6° · sin, sampled every eighth: linear between */
