@@ -39,7 +39,7 @@
 ### 👀 En action
 
 <p align="center">
-  <a href="https://youtu.be/-MKE4lyNyNw"><img src="https://img.youtube.com/vi/-MKE4lyNyNw/maxresdefault.jpg" width="720" alt="Vidéo de présentation de Tramevia Dock sur YouTube (32 secondes) : clique pour la regarder"></a><br>
+  <a href="https://youtu.be/-MKE4lyNyNw"><img src="docs/assets/screenshots/fr/video.jpg" width="720" alt="Vidéo de présentation de Tramevia Dock sur YouTube (32 secondes) : clique pour la regarder"></a><br>
   <sub>▶️ <b>Tramevia Dock en 30 secondes</b> (vidéo YouTube)</sub>
 </p>
 
