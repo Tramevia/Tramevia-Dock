@@ -71,7 +71,7 @@ When Tramevia Dock starts for the first time:
 - it opens the dashboard at http://localhost:8787. Without a password, the dashboard only works from this computer (a banner in **Settings → Security** reminds you);
 - the dashboard shows the three setup steps: **Create your developer app**, **Connect your accounts**, **Add the docks to OBS**.
 
-![The dashboard overview with the three setup steps, the total viewer count and the list of channels](../assets/screenshots/en/dashboard.png)
+![The dashboard on first launch: “Welcome to Tramevia Dock” and the three setup steps (create your developer app, connect your accounts, add the docks to OBS)](../assets/screenshots/en/first-run.png)
 
 > [!WARNING]
 > `data/secret.key` is the key that encrypts your tokens and app secrets. **Back up the whole `data` folder, including this file.** Without it, the saved credentials cannot be read: you would have to enter your app credentials again and reconnect every account.
