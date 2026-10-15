@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.3.5 — one page per dock
 
 - **One page per OBS dock**: a dock in OBS no longer shows the tabs to the other pages. Each dock (Chat, Community, Stream info, Dashboard) stays on its own page, so your dock lines are not all the same.
 
