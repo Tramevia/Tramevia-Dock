@@ -254,6 +254,14 @@ router.get('/auth/:platform/callback', async ({ params, url, req, res }) => {
   const state = url.searchParams.get('state') || '';
   const entry = pendingAuth.get(state);
   pendingAuth.delete(state);
+  // A redirect address missing from the platform app: Twitch sends the browser to an address it knows instead (often another
+  // instance, without this state), so say what is wrong rather than "link expired".
+  if (/^redirect(_uri)?_mismatch$/.test(url.searchParams.get('error') || '')) {
+    const name = adapters.get(params.platform)?.name || params.platform;
+    return page(false, lang === 'fr'
+      ? `L’adresse de redirection n’est pas enregistrée dans ton app ${name}, alors ${name} t’a renvoyé ici (${config.publicUrl}). Dans Tramevia Dock, ouvre les réglages de l’app ${name} (⚙), copie l’adresse de redirection et ajoute-la dans la console de ${name} (elle en accepte plusieurs), puis relance la connexion depuis cette même adresse.`
+      : `The redirect address is not registered in your ${name} app, so ${name} sent you here (${config.publicUrl}). In Tramevia Dock, open the ${name} app settings (⚙), copy the redirect address and add it in the ${name} console (it accepts several), then start the connection again from that same address.`);
+  }
   if (!entry || entry.platform !== params.platform || Date.now() - entry.at > 600_000) return page(false, lang === 'fr' ? 'Lien de connexion expiré ou déjà utilisé. Relance la connexion depuis le dock.' : 'Login link expired or already used. Start again from the dock.');
   if (url.searchParams.get('error') || !url.searchParams.get('code')) return page(false, url.searchParams.get('error_description') || url.searchParams.get('error') || 'Authorization denied.');
   const p = adapters.get(entry.platform);

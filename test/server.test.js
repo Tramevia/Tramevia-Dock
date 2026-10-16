@@ -59,6 +59,19 @@ test('malformed cookies and request targets never crash the server', async () =>
   }
 });
 
+test('OAuth callback: a redirect mismatch says so, an unknown state says expired', async () => {
+  const srv = await startServer();
+  try {
+    const mismatch = await fetch(srv.base + '/auth/twitch/callback?error=redirect_mismatch&error_description=Parameter+redirect_uri+does+not+match+registered+URI&state=elsewhere', { headers: { 'Accept-Language': 'en' } });
+    assert.equal(mismatch.status, 400);
+    assert.match(await mismatch.text(), /redirect address is not registered in your Twitch app/);
+    const unknown = await fetch(srv.base + '/auth/twitch/callback?code=x&state=elsewhere', { headers: { 'Accept-Language': 'en' } });
+    assert.match(await unknown.text(), /expired or already used/);
+  } finally {
+    await srv.stop();
+  }
+});
+
 test('rotating the dock key closes WebSockets opened with the old key', async () => {
   const srv = await startServer({ ADMIN_PASSWORD: 'correct-horse-battery' });
   try {
