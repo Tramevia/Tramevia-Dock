@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1 — clearer account connection error
+
+- **Redirect address missing from the platform app**: when Twitch refuses the redirect address (for example after moving to a new Railway instance), the page now says that this address is not registered in your app and how to add it, instead of "Login link expired or already used".
+
 ## 1.4.0 — alerts and viewers overlays
 
 - **Support the project (Soon)**: a *Support the project (Soon)* button in the dashboard header and in Settings → About. Sponsoring on GitHub Sponsors, with a supporter code that unlocks new alert styles early, opens in 1.4.5.

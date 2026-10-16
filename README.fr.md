@@ -15,7 +15,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-AGPL--3.0-blue" alt="Licence AGPL-3.0"></a>
   <img src="https://img.shields.io/badge/Node.js-%E2%89%A5%2024.15-339933?logo=nodedotjs&logoColor=white" alt="Node.js 24.15 ou plus récent">
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-1.4.0-8b5cf6" alt="Version 1.4.0"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-1.4.1-8b5cf6" alt="Version 1.4.1"></a>
   <img src="https://img.shields.io/badge/plateformes-Twitch%20%C2%B7%20Kick%20%C2%B7%20YouTube%20%C2%B7%20TikTok-6441a5" alt="Plateformes : Twitch, Kick, YouTube, TikTok">
   <img src="https://img.shields.io/badge/pens%C3%A9%20pour-OBS%20Studio-302e31?logo=obsstudio&logoColor=white" alt="Pensé pour OBS Studio">
   <a href="https://github.com/Tramevia/Tramevia-Dock/discussions"><img src="https://img.shields.io/badge/questions-GitHub%20Discussions-8b5cf6?logo=github&logoColor=white" alt="Pose tes questions dans les GitHub Discussions"></a>
