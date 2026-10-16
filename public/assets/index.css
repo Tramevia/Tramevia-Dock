@@ -206,6 +206,10 @@
   background-color: var(--surface-2); background-image: repeating-conic-gradient(var(--surface-3) 0 25%, transparent 0 50%); background-size: 20px 20px;
 }
 .checker iframe { display: block; width: 100%; height: 600px; border: 0; background: transparent; }
+/* Alerts are made for a source the size of the scene: their preview is a wide 16:9 under the form, not a 400x600 column. */
+.ov-scene .ov-builder { grid-template-columns: minmax(0, 1fr); }
+.ov-scene .ov-preview { position: static; max-width: none; }
+.ov-scene .checker iframe { height: auto; aspect-ratio: 16 / 9; }
 @media (max-width: 1100px) {
   .ov-builder { grid-template-columns: minmax(0, 1fr); }
   .ov-preview { position: static; max-width: 420px; width: 100%; }
@@ -220,6 +224,11 @@
 .set-row .segmented { flex-wrap: wrap; }
 .about-links { display: flex; flex-direction: column; gap: 6px; }
 .about-links a { display: inline-flex; align-items: center; gap: 6px; width: fit-content; }
+.support-box { padding-top: 12px; border-top: 1px solid var(--border); }
+.support-box form input { flex: 1 1 200px; min-width: 0; font-family: var(--mono, monospace); }
+.early-note .soon { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.early-note .soon img { width: 16px; height: 16px; }
+.early-note p { flex: 1 1 240px; margin: 0; }
 
 /* ---------- 6. Updates (About card + home banner) ---------- */
 .about-head { flex: 1 1 180px; min-width: 0; }

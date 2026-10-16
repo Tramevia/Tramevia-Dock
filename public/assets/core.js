@@ -112,7 +112,7 @@ export function applyI18n(root = document) {
 
 addI18n({
   fr: {
-    'nav.home': 'Tableau de bord', 'nav.chat': 'Chat', 'nav.community': 'Communauté', 'nav.stream': 'Infos du live',
+    'nav.home': 'Tableau de bord', 'nav.chat': 'Chat', 'nav.community': 'Communauté', 'nav.stream': 'Infos du live', 'nav.support': 'Soutenir le projet (Soon)',
     'login.title': 'Tramevia Dock', 'login.subtitle': 'Saisis le mot de passe administrateur (ADMIN_PASSWORD).',
     'login.password': 'Mot de passe', 'login.submit': 'Se connecter', 'login.error': 'Mot de passe incorrect.',
     'common.save': 'Enregistrer', 'common.cancel': 'Annuler', 'common.close': 'Fermer', 'common.copy': 'Copier',
@@ -128,7 +128,7 @@ addI18n({
     'err.forbidden': 'Action non autorisée avec cette clé (lecture seule).',
   },
   en: {
-    'nav.home': 'Dashboard', 'nav.chat': 'Chat', 'nav.community': 'Community', 'nav.stream': 'Stream info',
+    'nav.home': 'Dashboard', 'nav.chat': 'Chat', 'nav.community': 'Community', 'nav.stream': 'Stream info', 'nav.support': 'Support the project (Soon)',
     'login.title': 'Tramevia Dock', 'login.subtitle': 'Enter the admin password (ADMIN_PASSWORD).',
     'login.password': 'Password', 'login.submit': 'Sign in', 'login.error': 'Wrong password.',
     'common.save': 'Save', 'common.cancel': 'Cancel', 'common.close': 'Close', 'common.copy': 'Copy',
@@ -359,6 +359,7 @@ const ICONS = {
   globe: '<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
   key: '<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/>',
   monitor: '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>',
+  lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
   heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>',
   gift: '<path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
 };
@@ -383,6 +384,12 @@ export async function openAuth(platform, reconnect = null) {
 }
 
 // ---------------------------------------------------------------- Page boot
+export const SPONSOR_URL = 'https://github.com/sponsors/Tramevia';
+
+/** "Support the project" button with its soft halo (dashboard header, About card, locked alert styles). */
+export const supportButton = (cls = '') => h(`a.btn.sm.support${cls}`, { href: SPONSOR_URL, target: '_blank', rel: 'noopener noreferrer' },
+  icon('heart', 14), h('span', { dataset: { i18n: 'nav.support' } }, t('nav.support')));
+
 const NAV = [
   { href: '/', key: 'nav.home', icon: 'home' },
   { href: '/chat', key: 'nav.chat', icon: 'chat' },
@@ -399,6 +406,7 @@ function header(page) {
   return h('header.app-header',
     h('a.brand', { href: withKey('/'), title: 'Tramevia Dock' }, h('img', { src: '/assets/logo.svg', alt: '' }), h('span', 'Tramevia Dock')),
     nav, h('div.spacer'),
+    page === '/' && supportButton('.support-head'),
     // The hub may already be connected when the header is built.
     h('span#conn-dot.conn-dot', { class: connected === null ? '' : connected ? 'on' : 'off', title: t(connected ? 'common.online' : 'common.offline') }));
 }

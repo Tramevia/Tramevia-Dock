@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { OVERLAY_IDS, DEFAULTS, LEGACY, cleanOverlay, overlayFromQuery } from '../public/assets/overlay-settings.js';
+import { OVERLAY_IDS, DEFAULTS, LEGACY, ALERT_TYPES, alertCategory, cleanOverlay, overlayFromQuery } from '../public/assets/overlay-settings.js';
 
 const q = s => new URLSearchParams(s);
 const legacy = s => overlayFromQuery(q(s), null);
@@ -37,7 +37,7 @@ test('legacy URL: theme fallback, align, mode, inclusion lists', () => {
   assert.equal(legacy('theme=neon').settings.theme, 'transparent');
   assert.equal(legacy('theme=light').settings.theme, 'light');
   assert.equal(legacy('align=right').settings.align, 'right');
-  assert.equal(legacy('align=center').settings.align, 'left');
+  assert.equal(legacy('align=middle').settings.align, 'left');
   assert.equal(legacy('mode=featured').featured, true);
   assert.equal(legacy('mode=chat').featured, false);
   const r = legacy('platforms=Twitch, kick,&accounts=a1,,b2');
@@ -88,7 +88,7 @@ test('cleanOverlay: complete object, rounding, clamping, enums, unknown keys', (
   assert.equal(cleanOverlay({ max: NaN }).max, DEFAULTS.chat.max);
   assert.equal(cleanOverlay({ max: Infinity }).max, DEFAULTS.chat.max);
   assert.equal(cleanOverlay({ max: ' ' }).max, DEFAULTS.chat.max);
-  assert.equal(cleanOverlay({ align: 'center', theme: 'neon' }).align, 'left');
+  assert.equal(cleanOverlay({ align: 'middle', theme: 'neon' }).align, 'left');
   assert.equal(cleanOverlay({}, LEGACY).theme, 'transparent');
 });
 
@@ -105,4 +105,40 @@ test('cleanOverlay: id lists deduped, typed, bounded', () => {
 test('OVERLAY_IDS and DEFAULTS agree', () => {
   assert.deepEqual(Object.keys(DEFAULTS).sort(), [...OVERLAY_IDS].sort());
   for (const id of OVERLAY_IDS) assert.deepEqual(cleanOverlay(DEFAULTS[id], DEFAULTS[id]), DEFAULTS[id]);
+});
+
+test('viewers: id=viewers, number beside or inside the orb', () => {
+  const r = overlayFromQuery(q('id=viewers'), {});
+  assert.deepEqual([r.id, r.viewers, r.alerts, r.featured], ['viewers', true, false, false]);
+  assert.deepEqual(r.settings, DEFAULTS.viewers);
+  assert.deepEqual([r.settings.align, r.settings.theme], ['center', 'transparent']);
+  assert.equal(overlayFromQuery(q('id=viewers&mode=featured'), {}).featured, false);
+  assert.equal(overlayFromQuery(q('id=viewers&align=right'), {}).settings.align, 'right');
+  assert.equal(overlayFromQuery(q('id=viewers'), { viewers: { align: 'left', size: 40 } }).settings.size, 40);
+  assert.equal(cleanOverlay({ align: 'middle' }, DEFAULTS.viewers).align, 'center');
+  assert.equal(overlayFromQuery(q('id=chat'), {}).viewers, false);
+});
+
+test('alerts: id=alerts, position, duration, categories', () => {
+  const r = overlayFromQuery(q('id=alerts'), {});
+  assert.deepEqual([r.id, r.alerts, r.featured], ['alerts', true, false]);
+  assert.deepEqual(r.settings, DEFAULTS.alerts);
+  assert.equal(overlayFromQuery(q('id=alerts&mode=featured'), {}).featured, false);
+  assert.equal(overlayFromQuery(q('id=chat'), {}).alerts, false);
+  assert.equal(overlayFromQuery(q('id=alerts&position=bottom&alertSeconds=99'), {}).settings.position, 'bottom');
+  assert.equal(overlayFromQuery(q('id=alerts&alertSeconds=99'), {}).settings.alertSeconds, 60);
+  assert.equal(overlayFromQuery(q('id=alerts&position=left'), {}).settings.position, 'top');
+  assert.equal(overlayFromQuery(q('id=alerts&style=eclipse&volume=250'), {}, true).settings.style, 'eclipse'); // supporter code
+  assert.equal(overlayFromQuery(q('id=alerts&style=eclipse&volume=250'), {}).settings.volume, 100);
+  assert.equal(cleanOverlay({ style: 'huge', volume: -5 }, DEFAULTS.alerts).style, 'card');
+  assert.equal(cleanOverlay({ style: 'huge', volume: -5 }, DEFAULTS.alerts).volume, 0);
+  assert.equal(cleanOverlay({ style: 'impact' }, DEFAULTS.alerts).style, 'impact');
+  assert.equal(cleanOverlay({ style: 'smoke' }, DEFAULTS.alerts).style, 'card'); // removed in 1.4 before release
+  const s = cleanOverlay({ position: 'center', alertSeconds: 0.4, offTypes: ['tip', 'tip', 3] }, DEFAULTS.alerts);
+  assert.deepEqual([s.position, s.alertSeconds, s.offTypes, s.size], ['center', 1, ['tip'], 28]);
+  for (const [type, cat] of [['follow', 'follow'], ['resub', 'sub'], ['membership', 'sub'], ['giftmembership', 'giftsub'], ['superchat', 'tip'], ['tiktok_gift', 'tip'], ['raid', 'raid'], ['like', 'like']]) {
+    assert.equal(alertCategory(type), cat, type);
+  }
+  for (const type of ['announcement', 'stream_online', 'stream_offline', 'bogus', undefined]) assert.equal(alertCategory(type), null, String(type));
+  assert.deepEqual(Object.values(ALERT_TYPES).flat().sort(), [...new Set(Object.values(ALERT_TYPES).flat())].sort(), 'a type belongs to one category');
 });

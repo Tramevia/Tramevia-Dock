@@ -20,12 +20,8 @@
    This cannot be undone, and making the repo public does NOT do it for you.
 6. Check an anonymous pull: `docker logout ghcr.io && docker pull ghcr.io/tramevia/tramevia-dock:1`
    and `docker buildx imagetools inspect ghcr.io/tramevia/tramevia-dock:1` (expect linux/amd64 and linux/arm64).
-7. Create the Railway template (Railway: Deploy a Docker Image `ghcr.io/tramevia/tramevia-dock:X.Y.Z`, variables,
-   volume `/data`, domain on port 8787, healthcheck `/healthz`, Auto Updates "minor + patches", then
-   **Generate Template from Project**; erase your test `ADMIN_PASSWORD` in the composer). Then replace each
-   `<!-- RAILWAY_BUTTON … -->` comment in README.md, README.fr.md, docs/en/cloud.md and docs/fr/cloud.md with the
-   button it contains (put the template code in place of `<CODE>`), and remove the "button arrives with the first
-   public release" notes next to them.
+7. Done: the Railway template is published on the Tramevia Railway account (https://railway.com/deploy/tramevia-dock,
+   Auto Updates "Update to the latest tag", Overnight window). The button is in README.md, README.fr.md and both cloud.md.
 
 ## Version rules (users update automatically: follow them)
 
@@ -51,7 +47,9 @@
    - GHCR has `X.Y.Z`, `X.Y`, `X` and `latest`.
 7. Smoke test on a zip install of the previous version: About → **Check now** → **Install now**.
    It should restart, reconnect, and show "Updated to X.Y.Z".
-8. On a MAJOR version: update compose.yaml (`:X`) and the README update notes.
+8. When the release brings new alert styles: set their date in `EARLY` (public/assets/overlay-settings.js) to the release
+   day + 28 days (supporters only until then), and check the date in the CHANGELOG entry.
+8b. On a MAJOR version: update compose.yaml (`:X`) and the README update notes.
 9. On a MINOR or MAJOR version: Railway → Templates → Tramevia Dock → Edit → service source image
    → `ghcr.io/tramevia/tramevia-dock:X.Y.Z` → save, so new deployers start on the current version.
 

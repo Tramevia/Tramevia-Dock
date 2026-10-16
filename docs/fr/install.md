@@ -73,7 +73,7 @@ Voici ce qui se passe la première fois :
 3. Le terminal affiche une ligne du type `Tramevia Dock 1.0.0 — http://localhost:8787`, puis ton navigateur s’ouvre sur le tableau de bord.
 4. L’écran « Bienvenue sur Tramevia Dock » te propose trois étapes : « Créer ton app développeur », « Connecter tes comptes » et « Ajouter les docks dans OBS ».
 
-![Tableau de bord de Tramevia Dock : la vue d’ensemble avec les trois étapes de configuration, le total de spectateurs et la liste des chaînes en direct](../assets/screenshots/fr/dashboard.png)
+![Tableau de bord de Tramevia Dock : la vue d’ensemble avec les trois étapes de configuration, le total de spectateurs et la liste des chaînes en direct](../assets/screenshots/fr/first-run.png)
 
 Sans mot de passe (`ADMIN_PASSWORD`), le tableau de bord est accessible **uniquement depuis cet ordinateur**. C’est le fonctionnement normal en local : la section **Paramètres** du tableau de bord l’indique avec « Mode local sans mot de passe ».
 
