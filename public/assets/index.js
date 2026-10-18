@@ -1272,7 +1272,7 @@ function renderOverlayForm() {
         : viewers ? choice('align', ['left', 'center', 'right'], false, 'number') : choice('align', ['left', 'right'])),
     alerts && locked.length && h('div.row.early-note', h('p.small.muted', icon('lock', 12), ' ',
       t('home.ovl.early', { styles: locked.map(styleName).join(', ') }), ' ',
-      h('span.soon', h('img', { src: '/assets/logo.svg', alt: 'Tramevia' }), 'Soon', h('span', { attrs: { 'aria-hidden': 'true' } }, '😎'))), supportButton()),
+      h('span.soon', h('img', { src: '/assets/logo-3d.png', alt: 'Tramevia' }), 'Soon', h('span', { attrs: { 'aria-hidden': 'true' } }, '😎'))), supportButton()),
     !viewers && h('p.small.muted', t(`home.ovl.themeHint.${o.theme}`)),
     h('div.ov-fields',
       alerts ? [num('alertSeconds', 1, 60), num('volume', 0, 100)] : featured ? num('featureSeconds', 0, 300) : viewers ? null : [num('max', 1, 100), num('fade', 0, 600)],

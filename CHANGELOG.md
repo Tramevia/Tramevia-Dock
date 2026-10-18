@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.2 — new Tramevia logo next to the unlock date
+
+- **Unlock date**: the Tramevia logo next to "Unlock date: Soon" in the Overlays tab is now the new 3D T.
+
 ## 1.4.1 — clearer account connection error
 
 - **Redirect address missing from the platform app**: when Twitch refuses the redirect address (for example after moving to a new Railway instance), the page now says that this address is not registered in your app and how to add it, instead of "Login link expired or already used".
