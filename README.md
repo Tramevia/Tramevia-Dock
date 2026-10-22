@@ -43,8 +43,8 @@
 ### 👀 See it live
 
 <p align="center">
-  <a href="https://youtu.be/XBzPhtTi_YI"><img src="docs/assets/screenshots/en/video.jpg" width="720" alt="Tramevia Dock presentation video on YouTube (27 seconds): click to watch"></a><br>
-  <sub>▶️ <b>Tramevia Dock 1.4 in 27 seconds</b> (YouTube video)</sub>
+  <a href="https://youtube.com/shorts/K_hWhaCNm7k"><img src="docs/assets/screenshots/en/video.jpg" width="360" alt="What's new in Tramevia Dock 1.5, video on YouTube (30 seconds): click to watch"></a><br>
+  <sub>▶️ <b>What’s new in 1.5 in 30 seconds</b>: spam filters, polls, goals and 8 alert styles (YouTube video)</sub>
 </p>
 
 <table>
