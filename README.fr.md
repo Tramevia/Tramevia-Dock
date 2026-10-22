@@ -57,6 +57,7 @@
 
 ## 🆕 Nouveau dans la 1.5
 
+- 🎨 **Huit styles d’alertes pour les soutiens.** Impact, Éclipse, Verre, Interrupteur, Vague, Prisme, Soie et Néon, débloqués d’un coup avec un code soutien. → [Voir les styles](#alertes) · [Soutenir](#soutenir)
 - 🗳️ **Des outils de live sur toutes tes plateformes.** Un sondage auquel on répond depuis n’importe quel chat, des objectifs de follows et d’abonnements, des `!commandes` et des rappels, et une annonce Discord avec un récap à la fin. → [Étape 8](#etape-8)
 - 📊 **Deux nouveaux overlays.** Le sondage et tes objectifs à l’écran, en barres ou en anneau, au dégradé Tramevia ou de la couleur de ton choix, avec 18 icônes. → [Étape 8](#etape-8)
 - 🛡️ **Des filtres automatiques.** Mots interdits, liens et spam supprimés sur Twitch, Kick et YouTube à la fois, avec un timeout si tu veux. → [Fonctionnalités](#fonctionnalites)

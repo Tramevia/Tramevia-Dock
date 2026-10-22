@@ -1,7 +1,18 @@
 # Changelog
 
-## 1.5.0 — live tools, auto filters and Streamlabs
+## 1.5.0 — supporter alert styles, live tools, auto filters and Streamlabs
 
+- **Eight supporter alert styles** (OBS → Overlay → *Alerts*): one supporter code from [Buy Me a Coffee](https://buymeacoffee.com/tramevia) unlocks all eight at once, next to the free Card and Big text.
+  - **Impact**: a product shot, the alert falls in as three spinning slices that slam together with a splash.
+  - **Eclipse**: light only, two planes cross on a ring, then two tall walls of light frame the text.
+  - **Glass**: a frosted-glass capsule becomes a card while a warm light sweeps under it.
+  - **Switch**: a switch flips ON with the sound, light bursts out and glowing dots count down the time.
+  - **Wave**: a wave of white particles breaks over the alert, the text forms in the dust.
+  - **Prism**: crystal bars on a black glass floor, jumping on every note like an equaliser.
+  - **Silk**: veils of very fine threads weave a sphere around the icon.
+  - **Neon**: your name in big chrome letters on a spinning ring, lit with neon.
+
+  ![The ten alert styles: Card and Big text are free, the eight others are for supporters](https://raw.githubusercontent.com/Tramevia/Tramevia-Dock/main/docs/assets/screenshots/en/alert-styles.jpg)
 - **Live tools** (dashboard → *Live*): a poll, goals, commands and Discord, on all your platforms at once.
 - **Poll on every platform**: a question with 2 to 5 answers, from 15 s to 30 min. Viewers vote by typing 1, 2… in any chat, TikTok included; one vote per person, the first counts. End it early whenever you want, and optionally announce the question and the result in every live chat. Votes never show on the chat overlay.
 - **Poll overlay** (OBS → Overlay → *Poll*, 600 × 400): a dark card with the question, numbered answers whose bars fill with their share of the votes, the time left as a line running down the top edge, and the icons of the platforms viewers can vote from. The leading answer lights up in the Tramevia gradient and every new vote makes its number bounce. At the end a light sweeps across the winner, its number turns gold and the other answers dim; the result stays 15 s, then the card leaves. *Test a poll* plays a sample poll in the preview and in OBS without counting anything. Two styles: *Bars*, or *Ring*, where the answers are coloured arcs of one glass ring, the time runs round it with a bright dot and shows in its centre, and at the end the winning arc flares while its number and share take the centre.

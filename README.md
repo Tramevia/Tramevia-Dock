@@ -65,6 +65,7 @@
 
 ## 🆕 New in 1.5
 
+- 🎨 **Eight supporter alert styles.** Impact, Eclipse, Glass, Switch, Wave, Prism, Silk and Neon, unlocked all at once with a supporter code. → [See the styles](#alerts) · [Support](#support)
 - 🗳️ **Live tools on every platform.** A poll viewers answer from any chat, follower and sub goals, `!commands` and reminders, and a Discord announcement with a recap at the end. → [Step 8](#step-8)
 - 📊 **Two new overlays.** The poll and your goals on stream, as bars or a ring, in the Tramevia gradient or any colour, with 18 icons. → [Step 8](#step-8)
 - 🛡️ **Auto filters.** Banned words, links and spam removed on Twitch, Kick and YouTube at once, with an optional timeout. → [Features](#features)
