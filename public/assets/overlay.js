@@ -1,20 +1,33 @@
 // Chat overlay for OBS browser sources (/overlay/chat): read-only, transparent. Two kinds of URL:
-//  - saved:  ?key=&id=chat|featured|alerts|viewers → settings stored on the server (dashboard builder), re-applied live on every change
-//            without reloading; any setting param also in the URL overrides that one setting.
+//  - saved:  ?key=&id=chat|featured|alerts|viewers|poll|goal → settings stored on the server (dashboard builder), re-applied live on
+//            every change without reloading; any setting param also in the URL overrides that one setting.
 //            id=alerts shows live events one at a time (follows, subs, tips, raids…), never the backlog.
 //            id=viewers shows the live viewer total of the shown channels, with every change animated (+x / −x).
+//            id=poll shows the running poll and its votes, then the result for 15 s; id=goal the follow / sub goals (overlay-widgets.js).
 //  - legacy: ?key= without id → configured only by its params, as in 1.2, ignores live updates:
 //            &theme=dark|light|transparent&max=12&fade=0&platforms=&accounts=&hideBots=1&hideCommands=1&badges=0&icons=0
 //            &avatars=1&size=18&align=left|right&events=1&bubble=1&outline=1&mode=featured&featureSeconds=0&credit=1
 // platforms=/accounts= are inclusion lists; saved settings exclude with offPlatforms/offAccounts. Parsing: overlay-settings.js.
 import { boot, h, svg, fmt, query, addI18n, t } from '/assets/core.js';
 import { renderMessage, renderEvent } from '/assets/chat-render.js';
-import { alertCard } from '/assets/alert-card.js';
-import { viewerBadge } from '/assets/viewer-badge.js';
-import { overlayFromQuery, alertCategory } from '/assets/overlay-settings.js';
+import { overlayFromQuery, alertCategory, SUPPORTER_STYLES } from '/assets/overlay-settings.js';
 
-addI18n({ fr: { 'overlay.title': 'Overlay du chat', 'overlay.alerts': 'Overlay des alertes', 'overlay.viewers': 'Overlay des spectateurs' },
-  en: { 'overlay.title': 'Chat overlay', 'overlay.alerts': 'Alerts overlay', 'overlay.viewers': 'Viewers overlay' } });
+addI18n({
+  fr: {
+    'overlay.title': 'Overlay du chat', 'overlay.alerts': 'Overlay des alertes', 'overlay.viewers': 'Overlay des spectateurs',
+    'overlay.poll': 'Overlay du sondage', 'overlay.goal': 'Overlay des objectifs',
+    'overlay.poll.tag': 'Sondage', 'overlay.poll.result': 'Résultat', 'overlay.poll.how': 'Votez dans le chat : tapez le numéro',
+    'overlay.poll.ended': 'Sondage terminé', 'overlay.poll.votes': '{v} vote', 'overlay.poll.votes|plural': '{v} votes',
+    'overlay.goal.subs': 'Objectif abonnés', 'overlay.goal.follows': 'Objectif follows', 'overlay.goal.done': 'Objectif atteint !',
+  },
+  en: {
+    'overlay.title': 'Chat overlay', 'overlay.alerts': 'Alerts overlay', 'overlay.viewers': 'Viewers overlay',
+    'overlay.poll': 'Poll overlay', 'overlay.goal': 'Goal overlay',
+    'overlay.poll.tag': 'Poll', 'overlay.poll.result': 'Result', 'overlay.poll.how': 'Vote in chat: type the number',
+    'overlay.poll.ended': 'Poll closed', 'overlay.poll.votes': '{v} vote', 'overlay.poll.votes|plural': '{v} votes',
+    'overlay.goal.subs': 'Sub goal', 'overlay.goal.follows': 'Follower goal', 'overlay.goal.done': 'Goal reached!',
+  },
+});
 
 const BOTS = new Set(['nightbot', 'streamelements', 'moobot', 'streamlabs', 'fossabot', 'wizebot', 'sery_bot', 'botrixoficial', 'kickbot', 'soundalerts']);
 const KEEP = 200; // live chat/event frames kept for a rebuild (max is 100, the rest absorbs filtering); the hello backlog is kept whole
@@ -24,9 +37,19 @@ const list = h('div.ov-list', { attrs: { 'aria-live': 'off' } });
 const credit = h('div.ov-credit', 'Chat via Tramevia Dock'); // opt-in, off by default
 let app = null;
 let saved = null; // { chat, featured } from the server (saved URLs only)
-let unlocked = false; // supporter code on the server: a ?style= naming an early-access style is honoured
+let unlocked = false; // supporter code on the server: a ?style= naming a supporter style is honoured
 let C = overlayFromQuery(query, null); // { id, featured, settings: S, onlyPlatforms, onlyAccounts }
 let S = C.settings;
+// The id never changes in a page: each overlay loads only its own modules (a chat overlay skips ~120 KB of alert, viewer, poll and goal code).
+// The alerts overlay also adds its stylesheet (alerts.css), applied before the first alert can show, and the supporter styles pack
+// when this dock has one (/premium/, src/premium.js): decor = the pack's styles, null without it (a supporter style then shows as card).
+const stylesheet = href => new Promise(done => document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', href, onload: done, onerror: done })));
+const [{ alertCard } = {}, , decor = null] = C.alerts ? await Promise.all([import('/assets/alert-card.js'), stylesheet('/assets/alerts.css'),
+  import('/premium/decor.js').then(m => m.default({ h, svg }), () => null), stylesheet('/premium/alerts.css')]) : [];
+const look = () => (decor || !SUPPORTER_STYLES.has(S.style) ? S.style : 'card'); // the style the alerts are drawn in
+let premium; // pack version given by the server at start: a new, updated or removed pack reloads the alerts page
+const { viewerBadge } = C.viewers ? await import('/assets/viewer-badge.js') : {};
+const { pollCard, goalBars } = C.poll || C.goal ? await import('/assets/overlay-widgets.js') : {};
 let opts = {};
 let frames = []; // { t, d, at } (at = receive time)
 let feature = null; // last 'feature' payload, kept even in chat mode: { m, start }
@@ -43,12 +66,12 @@ function apply() {
   if (C.id) root.dataset.theme = S.theme === 'light' ? 'light' : 'dark';
   if (S.size) root.style.setProperty('--ov-fs', `${S.size}px`); else root.style.removeProperty('--ov-fs');
   // Alignment, bubbles and outline are chat settings: the alert styles draw their own text (the outline would stroke it).
-  const chat = !C.alerts && !C.viewers;
-  for (const [cls, on] of [['ov-right', chat && S.align === 'right'], ['ov-bubble', chat && S.bubble], ['ov-outline', chat && S.outline], ['ov-featured', C.featured], ['ov-alerts', C.alerts], ['ov-viewers', C.viewers]]) root.classList.toggle(cls, on);
+  const chat = !C.alerts && !C.viewers && !C.poll && !C.goal;
+  for (const [cls, on] of [['ov-right', chat && S.align === 'right'], ['ov-bubble', chat && S.bubble], ['ov-outline', chat && S.outline], ['ov-featured', C.featured], ['ov-alerts', C.alerts], ['ov-viewers', C.viewers], ['ov-poll', C.poll], ['ov-goal', C.goal]]) root.classList.toggle(cls, on);
   root.dataset.position = C.alerts ? S.position : '';
-  root.dataset.style = C.alerts ? S.style : '';
+  root.dataset.style = C.alerts ? look() : '';
   root.dataset.align = C.viewers ? S.align : '';
-  if (app && S.credit && !C.viewers) app.append(credit); else credit.remove();
+  if (app && S.credit && (chat || C.alerts)) app.append(credit); else credit.remove();
 }
 if (!C.id) apply(); // legacy: at import time, as before; saved URLs wait for the server settings
 
@@ -61,7 +84,7 @@ function shown(d) {
 function wanted(kind, d) {
   if (!shown(d)) return false;
   if (kind === 'event') return S.events;
-  if (d.deleted) return false;
+  if (d.deleted || d.flags?.vote) return false; // a poll vote ("1", "2"…) is counted on the poll overlay, not shown in the chat
   if (S.hideCommands && String(d.text || '').trimStart().startsWith('!')) return false;
   if (S.hideBots && (d.author?.roles?.includes('bot') || BOTS.has(String(d.author?.login || '').toLowerCase()))) return false;
   return true;
@@ -128,7 +151,7 @@ function chime(volume) {
 
 let current = null; // the event on screen (alerts mode)
 function showAlert(d) {
-  const card = alertCard(d, opts, S.style);
+  const card = alertCard(d, opts, look(), decor);
   list.append(card);
   card.style.setProperty('--evt', getComputedStyle(card.querySelector('.evt')).getPropertyValue('--evt')); // the event colour, for the card's own glow and accent
   card.style.setProperty('--alert-ms', String(S.alertSeconds * 1000)); // how long it stays: a style may show the time left
@@ -178,6 +201,61 @@ function keepStats(accounts) {
   for (const a of accounts || []) if (a.stats) stats.set(a.id, { platform: a.platform, ...a.stats });
 }
 
+// ------------------------------------------------------------------ poll (id=poll) and goals (id=goal)
+const POLL_RESULT = 15_000; // a closed poll stays on screen this long
+let accounts = []; // the channels (hello): the poll card shows the platforms viewers can vote from
+let poll = null, pollTest = null, card = null, pollTimer = 0, testRun = 0;
+let goals = null, bars = null, goalTimer = 0;
+
+function votePlatforms() {
+  const on = new Set(accounts.filter(a => shown({ accountId: a.id, platform: a.platform })).map(a => a.platform));
+  return ['twitch', 'kick', 'youtube', 'tiktok'].filter(p => on.has(p));
+}
+
+function showPoll() {
+  if (!app) return;
+  clearTimeout(pollTimer);
+  if (card?.look !== S.look) { card?.leave(); card?.el.remove(); card = { ...pollCard({ t, look: S.look }), look: S.look }; } // a new style: rebuilt
+  const p = pollTest || poll;
+  const left = p?.closedAt ? p.closedAt + POLL_RESULT - Date.now() : Infinity;
+  if (!p || left <= 0) { if (card.el.isConnected) card.leave(); return; }
+  if (!card.el.isConnected) app.append(card.el);
+  card.set(p, votePlatforms());
+  if (left !== Infinity) pollTimer = setTimeout(showPoll, left);
+}
+
+/** poll:test: a sample poll played here only (votes trickle in for 12 s, the result shows for 6 s), then the real one again. */
+function testPoll({ question, options }) {
+  clearInterval(testRun);
+  const start = Date.now();
+  const p = { id: `test-${start}`, question, options: options.map(label => ({ label, votes: 0 })), total: 0, startedAt: start, endsAt: start + 12_000, closedAt: null };
+  pollTest = p;
+  showPoll();
+  testRun = setInterval(() => {
+    if (Date.now() >= p.endsAt) {
+      clearInterval(testRun);
+      p.closedAt = Date.now();
+      showPoll();
+      setTimeout(() => { if (pollTest === p) { pollTest = null; showPoll(); } }, 6000);
+      return;
+    }
+    for (let k = Math.floor(Math.random() * 4); k > 0; k--) { p.options[Math.floor(Math.random() ** 1.5 * p.options.length)].votes++; p.total++; }
+    showPoll();
+  }, 450);
+}
+
+/** gain = goal:test ({ subs: 5 }): shown on top of the real counts. */
+function showGoals(gain = null) {
+  if (!app || !goals) return;
+  const style = [S.look, S.color, S.subsIcon, S.followsIcon].join();
+  if (bars?.style !== style) { // a new look, colour or icon: rebuilt
+    bars?.el.remove();
+    bars = { ...goalBars({ t, look: S.look, color: S.color, icons: { subs: S.subsIcon, follows: S.followsIcon } }), style };
+  }
+  if (!bars.el.isConnected) app.append(bars.el);
+  bars.set(goals, S.goal === 'both' ? ['subs', 'follows'] : [S.goal], gain);
+}
+
 /** Saved URLs: settings from the server (+ URL overrides), re-rendered in place. */
 function reconfigure(overlays, rebuild) {
   if (!C.id || !overlays) return;
@@ -187,7 +265,9 @@ function reconfigure(overlays, rebuild) {
   apply();
   if (!rebuild) return;
   clearTimeout(featureTimer);
-  if (C.viewers) showViewers(true); // a filter change is the streamer's edit, not a change of audience: no +x / −x
+  if (C.poll) showPoll();
+  else if (C.goal) showGoals();
+  else if (C.viewers) showViewers(true); // a filter change is the streamer's edit, not a change of audience: no +x / −x
   else if (C.alerts) {
     alerts = alerts.filter(alertWanted); // the card on screen stays; its duration applies from the next one
     // A style has its own elements and animations: the alert on screen is rebuilt in the new style (the builder's preview shows it at once).
@@ -203,13 +283,23 @@ function onFrame({ t: type, d }) {
   const replayed = afterHello;
   afterHello = type === 'hello';
   if ((type === 'hello' || type === 'overlay') && typeof d?.unlocked === 'boolean') unlocked = d.unlocked;
+  if (C.alerts && (type === 'hello' || type === 'overlay') && d && 'premium' in d && (d.premium ?? null) !== premium) return location.reload();
   if (type === 'hello') {
     reconfigure(d.overlays, false);
+    accounts = d.accounts || [];
+    if (C.poll) { poll = d.poll ?? null; showPoll(); return; }
+    if (C.goal) { goals = d.goals ?? null; showGoals(); return; }
     if (C.viewers) { keepStats(d.accounts); showViewers(); return; }
     if (C.alerts) return; // alerts never replay the backlog: an old follow must not pop up again after a reconnect
     frames = (d.backlog || []).filter(f => f.t === 'chat' || f.t === 'event').map(f => ({ t: f.t, d: f.d, at: f.d.ts }));
     feature = null;
     renderChat();
+  } else if (C.poll || C.goal) {
+    if (type === 'poll' && C.poll) { poll = d; showPoll(); }
+    else if (type === 'poll:test' && C.poll && Array.isArray(d?.options)) testPoll(d);
+    else if (type === 'goal' && C.goal) { clearTimeout(goalTimer); goals = d; showGoals(); }
+    else if (type === 'goal:test' && C.goal) { clearTimeout(goalTimer); showGoals(d); goalTimer = setTimeout(() => showGoals(), 4000); }
+    else if (type === 'overlay' && d?.id === C.id) reconfigure({ ...saved, [d.id]: d.settings }, true);
   } else if (C.viewers) {
     if (type === 'stats' && d?.accountId) {
       stats.set(d.accountId, { platform: d.platform, live: d.live, viewers: d.viewers });
@@ -233,6 +323,9 @@ function onFrame({ t: type, d }) {
     for (const f of frames) if (f.t === 'chat' && isMatch(d, keys(f.d))) f.d.deleted = true;
     if (feature?.m && isMatch(d, keys(feature.m))) feature.m.deleted = true;
     for (const el of list.querySelectorAll('.msg')) if (isMatch(d, el.dataset)) remove(el.closest('.feat-card') || el);
+  } else if (type === 'chat:clear') {
+    frames = [];
+    renderChat();
   } else if (type === 'feature') {
     feature = { m: d, start: replayed && d?.featuredAt ? d.featuredAt : Date.now() };
     if (C.featured) showFeatured(feature);
@@ -240,13 +333,17 @@ function onFrame({ t: type, d }) {
 }
 
 boot({
-  page: '/overlay/chat', title: t(C.alerts ? 'overlay.alerts' : C.viewers ? 'overlay.viewers' : 'overlay.title'), header: false, admin: false, ownTheme: Boolean(C.id),
+  page: '/overlay/chat', title: t(C.alerts ? 'overlay.alerts' : C.viewers ? 'overlay.viewers' : C.poll ? 'overlay.poll' : C.goal ? 'overlay.goal' : 'overlay.title'), header: false, admin: false, ownTheme: Boolean(C.id),
   onReady(state, el) {
     app = el;
     app.classList.add('ov');
     app.append(list);
     unlocked = Boolean(state.unlocked);
+    premium = state.premium?.version ?? null;
     if (C.id) reconfigure(state.overlays || {}, false); else apply();
+    accounts = state.accounts || [];
+    if (C.poll) { poll = state.poll ?? null; showPoll(); }
+    if (C.goal) { goals = state.goals ?? null; showGoals(); }
     if (C.viewers) { keepStats(state.accounts); showViewers(); }
   },
   onFrame,

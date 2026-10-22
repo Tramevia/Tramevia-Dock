@@ -1,9 +1,10 @@
-// Tramevia Dock — dashboard (home + onboarding): overview, accounts, setup wizards, OBS docks & overlay builder, settings.
+// Tramevia Dock — dashboard (home + onboarding): overview, live tools, accounts, setup wizards, OBS docks & overlay builder, settings.
 import {
   boot, h, api, t, addI18n, lang, setLang, applyTheme, openAuth, copy, copyField, toast, busy,
   confirmDialog, fmt, icon, platformIcon, store, withKey, accessKey, query, $, $$, supportButton,
 } from '/assets/core.js';
-import { OVERLAY_IDS, ALERT_TYPES, STYLES, isLocked, DEFAULTS as OV_DEFAULTS, cleanOverlay } from '/assets/overlay-settings.js';
+import { OVERLAY_IDS, ALERT_TYPES, STYLES, GOALS, LOOKS, GOAL_COLORS, GOAL_ICONS, isLocked, DEFAULTS as OV_DEFAULTS, cleanOverlay } from '/assets/overlay-settings.js';
+import { goalIcon } from '/assets/overlay-widgets.js';
 
 addI18n({
   fr: {
@@ -178,6 +179,70 @@ addI18n({
     'home.set.title': 'Paramètres', 'home.set.appearance': 'Apparence',
     'home.set.langDesc': 'Langue de l’interface.', 'home.set.themeDesc': 'Sombre conseillé dans OBS.',
     'home.set.dark': 'Sombre', 'home.set.light': 'Clair', 'home.set.auto': 'Auto',
+    'home.am.title': 'Filtres automatiques',
+    'home.am.desc': 'Un message filtré est masqué dans les docks et sur l’overlay, et supprimé sur la plateforme quand elle le permet. Toi et tes modérateurs n’êtes jamais filtrés.',
+    'home.am.words': 'Mots interdits', 'home.am.wordsPlaceholder': 'Un mot ou une expression par ligne',
+    'home.am.wordsHint': 'Mots entiers, sans tenir compte des majuscules ni des accents : « cretin » bloque aussi « Crétin », mais « con » ne bloque pas « contenu ».',
+    'home.am.links': 'Bloquer les liens', 'home.am.linksDesc': 'Adresses web, y compris sans « https:// » (bit.ly/…, site.com).',
+    'home.am.allowed': 'Liens autorisés', 'home.am.allowedHint': 'Un site par ligne. youtube.com autorise aussi www.youtube.com et m.youtube.com.',
+    'home.am.action': 'Action', 'home.am.actionDesc': 'Ce qui se passe sur la plateforme.',
+    'home.am.delete': 'Supprimer le message', 'home.am.timeout': 'Supprimer et exclure',
+    'home.am.duration': 'Durée de l’exclusion', 'home.am.1m': '1 min', 'home.am.10m': '10 min', 'home.am.1h': '1 h', 'home.am.24h': '24 h',
+    'home.am.vip': 'Ne pas filtrer les VIP', 'home.am.vipDesc': 'Les VIP de Twitch et Kick, et les meilleurs donateurs du live TikTok.',
+    'home.am.sub': 'Ne pas filtrer les abonnés', 'home.am.subDesc': 'Abonnés Twitch, Kick et TikTok, et membres de la chaîne YouTube.',
+    'home.am.spam': 'Anti-spam',
+    'home.am.caps': 'Trop de majuscules', 'home.am.capsDesc': 'Au moins 15 lettres, dont 70 % en majuscules.',
+    'home.am.repeat': 'Message répété', 'home.am.repeatDesc': 'La même personne envoie le même message 3 fois en 1 minute : la 3e copie et les suivantes sont filtrées.',
+    'home.am.emotes': 'Flood d’émotes', 'home.am.emotesDesc': 'Plus de 10 émotes ou emojis dans un message.',
+    'home.am.symbols': 'Flood de symboles', 'home.am.symbolsDesc': 'Au moins 15 symboles, plus de la moitié du message (!!!!!, ░▒▓…).',
+    'home.nav.live': 'Live',
+    'home.live.title': 'Outils du live', 'home.live.sub': 'Sondage, objectifs, commandes et Discord, sur toutes tes plateformes à la fois.',
+    'home.sum.current': 'Live en cours', 'home.sum.last': 'Dernier live', 'home.sum.since': 'depuis {d}', 'home.sum.when': '{date} · {d}',
+    'home.sum.peak': 'Pic de spectateurs', 'home.sum.messages': 'Messages', 'home.sum.chatters': 'Personnes dans le chat',
+    'home.sum.follows': 'follows', 'home.sum.subs': 'abonnements', 'home.sum.top': 'Les plus actifs',
+    'home.poll.title': 'Sondage',
+    'home.poll.desc': 'Tes spectateurs votent en tapant 1, 2… dans n’importe quel chat, TikTok compris. Une voix par personne. À l’écran avec l’overlay Sondage (section OBS).',
+    'home.poll.question': 'Question', 'home.poll.questionPh': 'On joue à quoi après ?', 'home.poll.option': 'Réponse {n}',
+    'home.poll.add': 'Ajouter une réponse', 'home.poll.remove': 'Retirer la réponse {n}', 'home.poll.duration': 'Durée',
+    'home.poll.announce': 'Annoncer dans les chats',
+    'home.poll.announceDesc': 'La question au début et le résultat à la fin, dans chaque chat en live qui accepte les messages (pas TikTok). Sur YouTube, chaque message coûte 50 unités de quota.',
+    'home.poll.start': 'Lancer le sondage', 'home.poll.end': 'Terminer maintenant', 'home.poll.new': 'Nouveau sondage',
+    'home.poll.left': 'encore {d}', 'home.poll.closed': 'Terminé', 'home.poll.votes': '{n} vote', 'home.poll.votes|plural': '{n} votes',
+    'home.poll.s': '{n} s', 'home.poll.min': '{n} min',
+    'home.goal.title': 'Objectifs',
+    'home.goal.desc': 'Comptés sur toutes tes plateformes depuis que tu as fixé l’objectif. À l’écran avec l’overlay Objectif (section OBS).',
+    'home.goal.follows': 'Follows', 'home.goal.followsDesc': 'Twitch, Kick et TikTok.',
+    'home.goal.subs': 'Abonnements', 'home.goal.subsDesc': 'Subs Twitch et Kick (un sub offert compte pour un), membres YouTube, abonnés TikTok.',
+    'home.goal.label': 'Titre affiché', 'home.goal.target': 'Objectif', 'home.goal.count': 'Compteur', 'home.goal.reset': 'Remettre à zéro',
+    'home.goal.resetTitle': 'Remettre ce compteur à zéro ?', 'home.goal.resetBody': 'Le compteur repart de 0. L’objectif et son titre ne changent pas.',
+    'home.goal.labelPh.follows': 'Objectif follows', 'home.goal.labelPh.subs': 'Objectif abonnés',
+    'home.bot.title': 'Commandes et rappels', 'home.bot.desc': 'Réponses automatiques aux !commandes et messages réguliers, envoyés depuis tes comptes connectés.',
+    'home.bot.commands': 'Commandes', 'home.bot.name': 'Commande', 'home.bot.text': 'Réponse', 'home.bot.namePh': 'discord',
+    'home.bot.textPh': 'Rejoins le Discord : https://discord.gg/…', 'home.bot.addCommand': 'Ajouter une commande',
+    'home.bot.cmdHint': 'La réponse part dans le chat où la commande a été tapée, au plus une fois toutes les 30 secondes. {user} = le nom de la personne.',
+    'home.bot.timers': 'Rappels', 'home.bot.timerPh': 'Pense à suivre la chaîne 💜', 'home.bot.every': 'Fréquence', 'home.bot.addTimer': 'Ajouter un rappel',
+    'home.bot.timerHint': 'Envoyés partout en même temps pendant le live, et seulement dans les chats où quelqu’un a écrit depuis le rappel précédent.',
+    'home.bot.channels': 'Comptes qui répondent', 'home.bot.remove': 'Supprimer', 'home.bot.noSend': 'Aucun compte connecté ne peut envoyer de message.',
+    'home.bot.quota': 'YouTube : chaque message coûte 50 unités de quota, sur 10 000 par jour. Un rappel toutes les 15 minutes pendant 4 h = 16 messages = 800 unités.',
+    'home.dc.title': 'Discord',
+    'home.dc.desc': 'Un message dans ton salon Discord quand ton live commence, avec le lien de chaque chaîne en live, et le résumé quand il se termine.',
+    'home.dc.webhook': 'Adresse du webhook', 'home.dc.how': 'Dans Discord : Modifier le salon → Intégrations → Webhooks → Nouveau webhook → Copier l’URL du webhook.',
+    'home.dc.save': 'Enregistrer', 'home.dc.linked': 'Webhook relié ({hint})', 'home.dc.test': 'Envoyer un test', 'home.dc.remove': 'Retirer',
+    'home.dc.tested': 'Message de test envoyé : regarde ton salon Discord.', 'home.dc.saved': 'Webhook enregistré.',
+    'home.dc.announce': 'Annoncer le début du live', 'home.dc.announceDesc': 'Une minute après le début, le temps que le titre arrive. Pas si Tramevia Dock démarre en plein live.',
+    'home.dc.summary': 'Publier le résumé à la fin', 'home.dc.summaryDesc': 'Durée, pic de spectateurs, follows et abonnements par plateforme, les plus actifs du chat. Cinq minutes après la fin.',
+    'home.dc.message': 'Message d’annonce', 'home.dc.messagePh': '🔴 {name} est en live : {title}',
+    'home.dc.messageHint': '{name} = ta chaîne, {title} = le titre du live, {category} = la catégorie. @everyone et les mentions de rôles marchent.',
+    'home.ovl.mode.poll': 'Sondage', 'home.ovl.mode.goal': 'Objectif',
+    'home.ovl.hint.poll': 'Affiche le sondage en cours et ses votes en direct, puis le résultat pendant 15 secondes. Lance-le depuis la section Live.',
+    'home.ovl.hint.goal': 'Affiche la progression de ton objectif de follows ou d’abonnements, toutes plateformes confondues. Règle-le depuis la section Live.',
+    'home.ovl.goal': 'Objectif affiché', 'home.ovl.goal.subs': 'Abonnements', 'home.ovl.goal.follows': 'Follows', 'home.ovl.goal.both': 'Les deux',
+    'home.ovl.look': 'Style', 'home.ovl.look.bars': 'Barres', 'home.ovl.look.ring': 'Anneau',
+    'home.ovl.color': 'Couleur', 'home.ovl.color.tramevia': 'Dégradé Tramevia', 'home.ovl.color.custom': 'Couleur libre',
+    'home.ovl.icon.subs': 'Icône abonnements', 'home.ovl.icon.follows': 'Icône follows',
+    'home.ovl.ic.star': 'Étoile', 'home.ovl.ic.heart': 'Cœur', 'home.ovl.ic.user-plus': 'Nouvel abonné', 'home.ovl.ic.users': 'Communauté', 'home.ovl.ic.trophy': 'Trophée', 'home.ovl.ic.crown': 'Couronne', 'home.ovl.ic.award': 'Médaille', 'home.ovl.ic.flag': 'Drapeau', 'home.ovl.ic.target': 'Cible', 'home.ovl.ic.rocket': 'Fusée', 'home.ovl.ic.zap': 'Éclair', 'home.ovl.ic.flame': 'Flamme', 'home.ovl.ic.gem': 'Diamant', 'home.ovl.ic.sparkles': 'Étincelles', 'home.ovl.ic.gamepad': 'Manette', 'home.ovl.ic.music': 'Musique', 'home.ovl.ic.coffee': 'Café', 'home.ovl.ic.gift': 'Cadeau',
+    'home.ovl.testPoll': 'Tester un sondage', 'home.ovl.testedPoll': 'Sondage de test envoyé : il se joue dans l’aperçu et ta source OBS, sans rien compter.',
+    'home.ovl.testGoal': 'Tester une progression', 'home.ovl.testedGoal': 'Progression de test envoyée : la barre avance quelques secondes dans l’aperçu et ta source OBS, puis revient.',
     'home.sec.title': 'Sécurité',
     'home.sec.local': 'Mode local sans mot de passe : le tableau de bord n’est accessible que depuis cet ordinateur.',
     'home.sec.password': 'Accès protégé par mot de passe (ADMIN_PASSWORD).',
@@ -197,12 +262,15 @@ addI18n({
     'home.about.title': 'À propos', 'home.about.version': 'Version {v}',
     'home.about.desc': 'Logiciel libre et auto-hébergé : tes identifiants restent sur ton serveur.',
     'home.about.repo': 'Code source sur GitHub', 'home.about.docs': 'Documentation', 'home.about.issues': 'Signaler un problème',
-    'home.sup.title': 'Soutenir Tramevia Dock (Soon)', 'home.sup.desc': 'Tramevia Dock est gratuit et le restera. En le soutenant sur GitHub Sponsors, tu reçois un code soutien : il débloque les nouveaux styles d’alertes avant tout le monde.',
+    'home.sup.title': 'Soutenir Tramevia Dock', 'home.sup.desc': 'Tramevia Dock est gratuit et le restera. En le soutenant sur Buy Me a Coffee, tu reçois un code soutien : il débloque les styles d’alertes réservés aux soutiens.',
     'home.sup.code': 'Code soutien', 'home.sup.activate': 'Activer', 'home.sup.remove': 'Retirer le code',
     'home.sup.active': 'Code soutien actif. Merci {name} !', 'home.sup.activeUntil': 'Code soutien actif jusqu’au {date}. Merci {name} !',
-    'home.sup.expired': 'Ton code soutien a expiré le {date}.', 'home.sup.ok': 'Code activé : les styles en accès anticipé sont débloqués.', 'home.sup.removed': 'Code soutien retiré.',
-    'home.ovl.early': 'Accès anticipé (Soon) : {styles} sont réservés aux soutiens, puis gratuits pour tous. Date de déblocage :',
-    'home.ovl.locked': '{style} est réservé aux soutiens (Soon), puis gratuit pour tous : Soon 😎. Ajoute ton code soutien dans Paramètres → À propos.',
+    'home.sup.expired': 'Ton code soutien a expiré le {date}.', 'home.sup.ok': 'Code activé : les styles réservés aux soutiens sont débloqués.', 'home.sup.removed': 'Code soutien retiré.',
+    'home.sup.pack.ok': 'Styles soutiens téléchargés (version {v}).', 'home.sup.pack.offline': 'Serveur Tramevia injoignable : les styles soutiens se téléchargeront au prochain essai (au démarrage, puis chaque jour).',
+    'home.sup.pack.refused': 'Le serveur Tramevia refuse ce code (expiré ou révoqué) : les styles soutiens ne sont pas téléchargés.', 'home.sup.pack.outdated': 'Mets Tramevia Dock à jour pour télécharger les styles soutiens.',
+    'home.sup.pack.none': 'Téléchargement des styles soutiens désactivé sur ce dock (PREMIUM_URL).',
+    'home.ovl.early': '{styles} sont réservés aux soutiens.',
+    'home.ovl.locked': '{style} est réservé aux soutiens. Ajoute ton code soutien dans Paramètres → À propos.',
     'home.upd.upToDate': 'à jour', 'home.upd.availableShort': 'mise à jour {v} disponible',
     'home.upd.checked': 'dernière vérification {ago}', 'home.upd.never': 'pas encore vérifiée',
     'home.upd.check': 'Vérifier maintenant', 'home.upd.upToDateToast': 'Tramevia Dock est à jour.',
@@ -401,6 +469,70 @@ addI18n({
     'home.set.title': 'Settings', 'home.set.appearance': 'Appearance',
     'home.set.langDesc': 'Interface language.', 'home.set.themeDesc': 'Dark recommended in OBS.',
     'home.set.dark': 'Dark', 'home.set.light': 'Light', 'home.set.auto': 'Auto',
+    'home.am.title': 'Auto filters',
+    'home.am.desc': 'A filtered message is hidden in the docks and on the overlay, and deleted on the platform when it allows it. You and your moderators are never filtered.',
+    'home.am.words': 'Banned words', 'home.am.wordsPlaceholder': 'One word or phrase per line',
+    'home.am.wordsHint': 'Whole words, ignoring case and accents: "cafe" also blocks "Café", but "ass" does not block "class".',
+    'home.am.links': 'Block links', 'home.am.linksDesc': 'Web addresses, even without "https://" (bit.ly/…, site.com).',
+    'home.am.allowed': 'Allowed links', 'home.am.allowedHint': 'One site per line. youtube.com also allows www.youtube.com and m.youtube.com.',
+    'home.am.action': 'Action', 'home.am.actionDesc': 'What happens on the platform.',
+    'home.am.delete': 'Delete the message', 'home.am.timeout': 'Delete and time out',
+    'home.am.duration': 'Timeout length', 'home.am.1m': '1 min', 'home.am.10m': '10 min', 'home.am.1h': '1 h', 'home.am.24h': '24 h',
+    'home.am.vip': 'Don’t filter VIPs', 'home.am.vipDesc': 'Twitch and Kick VIPs, and the top gifters of a TikTok LIVE.',
+    'home.am.sub': 'Don’t filter subscribers', 'home.am.subDesc': 'Twitch, Kick and TikTok subscribers, and YouTube channel members.',
+    'home.am.spam': 'Anti-spam',
+    'home.am.caps': 'Too many capitals', 'home.am.capsDesc': 'At least 15 letters, 70 % of them capitals.',
+    'home.am.repeat': 'Repeated message', 'home.am.repeatDesc': 'The same person sends the same message 3 times within a minute: the 3rd copy and the next ones are filtered.',
+    'home.am.emotes': 'Emote flood', 'home.am.emotesDesc': 'More than 10 emotes or emoji in one message.',
+    'home.am.symbols': 'Symbol flood', 'home.am.symbolsDesc': 'At least 15 symbols, over half of the message (!!!!!, ░▒▓…).',
+    'home.nav.live': 'Live',
+    'home.live.title': 'Live tools', 'home.live.sub': 'Poll, goals, commands and Discord, on all your platforms at once.',
+    'home.sum.current': 'Live now', 'home.sum.last': 'Last stream', 'home.sum.since': 'for {d}', 'home.sum.when': '{date} · {d}',
+    'home.sum.peak': 'Peak viewers', 'home.sum.messages': 'Messages', 'home.sum.chatters': 'People in chat',
+    'home.sum.follows': 'follows', 'home.sum.subs': 'subs', 'home.sum.top': 'Most active',
+    'home.poll.title': 'Poll',
+    'home.poll.desc': 'Viewers vote by typing 1, 2… in any chat, TikTok included. One vote per person. On screen with the Poll overlay (OBS section).',
+    'home.poll.question': 'Question', 'home.poll.questionPh': 'What do we play next?', 'home.poll.option': 'Answer {n}',
+    'home.poll.add': 'Add an answer', 'home.poll.remove': 'Remove answer {n}', 'home.poll.duration': 'Duration',
+    'home.poll.announce': 'Announce in the chats',
+    'home.poll.announceDesc': 'The question at the start and the result at the end, in every live chat that accepts messages (not TikTok). On YouTube, each message costs 50 quota units.',
+    'home.poll.start': 'Start the poll', 'home.poll.end': 'End now', 'home.poll.new': 'New poll',
+    'home.poll.left': '{d} left', 'home.poll.closed': 'Ended', 'home.poll.votes': '{n} vote', 'home.poll.votes|plural': '{n} votes',
+    'home.poll.s': '{n}s', 'home.poll.min': '{n} min',
+    'home.goal.title': 'Goals',
+    'home.goal.desc': 'Counted on all your platforms since you set the goal. On screen with the Goal overlay (OBS section).',
+    'home.goal.follows': 'Follows', 'home.goal.followsDesc': 'Twitch, Kick and TikTok.',
+    'home.goal.subs': 'Subs', 'home.goal.subsDesc': 'Twitch and Kick subs (a gifted sub counts as one), YouTube members, TikTok subscribers.',
+    'home.goal.label': 'Title shown', 'home.goal.target': 'Goal', 'home.goal.count': 'Count', 'home.goal.reset': 'Reset to zero',
+    'home.goal.resetTitle': 'Reset this count to zero?', 'home.goal.resetBody': 'The count starts again from 0. The goal and its title stay.',
+    'home.goal.labelPh.follows': 'Follower goal', 'home.goal.labelPh.subs': 'Sub goal',
+    'home.bot.title': 'Commands and reminders', 'home.bot.desc': 'Automatic answers to !commands and regular messages, sent from your connected accounts.',
+    'home.bot.commands': 'Commands', 'home.bot.name': 'Command', 'home.bot.text': 'Answer', 'home.bot.namePh': 'discord',
+    'home.bot.textPh': 'Join the Discord: https://discord.gg/…', 'home.bot.addCommand': 'Add a command',
+    'home.bot.cmdHint': 'The answer goes to the chat the command was typed in, at most once every 30 seconds. {user} = the person’s name.',
+    'home.bot.timers': 'Reminders', 'home.bot.timerPh': 'Remember to follow the channel 💜', 'home.bot.every': 'How often', 'home.bot.addTimer': 'Add a reminder',
+    'home.bot.timerHint': 'Sent everywhere at once during the stream, and only to chats where someone wrote since the previous reminder.',
+    'home.bot.channels': 'Accounts that answer', 'home.bot.remove': 'Delete', 'home.bot.noSend': 'No connected account can send messages.',
+    'home.bot.quota': 'YouTube: each message costs 50 quota units, out of 10,000 a day. One reminder every 15 minutes for 4 hours = 16 messages = 800 units.',
+    'home.dc.title': 'Discord',
+    'home.dc.desc': 'A message in your Discord channel when your stream starts, with the link of every live channel, and the recap when it ends.',
+    'home.dc.webhook': 'Webhook address', 'home.dc.how': 'In Discord: Edit Channel → Integrations → Webhooks → New Webhook → Copy Webhook URL.',
+    'home.dc.save': 'Save', 'home.dc.linked': 'Webhook connected ({hint})', 'home.dc.test': 'Send a test', 'home.dc.remove': 'Remove',
+    'home.dc.tested': 'Test message sent: check your Discord channel.', 'home.dc.saved': 'Webhook saved.',
+    'home.dc.announce': 'Announce when the stream starts', 'home.dc.announceDesc': 'One minute after the start, so the title is in. Not when Tramevia Dock starts during a stream.',
+    'home.dc.summary': 'Post the recap at the end', 'home.dc.summaryDesc': 'Duration, peak viewers, follows and subs per platform, the most active chatters. Five minutes after the end.',
+    'home.dc.message': 'Announcement message', 'home.dc.messagePh': '🔴 {name} is live: {title}',
+    'home.dc.messageHint': '{name} = your channel, {title} = the stream title, {category} = the category. @everyone and role mentions work.',
+    'home.ovl.mode.poll': 'Poll', 'home.ovl.mode.goal': 'Goal',
+    'home.ovl.hint.poll': 'Shows the running poll and its votes live, then the result for 15 seconds. Start it from the Live section.',
+    'home.ovl.hint.goal': 'Shows the progress of your follower or sub goal, all platforms together. Set it from the Live section.',
+    'home.ovl.goal': 'Goal shown', 'home.ovl.goal.subs': 'Subs', 'home.ovl.goal.follows': 'Follows', 'home.ovl.goal.both': 'Both',
+    'home.ovl.look': 'Style', 'home.ovl.look.bars': 'Bars', 'home.ovl.look.ring': 'Ring',
+    'home.ovl.color': 'Colour', 'home.ovl.color.tramevia': 'Tramevia gradient', 'home.ovl.color.custom': 'Custom colour',
+    'home.ovl.icon.subs': 'Sub icon', 'home.ovl.icon.follows': 'Follower icon',
+    'home.ovl.ic.star': 'Star', 'home.ovl.ic.heart': 'Heart', 'home.ovl.ic.user-plus': 'New follower', 'home.ovl.ic.users': 'Community', 'home.ovl.ic.trophy': 'Trophy', 'home.ovl.ic.crown': 'Crown', 'home.ovl.ic.award': 'Medal', 'home.ovl.ic.flag': 'Flag', 'home.ovl.ic.target': 'Target', 'home.ovl.ic.rocket': 'Rocket', 'home.ovl.ic.zap': 'Lightning', 'home.ovl.ic.flame': 'Flame', 'home.ovl.ic.gem': 'Diamond', 'home.ovl.ic.sparkles': 'Sparkles', 'home.ovl.ic.gamepad': 'Gamepad', 'home.ovl.ic.music': 'Music', 'home.ovl.ic.coffee': 'Coffee', 'home.ovl.ic.gift': 'Gift',
+    'home.ovl.testPoll': 'Test a poll', 'home.ovl.testedPoll': 'Test poll sent: it plays in the preview and your OBS source, without counting anything.',
+    'home.ovl.testGoal': 'Test progress', 'home.ovl.testedGoal': 'Test progress sent: the bar moves for a few seconds in the preview and your OBS source, then comes back.',
     'home.sec.title': 'Security',
     'home.sec.local': 'Local mode without password: the dashboard is only reachable from this computer.',
     'home.sec.password': 'Access protected by a password (ADMIN_PASSWORD).',
@@ -420,12 +552,15 @@ addI18n({
     'home.about.title': 'About', 'home.about.version': 'Version {v}',
     'home.about.desc': 'Free and self-hosted software: your credentials stay on your server.',
     'home.about.repo': 'Source code on GitHub', 'home.about.docs': 'Documentation', 'home.about.issues': 'Report a problem',
-    'home.sup.title': 'Support Tramevia Dock (Soon)', 'home.sup.desc': 'Tramevia Dock is free and will stay free. Support it on GitHub Sponsors and you get a supporter code: it unlocks new alert styles before everyone else.',
+    'home.sup.title': 'Support Tramevia Dock', 'home.sup.desc': 'Tramevia Dock is free and will stay free. Support it on Buy Me a Coffee and you get a supporter code: it unlocks the supporter-only alert styles.',
     'home.sup.code': 'Supporter code', 'home.sup.activate': 'Activate', 'home.sup.remove': 'Remove the code',
     'home.sup.active': 'Supporter code active. Thank you {name}!', 'home.sup.activeUntil': 'Supporter code active until {date}. Thank you {name}!',
-    'home.sup.expired': 'Your supporter code expired on {date}.', 'home.sup.ok': 'Code activated: early-access styles are unlocked.', 'home.sup.removed': 'Supporter code removed.',
-    'home.ovl.early': 'Early access (Soon): {styles} are for supporters, then free for everyone. Unlock date:',
-    'home.ovl.locked': '{style} is for supporters (Soon), then free for everyone: Soon 😎. Add your supporter code in Settings → About.',
+    'home.sup.expired': 'Your supporter code expired on {date}.', 'home.sup.ok': 'Code activated: supporter styles are unlocked.', 'home.sup.removed': 'Supporter code removed.',
+    'home.sup.pack.ok': 'Supporter styles downloaded (version {v}).', 'home.sup.pack.offline': 'Tramevia server unreachable: the supporter styles will download on the next try (at start, then every day).',
+    'home.sup.pack.refused': 'The Tramevia server refuses this code (expired or revoked): the supporter styles are not downloaded.', 'home.sup.pack.outdated': 'Update Tramevia Dock to download the supporter styles.',
+    'home.sup.pack.none': 'Supporter styles download turned off on this dock (PREMIUM_URL).',
+    'home.ovl.early': '{styles} are for supporters.',
+    'home.ovl.locked': '{style} is for supporters. Add your supporter code in Settings → About.',
     'home.upd.upToDate': 'up to date', 'home.upd.availableShort': 'update {v} available',
     'home.upd.checked': 'last checked {ago}', 'home.upd.never': 'not checked yet',
     'home.upd.check': 'Check now', 'home.upd.upToDateToast': 'Tramevia Dock is up to date.',
@@ -456,11 +591,11 @@ addI18n({
 
 const REPO = 'https://github.com/Tramevia/Tramevia-Dock';
 const KICK_SCOPES = ['user:read', 'channel:read', 'channel:write', 'chat:write', 'events:subscribe', 'moderation:ban', 'moderation:chat_message:manage', 'kicks:read'];
-const SECTIONS = [['overview', 'home'], ['accounts', 'users'], ['obs', 'monitor'], ['settings', 'settings']];
+const SECTIONS = [['overview', 'home'], ['live', 'radio'], ['accounts', 'users'], ['obs', 'monitor'], ['settings', 'settings']];
 const DOCKS = [['chat', '/chat', 'chat'], ['events', '/events', 'zap'], ['community', '/community', 'users'], ['stream', '/stream', 'edit'], ['home', '/', 'home']];
 const AUTH_TIMEOUT = 600_000; // server forgets the OAuth state after 10 min
 
-const S = { state: null, accounts: [], apps: null, keys: null, session: null, ui: {}, pending: {}, update: null };
+const S = { state: null, accounts: [], apps: null, keys: null, session: null, ui: {}, pending: {}, update: null, bot: null, discord: null, live: null };
 const el = {};
 const forms = {}; // username forms survive re-renders (keeps typed text)
 let ovId = 'chat'; // saved overlay shown in the builder
@@ -581,6 +716,7 @@ function render() {
   for (const [id] of SECTIONS) el[id] = h('section.home-section', { id, attrs: { 'aria-label': t(`home.nav.${id}`) } });
   el.root.replaceChildren(h('div.home', nav, h('div.home-main', SECTIONS.map(([id]) => el[id]))));
   renderOverview();
+  renderLive();
   renderAccounts();
   renderObs();
   renderSettings();
@@ -622,7 +758,7 @@ function onboarding(hero) {
     ['s3', h('button.btn.sm', { type: 'button', dataset: { focus: 'onb:obs' }, onclick: () => goTo('obs') }, icon('monitor'), t('home.onb.s3Cta'))],
   ];
   return h(`div.card.onb${hero ? '.hero' : ''}`,
-    h('div.onb-head', hero && h('img', { src: '/assets/logo.svg', alt: '' }),
+    h('div.onb-head', hero && h('img', { src: '/assets/logo-3d.webp', alt: '' }),
       h('div.stack.tight', hero ? h('h1', t('home.onb.title')) : h('h2', t('home.onb.resume')), h('p.muted', t('home.onb.sub')))),
     h('div.stack.tight',
       h('div.progress', { attrs: { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '3', 'aria-valuenow': String(count), 'aria-label': t('home.onb.progressLabel') } },
@@ -694,6 +830,18 @@ function paintStats() {
   }
   const count = $('#ov-count');
   if (count) count.textContent = [t('home.ov.liveCount', { n: live.length, total: S.accounts.length }), partial && t('home.ov.partial')].filter(Boolean).join(' · ');
+  // Share of the audience per platform: one bar, one legend line per platform.
+  const split = $('#ov-split');
+  if (split) {
+    const by = new Map();
+    for (const a of live) if (a.stats.viewers > 0) by.set(a.platform, (by.get(a.platform) || 0) + a.stats.viewers);
+    const parts = [...by].sort((x, y) => y[1] - x[1]);
+    const name = id => S.state.platforms.find(p => p.id === id)?.name || id;
+    split.replaceChildren(...(parts.length ? [
+      h('div.ov-bar', { attrs: { 'aria-hidden': 'true' } }, parts.map(([pf, n]) => h(`span.pf-${pf}`, { style: { 'flex-grow': String(n) } }))),
+      h('ul.ov-legend', parts.map(([pf, n]) => h(`li.pf-${pf}`, h('span.ov-dot'), h('span.ellipsis', name(pf)), h('strong', fmt.number(n))))),
+    ] : []));
+  }
 }
 
 function renderOverview() {
@@ -710,9 +858,11 @@ function renderOverview() {
     allDone ? '' : onboarding(false), // replaceChildren() would print a `false`
     h('div.ov-grid',
       h('div.card.ov-total',
-        h('span.section-title', t('home.ov.total')),
-        h('span.ov-total-num', { id: 'ov-total' }, '—'),
-        h('span.small.muted', { id: 'ov-count' })),
+        h('div.stack.tight',
+          h('span.section-title', t('home.ov.total')),
+          h('span.ov-total-num', { id: 'ov-total' }, '—'),
+          h('span.small.muted', { id: 'ov-count' })),
+        h('div.ov-split', { id: 'ov-split' })),
       h('div.card.flush.ov-live',
         h('div.ov-live-head', h('h3', t('home.ov.channels')), h('a.btn.ghost.sm', { href: '#accounts', dataset: { focus: 'ov:manage' } }, t('home.ov.manage'))),
         h('ul.ov-list', S.accounts.map(a => h(`li.ov-row.pf-${a.platform}`,
@@ -720,8 +870,10 @@ function renderOverview() {
           h('div.ov-row-main', h('div.ellipsis.strong', a.displayName), h('div.small.muted.ellipsis', { dataset: { meta: a.id } })),
           statusBadge(a, true),
           h('div.ov-row-stat', { dataset: { live: a.id } })))))),
+    el.summary = h('div.card.sum-card', { attrs: { 'aria-live': 'off' } }),
     quickLinks()));
   paintStats();
+  paintSummary();
 }
 
 function quickLinks() {
@@ -736,7 +888,249 @@ function quickLinks() {
       h('span.stack.tight', h('strong', t(`home.links.${k}`)), h('span.small.muted', t(`home.links.${k}Desc`)))))));
 }
 
-// ---------------------------------------------------------------- 2. accounts
+/** Overview card: the stream running now, else the last one (hidden before the first stream). Repainted by 'live' frames. */
+function paintSummary() {
+  const box = el.summary;
+  if (!box) return;
+  const cur = S.live?.current;
+  const s = cur || S.live?.last;
+  box.hidden = !s;
+  if (!s) return box.replaceChildren();
+  const d = fmt.duration((cur ? Date.now() : s.endedAt) - s.startedAt);
+  const when = cur ? t('home.sum.since', { d })
+    : t('home.sum.when', { date: new Date(s.startedAt).toLocaleDateString(lang(), { weekday: 'long', day: 'numeric', month: 'long' }), d });
+  const stat = (label, value) => h('div.sum-stat', h('strong', value), h('span.small.muted', label));
+  box.replaceChildren(...[
+    h('div.sum-head', h('h3.card-title', icon('chart'), t(cur ? 'home.sum.current' : 'home.sum.last')), cur && h('span.badge.live', t('common.live')), h('span.small.muted', when)),
+    h('div.sum-stats', stat(t('home.sum.peak'), fmt.number(s.peak)), stat(t('home.sum.messages'), fmt.number(s.messages)), stat(t('home.sum.chatters'), fmt.number(s.chatters))),
+    s.platforms.length > 0 && h('ul.sum-pf', s.platforms.map(p => h(`li.pf-${p.platform}`, platformIcon(p.platform), h('span.ellipsis', platform(p.platform)?.name || p.platform),
+      h('span.small.muted', `${fmt.number(p.follows)} ${t('home.sum.follows')} · ${fmt.number(p.subs)} ${t('home.sum.subs')}`)))),
+    s.top.length > 0 && h('div.stack.tight', h('span.label', t('home.sum.top')),
+      h('ol.sum-top', s.top.map(c => h('li', platformIcon(c.platform), h('span.ellipsis', c.name), h('strong', fmt.number(c.n)))))),
+  ].filter(c => c instanceof Node));
+}
+
+// ---------------------------------------------------------------- 2. live tools: poll, goals, commands, Discord
+function renderLive() {
+  if (!el.live) return;
+  el.live.replaceChildren(
+    sectionHead('radio', t('home.live.title'), t('home.live.sub')),
+    h('div.set-grid', el.pollCard = h('div.card'), el.goalCard = h('div.card'), el.botCard = h('div.card'), el.dcCard = h('div.card')));
+  renderPoll();
+  renderGoals();
+  renderBot();
+  renderDiscord();
+}
+
+const pollDraft = { question: '', options: ['', ''], seconds: 120, announce: true }; // the form survives re-renders
+const POLL_SECONDS = [30, 60, 120, 300, 600];
+let pollTimer = 0;
+const clock = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+const pct = new Intl.NumberFormat(undefined, { style: 'percent' });
+
+/** The poll running (live bars, time left) or ended (result), else the form to start one. */
+function renderPoll() {
+  const box = el.pollCard;
+  if (!box) return;
+  clearInterval(pollTimer);
+  pollTimer = 0;
+  const p = S.state.poll;
+  const head = [h('h3.card-title', icon('chart'), t('home.poll.title')), h('p.small.muted', t('home.poll.desc'))];
+  if (p) {
+    el.pollBars = h('ol.poll-bars', p.options.map((o, i) => h('li.poll-bar', h('span.poll-num', String(i + 1)), h('span.ellipsis', o.label), h('strong'),
+      h('span.progress', { attrs: { 'aria-hidden': 'true' } }, h('span')))));
+    el.pollMeta = h('p.small.muted');
+    const end = h('button.btn.sm', { type: 'button', dataset: { focus: 'poll:end' }, onclick: e => busy(e.currentTarget, async () => { S.state.poll = await api('/api/poll/close', { body: {} }); renderPoll(); }) }, icon('check'), t('home.poll.end'));
+    const again = h('button.btn.sm.primary', { type: 'button', dataset: { focus: 'poll:new' }, onclick: e => busy(e.currentTarget, async () => { await api('/api/poll', { method: 'DELETE' }); S.state.poll = null; renderPoll(); }) }, icon('plus'), t('home.poll.new'));
+    keepFocus(() => box.replaceChildren(...head, h('strong.poll-q', p.question), el.pollBars, el.pollMeta, h('div.row', p.closedAt ? again : end)));
+    paintPoll();
+    if (!p.closedAt) pollTimer = setInterval(paintPoll, 1000); // the time left (stopped when the poll ends)
+    return;
+  }
+  const d = pollDraft;
+  const q = h('input', { id: 'poll-q', type: 'text', maxLength: 120, value: d.question, placeholder: t('home.poll.questionPh'), dataset: { focus: 'poll:q' }, oninput: () => { d.question = q.value; } });
+  const options = d.options.map((v, i) => {
+    const name = t('home.poll.option', { n: i + 1 });
+    const input = h('input', { id: `poll-o${i}`, type: 'text', maxLength: 40, value: v, placeholder: name, attrs: { 'aria-label': name }, dataset: { focus: `poll:o${i}` }, oninput: () => { d.options[i] = input.value; } });
+    return h('div.poll-opt', h('span.poll-num', { attrs: { 'aria-hidden': 'true' } }, String(i + 1)), input,
+      d.options.length > 2 && h('button.icon-btn', { type: 'button', title: t('home.poll.remove', { n: i + 1 }), attrs: { 'aria-label': t('home.poll.remove', { n: i + 1 }) }, dataset: { focus: `poll:x${i}` }, onclick: () => { d.options.splice(i, 1); renderPoll(); } }, icon('x')));
+  });
+  const add = () => { d.options.push(''); renderPoll(); $(`#poll-o${d.options.length - 1}`)?.focus(); };
+  keepFocus(() => box.replaceChildren(...head,
+    h('form.stack', { onsubmit: e => { e.preventDefault(); startPoll(e.submitter); } },
+      h('div.field', h('label', { htmlFor: q.id }, t('home.poll.question')), q),
+      h('div.stack.tight', options, d.options.length < 5 && h('button.btn.sm.ghost.poll-add', { type: 'button', dataset: { focus: 'poll:add' }, onclick: add }, icon('plus'), t('home.poll.add'))),
+      h('div.field', h('span.label', t('home.poll.duration')),
+        segmented(t('home.poll.duration'), POLL_SECONDS.map(s => [s, s < 60 ? t('home.poll.s', { n: s }) : t('home.poll.min', { n: s / 60 })]), d.seconds, v => { d.seconds = v; }, 'poll:dur')),
+      h('label.set-row.set-toggle', h('span.set-row-text', h('strong', t('home.poll.announce')), h('span.small.muted', t('home.poll.announceDesc'))),
+        h('span.switch', h('input', { type: 'checkbox', checked: d.announce, dataset: { focus: 'poll:announce' }, onchange: e => { d.announce = e.target.checked; } }), h('span'))),
+      h('div', h('button.btn.primary', { type: 'submit', dataset: { focus: 'poll:start' } }, icon('play'), t('home.poll.start'))))));
+}
+
+async function startPoll(button) {
+  const d = pollDraft;
+  await busy(button, async () => {
+    S.state.poll = await api('/api/poll', { body: { question: d.question, options: d.options, seconds: d.seconds, announce: d.announce } });
+    Object.assign(d, { question: '', options: ['', ''] });
+    renderPoll();
+  });
+}
+
+/** Bars and time left in place ('poll' frames come with every wave of votes). */
+function paintPoll() {
+  const p = S.state.poll;
+  if (!p || !el.pollBars?.isConnected) { clearInterval(pollTimer); pollTimer = 0; return; }
+  const best = Math.max(...p.options.map(o => o.votes));
+  [...el.pollBars.children].forEach((li, i) => {
+    const share = p.total ? p.options[i].votes / p.total : 0;
+    li.classList.toggle('win', Boolean(p.closedAt && p.total && p.options[i].votes === best));
+    li.querySelector('strong').textContent = pct.format(share);
+    li.querySelector('.progress > span').style.setProperty('--p', `${share * 100}%`);
+  });
+  el.pollMeta.textContent = [t('home.poll.votes', { n: p.total }), p.closedAt ? t('home.poll.closed') : t('home.poll.left', { d: clock(p.endsAt - Date.now()) })].join(' · ');
+}
+
+/** Follow and sub goals: title, count and goal saved on change; bars repainted by 'goal' frames. */
+function renderGoals() {
+  const box = el.goalCard;
+  if (!box) return;
+  const g = S.state.goals;
+  box.hidden = !g;
+  if (!g) return;
+  const save = patch => api('/api/goals', { method: 'PUT', body: { ...S.state.goals, ...patch } })
+    .then(r => { S.state.goals = r; paintGoals(); }, err => { toast(err.message, 'error', 6000); renderGoals(); });
+  const field = (kind, key, input) => h('div.field', h('label', { htmlFor: input.id }, t(`home.goal.${key}`)), input);
+  const num = (kind, key, min) => {
+    const input = h('input', {
+      id: `goal-${kind}-${key}`, type: 'number', min, max: 10_000_000, step: 1, value: g[kind][key], dataset: { focus: `goal:${kind}:${key}`, goal: `${kind}:${key}` },
+      onchange: () => {
+        const n = Number(input.value);
+        if (input.value !== '' && Number.isInteger(n) && n >= min) save({ [kind]: { ...S.state.goals[kind], [key]: n } }); else input.value = S.state.goals[kind][key];
+      },
+    });
+    return field(kind, key, input);
+  };
+  keepFocus(() => box.replaceChildren(
+    h('h3.card-title', icon('target'), t('home.goal.title')),
+    h('p.small.muted', t('home.goal.desc')),
+    ...['subs', 'follows'].map(kind => {
+      const label = h('input', { id: `goal-${kind}-label`, type: 'text', maxLength: 40, value: g[kind].label, placeholder: t(`home.goal.labelPh.${kind}`), dataset: { focus: `goal:${kind}:label` },
+        onchange: () => save({ [kind]: { ...S.state.goals[kind], label: label.value } }) });
+      const reset = async () => {
+        if (await confirmDialog({ title: t('home.goal.resetTitle'), body: t('home.goal.resetBody'), confirm: t('home.goal.reset') })) save({ [kind]: { ...S.state.goals[kind], count: 0 } });
+      };
+      return h('div.goal-row',
+        h('div.row', h('strong', t(`home.goal.${kind}`)), h('span.spacer'), h('strong.goal-count', { dataset: { goalCount: kind } })),
+        h('span.small.muted', t(`home.goal.${kind}Desc`)),
+        h('div.progress', { dataset: { goalBar: kind }, attrs: { 'aria-hidden': 'true' } }, h('span')),
+        h('div.goal-fields', field(kind, 'label', label), num(kind, 'count', 0), num(kind, 'target', 1)),
+        h('div', h('button.btn.sm.ghost', { type: 'button', dataset: { focus: `goal:${kind}:reset` }, onclick: reset }, icon('refresh'), t('home.goal.reset'))));
+    })));
+  paintGoals();
+}
+
+function paintGoals() {
+  const g = S.state.goals;
+  if (!g || !el.goalCard?.isConnected) return;
+  for (const kind of ['subs', 'follows']) {
+    const { count, target } = g[kind];
+    const text = $(`[data-goal-count="${kind}"]`);
+    if (text) text.textContent = `${fmt.number(count)} / ${fmt.number(target)}`;
+    $(`[data-goal-bar="${kind}"] > span`)?.style.setProperty('--p', `${Math.min(100, (count / target) * 100)}%`);
+    const input = $(`[data-goal="${kind}:count"]`);
+    if (input && document.activeElement !== input) input.value = count;
+  }
+}
+
+let botDraft = null; // what the card shows, rows still being typed included (only complete ones are saved)
+let botQueue = Promise.resolve();
+const BOT_MINUTES = [5, 10, 15, 20, 30, 45, 60];
+
+function saveBot() {
+  const d = botDraft;
+  const body = { commands: d.commands.filter(c => c.name && c.text.trim()), timers: d.timers.filter(r => r.text.trim()), offAccounts: d.offAccounts };
+  botQueue = botQueue.then(() => api('/api/bot', { method: 'PUT', body }).then(r => { S.bot = r; }, err => toast(err.message, 'error', 6000)));
+}
+
+/** Chat commands, reminders and the accounts that send them. Each change is saved at once. */
+function renderBot() {
+  const box = el.botCard;
+  if (!box) return;
+  box.hidden = !S.bot;
+  if (!S.bot) return;
+  const d = botDraft ||= structuredClone(S.bot);
+  if (!d.commands.length) d.commands.push({ name: '', text: '' });
+  if (!d.timers.length) d.timers.push({ text: '', minutes: 15 });
+  const remove = (list, i, key) => h('button.icon-btn', { type: 'button', title: t('home.bot.remove'), attrs: { 'aria-label': t('home.bot.remove') }, dataset: { focus: key },
+    onclick: () => { list.splice(i, 1); saveBot(); renderBot(); } }, icon('trash'));
+  const command = (c, i) => {
+    const name = h('input.bot-name', { type: 'text', maxLength: 25, value: c.name, placeholder: t('home.bot.namePh'), attrs: { 'aria-label': t('home.bot.name') }, dataset: { focus: `bot:c${i}:name` },
+      onchange: () => { c.name = name.value.trim().replace(/^!+/, '').toLowerCase(); name.value = c.name; saveBot(); } });
+    const text = h('input', { type: 'text', maxLength: 500, value: c.text, placeholder: t('home.bot.textPh'), attrs: { 'aria-label': t('home.bot.text') }, dataset: { focus: `bot:c${i}:text` },
+      onchange: () => { c.text = text.value; saveBot(); } });
+    return h('div.bot-row', h('span.bot-name-box', h('span.bot-bang', { attrs: { 'aria-hidden': 'true' } }, '!'), name), text, remove(d.commands, i, `bot:c${i}:x`));
+  };
+  const timer = (r, i) => {
+    const text = h('input', { type: 'text', maxLength: 500, value: r.text, placeholder: t('home.bot.timerPh'), attrs: { 'aria-label': t('home.bot.timers') }, dataset: { focus: `bot:t${i}:text` },
+      onchange: () => { r.text = text.value; saveBot(); } });
+    const every = h('select', { attrs: { 'aria-label': t('home.bot.every') }, dataset: { focus: `bot:t${i}:min` }, onchange: () => { r.minutes = Number(every.value); saveBot(); } },
+      [...new Set([...BOT_MINUTES, r.minutes])].sort((x, y) => x - y).map(m => h('option', { value: m, selected: m === r.minutes }, t('home.poll.min', { n: m }))));
+    return h('div.bot-row.bot-timer', text, every, remove(d.timers, i, `bot:t${i}:x`));
+  };
+  const senders = S.accounts.filter(a => a.caps?.chatSend);
+  const chip = a => h('button.toggle-chip', {
+    type: 'button', dataset: { focus: `bot:a:${a.id}` }, attrs: { 'aria-pressed': String(!d.offAccounts.includes(a.id)) },
+    onclick: e => {
+      d.offAccounts = d.offAccounts.includes(a.id) ? d.offAccounts.filter(x => x !== a.id) : [...d.offAccounts, a.id];
+      e.currentTarget.setAttribute('aria-pressed', String(!d.offAccounts.includes(a.id)));
+      saveBot();
+    },
+  }, platformIcon(a.platform), a.displayName);
+  keepFocus(() => box.replaceChildren(
+    h('h3.card-title', icon('chat'), t('home.bot.title')),
+    h('p.small.muted', t('home.bot.desc')),
+    h('h4.set-sub', t('home.bot.commands')),
+    h('div.stack.tight', d.commands.map(command)),
+    h('div.row.tight', h('button.btn.sm.ghost', { type: 'button', dataset: { focus: 'bot:addc' }, onclick: () => { d.commands.push({ name: '', text: '' }); renderBot(); } }, icon('plus'), t('home.bot.addCommand'))),
+    h('p.tiny.muted', t('home.bot.cmdHint')),
+    h('h4.set-sub', t('home.bot.timers')),
+    h('div.stack.tight', d.timers.map(timer)),
+    h('div.row.tight', h('button.btn.sm.ghost', { type: 'button', dataset: { focus: 'bot:addt' }, onclick: () => { d.timers.push({ text: '', minutes: 15 }); renderBot(); } }, icon('plus'), t('home.bot.addTimer'))),
+    h('p.tiny.muted', t('home.bot.timerHint')),
+    h('h4.set-sub', t('home.bot.channels')),
+    senders.length ? h('div.row.tight', senders.map(chip)) : h('p.small.muted', t('home.bot.noSend')),
+    senders.some(a => a.platform === 'youtube') && h('p.tiny.muted', icon('info', 12), ' ', t('home.bot.quota'))));
+}
+
+/** Discord webhook (sealed on the server, only a hint comes back), announcement and recap switches, announcement text. */
+function renderDiscord() {
+  const box = el.dcCard;
+  if (!box) return;
+  const dc = S.discord;
+  box.hidden = !dc;
+  if (!dc) return;
+  const put = patch => api('/api/discord', { method: 'PUT', body: patch })
+    .then(r => { S.discord = r; renderDiscord(); return true; }, err => { toast(err.message, 'error', 6000); renderDiscord(); return false; });
+  const toggle = key => h('label.set-row.set-toggle', h('span.set-row-text', h('strong', t(`home.dc.${key}`)), h('span.small.muted', t(`home.dc.${key}Desc`))),
+    h('span.switch', h('input', { type: 'checkbox', checked: dc[key], dataset: { focus: `dc:${key}` }, onchange: e => put({ [key]: e.target.checked }) }), h('span')));
+  const url = h('input', { id: 'dc-url', type: 'password', autocomplete: 'off', spellcheck: false, placeholder: 'https://discord.com/api/webhooks/…', dataset: { focus: 'dc:url' } });
+  const hook = dc.webhook
+    ? h('div.row', h('span.badge.ok', icon('check', 12), t('home.dc.linked', { hint: dc.hint })), h('span.spacer'),
+      h('button.btn.sm', { type: 'button', dataset: { focus: 'dc:test' }, onclick: e => busy(e.currentTarget, async () => { await api('/api/discord/test', { body: {} }); toast(t('home.dc.tested'), 'ok'); }) }, icon('send'), t('home.dc.test')),
+      h('button.btn.sm.ghost', { type: 'button', dataset: { focus: 'dc:remove' }, onclick: () => put({ webhook: null }) }, t('home.dc.remove')))
+    : h('form.stack.tight', { onsubmit: async e => { e.preventDefault(); if (await put({ webhook: url.value })) toast(t('home.dc.saved'), 'ok'); } },
+      h('label.label', { htmlFor: url.id }, t('home.dc.webhook')),
+      h('div.row.tight.dc-url', url, h('button.btn.sm.primary', { type: 'submit', dataset: { focus: 'dc:save' } }, t('home.dc.save'))),
+      h('p.tiny.muted', t('home.dc.how')));
+  const msg = h('textarea', { id: 'dc-msg', rows: 2, maxLength: 500, value: dc.message, placeholder: t('home.dc.messagePh'), dataset: { focus: 'dc:msg' }, onchange: () => put({ message: msg.value }) });
+  keepFocus(() => box.replaceChildren(
+    h('h3.card-title', icon('megaphone'), t('home.dc.title')),
+    h('p.small.muted', t('home.dc.desc')),
+    hook, toggle('announce'), toggle('summary'),
+    h('div.field', h('label', { htmlFor: msg.id }, t('home.dc.message')), msg, h('p.tiny.muted', t('home.dc.messageHint')))));
+}
+
+// ---------------------------------------------------------------- 3. accounts
 function renderAccounts() {
   if (!el.accounts) return;
   keepFocus(() => el.accounts.replaceChildren(
@@ -944,7 +1338,7 @@ function kickOptions(a) {
   });
 }
 
-// ---------------------------------------------------------------- 3. setup wizard
+// ---------------------------------------------------------------- 4. setup wizard
 function wizardSteps(pid, { appName, redirect, consoleUrl, local, webhookUrl }) {
   const k = s => t(`home.wiz.${pid}.${s}`);
   const consoleBtn = consoleUrl && linkBtn(consoleUrl, t('home.wiz.openConsole', { name: platform(pid).name }));
@@ -1103,7 +1497,7 @@ async function removeApp(p, dlg) {
   });
 }
 
-// ---------------------------------------------------------------- 4. OBS
+// ---------------------------------------------------------------- 5. OBS
 function renderObs() {
   if (!el.obs) return;
   const base = S.state.publicUrl;
@@ -1220,6 +1614,8 @@ function renderOverlayForm() {
   const featured = id === 'featured';
   const alerts = id === 'alerts';
   const viewers = id === 'viewers';
+  const poll = id === 'poll', goal = id === 'goal';
+  const widget = viewers || poll || goal; // draws its own figure: no chat filters, display switches or theme hint
   const set = (key, value) => { o[key] = value; saveOverlay(id, key); };
   const num = (key, min, max) => {
     const input = h('input', {
@@ -1254,6 +1650,32 @@ function renderOverlayForm() {
       renderOverlayForm(); // puts the pressed state back on the saved style
       ovStatus(t('home.ovl.locked', { style: styleName(v) }));
     }, 'ov:style'));
+  // Goal colour: the Tramevia gradients, a suggested colour or any colour (the picker); one icon per goal shown.
+  const pressed = (box, current) => { for (const b of box.querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.value === current)); };
+  const colorChoice = () => {
+    const custom = o.color !== 'tramevia' && !GOAL_COLORS.includes(o.color);
+    const picker = h('input', { type: 'color', value: o.color === 'tramevia' ? '#a78bfa' : o.color, dataset: { focus: 'ov:color:pick' }, attrs: { 'aria-label': t('home.ovl.color.custom') },
+      oninput: () => { set('color', picker.value); pressed(box, picker.value); wrap.classList.add('on'); } });
+    const wrap = h(`label.swatch.custom${custom ? '.on' : ''}`, { title: t('home.ovl.color.custom') }, picker);
+    const box = h('div.swatches', { attrs: { role: 'group', 'aria-label': t('home.ovl.color') } },
+      ['tramevia', ...GOAL_COLORS].map(c => h('button.swatch', {
+        type: 'button', value: c, title: c === 'tramevia' ? t('home.ovl.color.tramevia') : c, dataset: { focus: `ov:color:${c}` },
+        style: { '--sw': c === 'tramevia' ? 'linear-gradient(140deg, #74a4ff, #9c66ff 50%, #ff4bb4)' : c },
+        attrs: { 'aria-pressed': String(o.color === c), 'aria-label': c === 'tramevia' ? t('home.ovl.color.tramevia') : c },
+        onclick: () => { set('color', c); pressed(box, c); wrap.classList.remove('on'); },
+      })), wrap);
+    return h('div.field', h('span.label', t('home.ovl.color')), box);
+  };
+  const iconChoice = kind => {
+    const key = `${kind}Icon`;
+    const box = h('div.icon-picks', { attrs: { role: 'group', 'aria-label': t(`home.ovl.icon.${kind}`) } },
+      GOAL_ICONS.map(n => h('button.icon-pick', {
+        type: 'button', value: n, title: t(`home.ovl.ic.${n}`), dataset: { focus: `ov:${key}:${n}` },
+        attrs: { 'aria-pressed': String(o[key] === n), 'aria-label': t(`home.ovl.ic.${n}`) },
+        onclick: () => { set(key, n); pressed(box, n); },
+      }, goalIcon(n))));
+    return h('div.field', h('span.label', t(`home.ovl.icon.${kind}`)), box);
+  };
   // Bubbles and outline only change something on the transparent theme (dark/light always draw cards).
   const textOnly = o.theme === 'transparent';
 
@@ -1266,29 +1688,31 @@ function renderOverlayForm() {
       segmented(t('home.ovl.mode'), OVERLAY_IDS.map(v => [v, t(`home.ovl.mode.${v}`)]), id, v => { ovId = v; renderOverlayForm(); }, 'ov:mode')),
     h('p.small.muted', t(`home.ovl.hint.${id}`)),
     h('div.stack.tight', h('span.label', t('home.ovl.url', { name: t(`home.ovl.mode.${id}`) })), secretField(overlayUrl(id, S.state.publicUrl), 'ov:url'),
-      h('p.small.muted', t('home.ovl.how', { w: alerts ? 1920 : 400, h: alerts ? 1080 : viewers ? 400 : 600, scene: alerts ? t('home.ovl.scene') : '' })), h('p.tiny.muted', icon('shield', 12), ' ', t('home.ovl.readonly'))),
+      h('p.small.muted', t('home.ovl.how', { w: alerts ? 1920 : poll ? 600 : goal ? 800 : 400, h: alerts ? 1080 : viewers || poll ? 400 : goal ? 200 : 600, scene: alerts ? t('home.ovl.scene') : '' })), h('p.tiny.muted', icon('shield', 12), ' ', t('home.ovl.readonly'))),
     h('div.row.ov-choices', choice('theme', ['transparent', 'dark', 'light'], true),
       alerts ? [choice('position', ['top', 'center', 'bottom']), styleChoice()]
-        : viewers ? choice('align', ['left', 'center', 'right'], false, 'number') : choice('align', ['left', 'right'])),
+        : viewers ? choice('align', ['left', 'center', 'right'], false, 'number') : goal ? [choice('goal', GOALS, true), choice('look', LOOKS)] : poll ? choice('look', LOOKS) : choice('align', ['left', 'right'])),
+    goal && colorChoice(),
+    goal && h('div.row.ov-choices', (o.goal === 'follows' ? ['follows'] : o.goal === 'both' ? ['subs', 'follows'] : ['subs']).map(iconChoice)),
     alerts && locked.length && h('div.row.early-note', h('p.small.muted', icon('lock', 12), ' ',
-      t('home.ovl.early', { styles: locked.map(styleName).join(', ') }), ' ',
-      h('span.soon', h('img', { src: '/assets/logo-3d.png', alt: 'Tramevia' }), 'Soon', h('span', { attrs: { 'aria-hidden': 'true' } }, '😎'))), supportButton()),
-    !viewers && h('p.small.muted', t(`home.ovl.themeHint.${o.theme}`)),
+      t('home.ovl.early', { styles: locked.map(styleName).join(', ') })), supportButton()),
+    !widget && h('p.small.muted', t(`home.ovl.themeHint.${o.theme}`)),
     h('div.ov-fields',
-      alerts ? [num('alertSeconds', 1, 60), num('volume', 0, 100)] : featured ? num('featureSeconds', 0, 300) : viewers ? null : [num('max', 1, 100), num('fade', 0, 600)],
+      alerts ? [num('alertSeconds', 1, 60), num('volume', 0, 100)] : featured ? num('featureSeconds', 0, 300) : widget ? null : [num('max', 1, 100), num('fade', 0, 600)],
       num('size', 10, 48)),
     alerts && h('div.stack.tight', h('span.label', t('home.ovl.types')),
       h('div.row.tight', Object.keys(ALERT_TYPES).map((c, _, all) => chip('offTypes', all, c, t(`home.ovl.type.${c}`))))),
-    !viewers && h('div.stack.tight', h('span.label', t('home.ovl.display')),
+    !widget && h('div.stack.tight', h('span.label', t('home.ovl.display')),
       h('div.ov-switches', (alerts ? ['icons', 'credit'] : ['badges', 'icons', 'avatars', ...(textOnly ? ['bubble', 'outline'] : []), 'credit']).map(toggle))),
-    !featured && !alerts && !viewers ? h('div.stack.tight', h('span.label', t('home.ovl.filters')),
+    !featured && !alerts && !widget ? h('div.stack.tight', h('span.label', t('home.ovl.filters')),
       h('div.ov-switches', ['hideBots', 'hideCommands', 'events'].map(toggle))) : null,
-    !featured && h('div.stack.tight', h('span.label', t('home.ovl.platforms')),
+    !featured && !poll && !goal && h('div.stack.tight', h('span.label', t('home.ovl.platforms')),
       h('div.row.tight', S.state.platforms.map((p, _, all) => chip('offPlatforms', all.map(x => x.id), p.id, p.name, platformIcon(p.id))))),
-    !featured && S.accounts.length > 1 && h('div.stack.tight', h('span.label', t('home.ovl.accounts')),
+    !featured && !poll && !goal && S.accounts.length > 1 && h('div.stack.tight', h('span.label', t('home.ovl.accounts')),
       h('div.row.tight', S.accounts.map((a, _, all) => chip('offAccounts', all.map(x => x.id), a.id, a.displayName, platformIcon(a.platform))))),
     alerts && h('button.btn.sm', { type: 'button', dataset: { focus: 'ov:test' }, onclick: e => testAlert(e.currentTarget) }, icon('zap'), t('home.ovl.test')),
     viewers && h('button.btn.sm', { type: 'button', dataset: { focus: 'ov:test' }, onclick: e => testViewers(e.currentTarget) }, icon('zap'), t('home.ovl.testViewers')),
+    (poll || goal) && h('button.btn.sm', { type: 'button', dataset: { focus: 'ov:test' }, onclick: e => testWidget(id, e.currentTarget) }, icon('zap'), t(poll ? 'home.ovl.testPoll' : 'home.ovl.testGoal')),
     el.ovStatus = h('p.small.muted', { attrs: { role: 'status' } }),
   ].filter(c => c instanceof Node)));
 }
@@ -1307,6 +1731,13 @@ async function testViewers(button) {
   ovStatus(t('home.ovl.testedViewers'));
 }
 
+/** A test poll (played by the overlay itself) or goal gain, for the preview and the OBS source, after any pending save. */
+async function testWidget(id, button) {
+  const s = ovSyncOf(id);
+  await busy(button, () => (s.queue = s.queue.then(() => api(`/api/overlays/${id}/test`, { method: 'POST' }))));
+  ovStatus(t(id === 'poll' ? 'home.ovl.testedPoll' : 'home.ovl.testedGoal'));
+}
+
 /** 'hello' / 'overlay' frames: settings changed elsewhere (another tab, a reset). Our own echoes are skipped. */
 function setOverlays(next) {
   let changed = false;
@@ -1318,7 +1749,7 @@ function setOverlays(next) {
   if (changed) renderOverlayForm();
 }
 
-// ---------------------------------------------------------------- 5. settings
+// ---------------------------------------------------------------- 6. settings
 function renderSettings() {
   if (!el.settings) return;
   const theme = document.documentElement.dataset.theme || 'dark';
@@ -1340,8 +1771,9 @@ function renderSettings() {
         row(t('home.sec.dock'), t('home.sec.dockDesc'), rotate('dock', t('home.sec.rotate'))),
         row(t('home.sec.overlay'), t('home.sec.overlayDesc'), rotate('overlay', t('home.sec.rotate'))),
         row(t('home.sec.sessions'), t(pw ? 'home.sec.sessionsDesc' : 'home.sec.sessionsLocal'), sessionsBtn)),
+      S.state.automod && automodCard(),
       h('div.card.about',
-        h('div.row', h('img', { src: '/assets/logo.svg', alt: '', width: 36, height: 36 }),
+        h('div.row', h('img', { src: '/assets/logo-3d.webp', alt: '', width: 36, height: 36 }),
           h('div.about-head', h('strong', 'Tramevia Dock'), h('p.small.muted', versionLine())),
           S.update && checkButton()),
         h('p.small.muted', t('home.about.desc')),
@@ -1353,12 +1785,45 @@ function renderSettings() {
           extLink(`${REPO}/issues`, icon('external', 14), ' ', t('home.about.issues')))))));
 }
 
-/** About card: the support button and the supporter code that unlocks early-access alert styles. */
+/** Auto filters (banned words, links) on every platform. Saved whole on each change; the server keeps what it validated. */
+function automodCard() {
+  const a = S.state.automod;
+  const save = patch => api('/api/automod', { method: 'PUT', body: { ...a, ...patch } })
+    .then(r => { S.state.automod = r; renderSettings(); }, err => toast(err.message, 'error', 6000));
+  const row = (title, desc, control) => h('div.set-row', h('div.set-row-text', h('strong', title), desc && h('p.small.muted', desc)), control);
+  const toggle = (key, label) => h('label.set-row.set-toggle',
+    h('span.set-row-text', h('strong', t(`home.am.${label}`)), h('span.small.muted', t(`home.am.${label}Desc`))),
+    h('span.switch', h('input', { type: 'checkbox', checked: a[key], dataset: { focus: `am:${key}` }, onchange: e => save({ [key]: e.target.checked }) }), h('span')));
+  const words = h('textarea', {
+    id: 'am-words', rows: 4, value: a.words.join('\n'), placeholder: t('home.am.wordsPlaceholder'), dataset: { focus: 'am:words' },
+    onchange: () => save({ words: words.value.split(/[\n,]/) }), // one per line or comma-separated
+  });
+  const allowed = h('textarea', {
+    id: 'am-allowed', rows: 3, value: a.allowedLinks.join('\n'), placeholder: 'youtube.com\nclips.twitch.tv', dataset: { focus: 'am:allowed' },
+    onchange: () => save({ allowedLinks: allowed.value.split(/[\s,]/) }),
+  });
+  return h('div.card',
+    h('h3.card-title', icon('filter'), t('home.am.title')),
+    h('p.small.muted', t('home.am.desc')),
+    h('div.field', h('label', { htmlFor: words.id }, t('home.am.words')), words, h('p.tiny.muted', t('home.am.wordsHint'))),
+    toggle('links', 'links'),
+    a.links && h('div.field', h('label', { htmlFor: allowed.id }, t('home.am.allowed')), allowed, h('p.tiny.muted', t('home.am.allowedHint'))),
+    h('h4.set-sub', t('home.am.spam')),
+    ['caps', 'repeat', 'emotes', 'symbols'].map(k => toggle(k, k)),
+    row(t('home.am.action'), t('home.am.actionDesc'), segmented(t('home.am.action'), [['delete', t('home.am.delete')], ['timeout', t('home.am.timeout')]], a.action, v => save({ action: v }), 'am:action')),
+    a.action === 'timeout' && row(t('home.am.duration'), null, segmented(t('home.am.duration'), AM_DURATIONS.map(([s, k]) => [s, t(k)]), a.duration, v => save({ duration: v }), 'am:duration')),
+    toggle('exemptVip', 'vip'),
+    toggle('exemptSub', 'sub'));
+}
+const AM_DURATIONS = [[60, 'home.am.1m'], [600, 'home.am.10m'], [3600, 'home.am.1h'], [86400, 'home.am.24h']];
+
+/** About card: the support button and the supporter code that unlocks the supporter alert styles. */
 function supportBox() {
   const sup = S.state.supporter;
   if (sup && !sup.expired) {
     return h('div.stack.tight.support-box', h('strong', t('home.sup.title')),
       h('p.small', icon('check', 14), ' ', t(sup.until ? 'home.sup.activeUntil' : 'home.sup.active', { name: sup.name, date: sup.until && day(sup.until) })),
+      S.state.premium && h('p.small.muted', t(`home.sup.pack.${S.state.premium.status}`, { v: S.state.premium.version })),
       h('div.row.tight', supportButton(),
         h('button.btn.sm.ghost', { type: 'button', dataset: { focus: 'sup:remove' }, onclick: e => setSupporter(null, e.currentTarget) }, t('home.sup.remove'))));
   }
@@ -1377,6 +1842,7 @@ async function setSupporter(code, button) {
     const r = await api('/api/supporter', code === null ? { method: 'DELETE' } : { method: 'PUT', body: { code } });
     S.state.supporter = r.supporter;
     S.state.unlocked = Boolean(r.supporter && !r.supporter.expired);
+    S.state.premium = r.premium;
     toast(t(code === null ? 'home.sup.removed' : 'home.sup.ok'), 'ok', 5000);
     renderSettings();
     renderOverlayForm();
@@ -1403,7 +1869,7 @@ async function rotateKey(what, button) {
   });
 }
 
-// ---------------------------------------------------------------- 6. updates (About card + home banner)
+// ---------------------------------------------------------------- 7. updates (About card + home banner)
 const major = v => Number(String(v).split('.')[0]);
 /** UPDATE_CHECK=0 on the server: checks are off although the dashboard setting is not. */
 const checksEnvOff = () => !S.update.checks && S.ui.updateCheck !== false;
@@ -1439,7 +1905,7 @@ function checkButton() {
 function updateSettings() {
   const u = S.update;
   const envOff = checksEnvOff();
-  const toggle = (key, on, disabled, label) => h('label.set-row.upd-toggle',
+  const toggle = (key, on, disabled, label) => h('label.set-row.set-toggle',
     h('span.set-row-text', h('strong', t(`home.upd.${label}`)), h('span.small.muted', t(`home.upd.${label}Desc`))),
     h('span.switch', h('input', {
       type: 'checkbox', checked: on, disabled, dataset: { focus: `upd:${key}` },
@@ -1524,9 +1990,17 @@ function setAccounts(list) {
 
 function onFrame({ t: topic, d }) {
   if (!S.apps || !el.overview) return;
-  if (topic === 'hello') { setAccounts(d.accounts); refreshUpdate(); setOverlays(d.overlays); if ('overlaysSaved' in d) S.state.overlaysSaved = d.overlaysSaved; migrateOverlay(); } // reconnect after a restart (e.g. rolled-back update)
+  if (topic === 'hello') { // reconnect after a restart (e.g. rolled-back update)
+    setAccounts(d.accounts); refreshUpdate(); setOverlays(d.overlays); if ('overlaysSaved' in d) S.state.overlaysSaved = d.overlaysSaved; migrateOverlay();
+    if ('poll' in d) { S.state.poll = d.poll; renderPoll(); }
+    if (d.goals) { S.state.goals = d.goals; paintGoals(); }
+    api('/api/live').then(r => { S.live = r; paintSummary(); }, () => {});
+  }
   else if (topic === 'accounts') setAccounts(d);
   else if (topic === 'update') setUpdate(d);
+  else if (topic === 'live') { S.live = d; paintSummary(); }
+  else if (topic === 'poll') { const was = S.state.poll; S.state.poll = d; if (!d || !was || d.id !== was.id || Boolean(d.closedAt) !== Boolean(was.closedAt)) renderPoll(); else paintPoll(); }
+  else if (topic === 'goal') { S.state.goals = d; paintGoals(); }
   else if (topic === 'overlay' && OVERLAY_IDS.includes(d?.id)) setOverlays({ [d.id]: d.settings });
   else if (topic === 'stats') {
     const a = S.accounts.find(x => x.id === d.accountId);
@@ -1544,6 +2018,8 @@ function onFrame({ t: topic, d }) {
 async function load() {
   el.root.replaceChildren(skeleton());
   try {
+    // bot, discord and live come with the state (null: that module failed to load).
+    ({ bot: S.bot = null, discord: S.discord = null, live: S.live = null } = S.state);
     [S.apps, S.keys, S.session, S.update] = await Promise.all([api('/api/apps'), api('/api/keys'), api('/api/session'), api('/api/update').catch(() => null)]);
     render();
   } catch (err) {

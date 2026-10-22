@@ -115,7 +115,10 @@ export default {
       const first = Math.random() < 0.06;
       // Now and then, a viewer replies to a recent message of the same channel.
       const parent = Math.random() < 0.12 && ctx.hub.backlog().reverse().find(f => f.t === 'chat' && f.d.accountId === account.id)?.d;
-      message(ctx, account, author, fragments(parent ? [`@${parent.author.name} `, 'carrément !'] : pick(LINES), account.login), {
+      // During a poll most viewers vote (more often for the first answers, so a result shows).
+      const poll = ctx.poll?.get();
+      const vote = poll && !poll.closedAt && Math.random() < 0.7 && [String(1 + Math.floor(Math.random() ** 1.6 * poll.options.length))];
+      message(ctx, account, author, fragments(vote || (parent ? [`@${parent.author.name} `, 'carrément !'] : pick(LINES)), account.login), {
         flags: { first, highlight: first }, msg: parent ? { reply: { id: parent.id, author: parent.author.name, text: parent.text } } : {},
       });
     }, 1400);

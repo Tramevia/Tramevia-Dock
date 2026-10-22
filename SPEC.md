@@ -38,6 +38,11 @@ src/platforms/youtube.js   YouTube adapter                + test/youtube.test.js
 src/platforms/tiktok.js    TikTok adapter                 + test/tiktok.test.js
 src/chat/emotes.js         tokenizer + 7TV/BTTV/FFZ       + test/emotes.test.js
 src/chat/routes.js         chat HTTP API                  + test/chat-routes.test.js
+src/chat/automod.js        auto filters (§7.1)            + test/automod.test.js
+src/chat/bot.js            commands and reminders (§7.5)  + test/live.test.js
+src/live.js                live sessions, summary, Discord (§7.6)   + test/live.test.js
+src/poll.js                poll on every platform (§7.7)  + test/live.test.js
+src/goals.js               follow / sub goals (§7.8)      + test/live.test.js
 src/community.js           community HTTP API             + test/community.test.js
 src/stream-info.js         stream info + presets          + test/stream-info.test.js
 src/overlays.js            saved overlay settings (§7.4)
@@ -45,6 +50,11 @@ src/update.js              update check + self-update (node: built-ins only) + t
 public/index.html + assets/index.{js,css}                 dashboard
 public/chat.html + assets/chat.{js,css}, assets/chat-render.js, overlay.html + assets/overlay.{js,css}   chat dock + overlay
 public/assets/overlay-settings.js                         overlay settings rules (pure, shared by server, overlay and dashboard)
+public/assets/overlay-widgets.js                          poll card and goal bars (overlay ids poll and goal)
+public/assets/alerts.css + alert-card.js, viewer-badge.js alerts and viewers overlays: overlay.js imports a module (and alerts.css)
+                                                          only for its own overlay id, so a chat overlay never loads them
+src/premium.js                                            supporter styles pack: downloaded with the supporter code into
+                                                          <data>/premium/, served at /premium/ (decor.js + alerts.css) to alerts
 public/community.html + assets/community.{js,css}         community dock
 public/stream.html + assets/stream.{js,css}               stream info dock
 ```
@@ -70,7 +80,7 @@ Built in `src/server.js`, passed to adapters and modules:
 | `requireAccount(id)` | account or `HttpError 404` |
 | `tokenize({platform, channelId, fragments})` | → `Token[]` (src/chat/emotes.js) |
 | `emotes.load(platform, channelId)` | preload third-party emote sets (fire and forget) |
-| `emitChat(msg)`, `emitEvent(evt)`, `emitDelete({accountId, messageId?, userId?})` | publish to the hub; `emitChat` fills `flags.first` |
+| `emitChat(msg)`, `emitEvent(evt)`, `emitDelete({accountId, messageId?, userId?})` | publish to the hub; `emitChat` fills `flags.first` and runs the auto filters (§7.1) |
 | `t(fr, en)` | server-side user-visible text in the dashboard language (account errors, test results, send/moderate errors). Never write combined "FR / EN" strings. |
 | `router` | for `routes(router, ctx)` hooks |
 
@@ -135,7 +145,7 @@ API calls with a user token: `ctx.accounts.withToken(account, token => ctx.reque
   text,                                   // plain text (search, copy, TTS)
   tokens: Token[],                        // render tokens (see below)
   reply: { id, author, text } | null,     // message being replied to
-  flags: { first, action, highlight, self },  // self = sent by the account owner; highlight = paid/announcement/etc.
+  flags: { first, action, highlight, self, filtered? },  // self = sent by the account owner; highlight = paid/announcement/etc.; filtered = 'word' | 'link' (auto filters, then deleted: true)
   deleted: false }
 
 // Token
@@ -186,8 +196,8 @@ A limit applies only when the adapter declares it in `infoFields`; an undeclared
 ## 7. HTTP API
 
 Core (implemented in `src/server.js`): `GET /healthz`, `GET /api/session`, `POST /api/login|logout`, `GET /api/state`
-(`{access, version, demo, publicUrl, platforms: meta[], accounts: describe[] (admin) | {id, platform, login, displayName, avatar, stats}[] (read), ui, overlays, overlaysSaved}`;
-`overlays` and `overlaysSaved` for read and admin access, §7.4), `GET|PUT /api/settings` (UI
+(`{access, version, demo, publicUrl, platforms: meta[], accounts: describe[] (admin) | {id, platform, login, displayName, avatar, stats}[] (read), ui, overlays, overlaysSaved, automod, poll, goals, bot, discord, live}`;
+`overlays` and `overlaysSaved` for read and admin access, §7.4; `automod` admin only, §7.1; `poll` §7.7 and `goals` §7.8 for both; `bot`, `discord` and `live` admin only, as their own routes return them, or `null`), `GET|PUT /api/settings` (UI
 settings object, ≤32 KB, broadcast as topic `settings`; `updateCheck` / `updateAuto` must be booleans or `null`), `GET /api/apps`, `PUT|DELETE /api/apps/:platform`,
 `POST /api/apps/:platform/test`, `POST /api/accounts/:platform/connect {reconnect?, openOnServer?} → {url, opened}`,
 `GET /auth/:platform/callback`, `POST /api/accounts/username/:platform {username}`,
@@ -211,6 +221,8 @@ Errors: `{error, code}`; an `ApiError` thrown by a handler becomes `502 {error, 
 - `POST /api/chat/moderate {accountId, action: delete|timeout|ban|unban, messageId?, userId, userLogin?, duration?, reason?}` → `{ok}`
   (check caps; timeout duration within `caps.limits.timeoutMin`–`timeoutMax` seconds, default 1–1 209 600).
 - `GET /api/chat/user?accountId&userId` → `{user, messages: Message[] (from hub backlog), info?: userInfo(), infoError?}`.
+- `POST /api/chat/clear` → `{ok}`: empties the hub backlog (chat + events) and publishes topic `chat:clear` (`{}`): docks and the chat overlay empty their lists. The server does the same on its own when the live state goes from `off` to `live` (a new stream starts).
+- `GET /api/automod` → `{words, links, allowedLinks, caps, repeat, emotes, symbols, action: delete|timeout, duration, exemptVip, exemptSub}`; `PUT /api/automod` with the whole object (missing fields go back to their defaults; 400 on bad values). Also in `/api/state` as `automod` (admin only). `src/chat/automod.js`: every incoming chat message is checked before it is published. Banned words match whole words, ignoring case and accents; `links` catches `http(s)://`, `www.` and bare domains on common TLDs; `allowedLinks` (domains, up to 100, stored as `youtube.com`) let a link through, subdomains included, unless the message carries another link. Anti-spam (booleans, off by default): `caps` = 15+ letters, 70 % of them capitals; `repeat` = the 3rd identical message (case, accents and spaces ignored) from one person within 60 s; `emotes` = more than 10 emotes or emoji; `symbols` = 15+ symbols making over half the message. Broadcaster, moderators and `flags.self` are never filtered; VIPs (`exemptVip`) and subscribers/members (`exemptSub`) optionally. A match is published with `deleted: true` and `flags.filtered`, so docks show it struck through and overlays skip it; then, when the account's caps allow it, the message is deleted on the platform and, with `action: timeout`, its author is timed out for `duration` seconds (clamped to the platform limits).
 - `POST /api/chat/feature {message|null}` → publishes topic `feature` (overlay featured slot) with `featuredAt` (ms);
   `409 {code:'deleted'}` for a deleted message. The hub clears the slot (`feature null`) when a `chat:delete` matches it.
 - `POST /api/actions/marker {accountId, description?}`, `POST /api/actions/clip {accountId}` → adapter result.
@@ -234,23 +246,26 @@ Errors: `{error, code}`; an `ApiError` thrown by a handler becomes `502 {error, 
   per-account field = inherit the common value.
 
 ### 7.4 Overlays (`src/overlays.js`)
-Four saved overlays, ids `chat`, `featured`, `alerts` and `viewers` (`OVERLAY_IDS`), stored in the settings key `overlays` (`{chat, featured, alerts, viewers}`;
+Six saved overlays, ids `chat`, `featured`, `alerts`, `viewers`, `poll` and `goal` (`OVERLAY_IDS`), stored in the settings key `overlays` (`{chat, featured, alerts, viewers, poll, goal}`;
 absent = defaults, no migration; a missing id = its defaults). Validation is `cleanOverlay()` from `public/assets/overlay-settings.js`: complete object, unknown keys
 dropped, numbers rounded and clamped (`max` 1–100, `fade` 0–3600, `size` 8–120, `featureSeconds` 0–3600, `alertSeconds` 1–60), enums whitelisted
-(`position` top|center|bottom, `style` card|text|impact|eclipse|glass|switch|wave|prism|silk|neon, `align` left|center|right: chat = left|right, anything else drawn left), `volume` 0–100 (alert chime, /assets/chime.wav), `offPlatforms` / `offAccounts` / `offTypes` = **exclusion** lists of ids (an account added later is shown).
+(`position` top|center|bottom, `style` card|text|impact|eclipse|glass|switch|wave|prism|silk|neon, `align` left|center|right: chat = left|right, anything else drawn left, `goal` subs|follows|both, `look` bars|ring = how the poll and goal overlays draw, goal only: `color` tramevia|#rrggbb, `subsIcon` / `followsIcon` one of `GOAL_ICONS` (18 line icons)), `volume` 0–100 (alert chime, /assets/chime.wav), `offPlatforms` / `offAccounts` / `offTypes` = **exclusion** lists of ids (an account added later is shown).
 `offTypes` holds alert categories (`ALERT_TYPES`: follow, sub, giftsub, tip, raid, redemption, like, share; `alertCategory(type)` maps an event
 type to its category, null = never alerts: announcements, stream on/off).
-- `GET /api/overlays` (read) → `{overlays: {chat, featured, alerts, viewers}, saved}` (`saved` = the settings key exists).
+- `GET /api/overlays` (read) → `{overlays: {chat, featured, alerts, viewers, poll, goal}, saved}` (`saved` = the settings key exists).
 - `POST /api/overlays/alerts/test` (admin) → `{ok, type}`: publishes a sample event (`test: true`) on topic `alert:test`, picked among the
   categories not in `offTypes`. Not stored, not an `event` (the docks never see it).
 - `POST /api/overlays/viewers/test` (admin) → `{ok, delta}`: publishes `{delta}` (±1–12) on topic `viewers:test`; viewer overlays show the
   total + delta for 3.5 s, then the real total (a drop below 0 is shown as a rise).
+- `POST /api/overlays/poll/test` (admin) → `{ok}`: publishes `{question, options}` on topic `poll:test`; poll overlays play it on their own
+  (votes for 12 s, the result for 6 s), then show the real poll again. `POST /api/overlays/goal/test` (admin) → `{ok, follows: 1, subs: 5}`:
+  publishes `{follows, subs}` on topic `goal:test`; goal overlays show the counts plus that gain for 4 s. Neither is stored or counted.
 - `PUT /api/overlays/:id {…patch}` (admin) → `{id, settings}`: merged over the current settings, cleaned, saved, published as
   topic `overlay`. `400 {code:'invalid_overlay'}` if the body is not a plain object or its JSON is over 4000 chars;
   `404 {code:'unknown_overlay'}` for another id.
 - `DELETE /api/overlays/:id` (admin) → `{id, settings}`: back to the defaults, saved and published.
 
-Overlay page (`/overlay/chat`): `?key=…&id=chat|featured|alerts|viewers` = saved settings, applied live from `overlay` frames; any setting param
+Overlay page (`/overlay/chat`): `?key=…&id=chat|featured|alerts|viewers|poll|goal` = saved settings, applied live from `overlay` frames; any setting param
 also in the URL overrides that one setting. Without `id` (legacy URL) the page is configured only by its params, exactly as in 1.2,
 and ignores `overlay` frames. URL `platforms=` / `accounts=` are **inclusion** lists; a message is shown when it passes both lists.
 `id=alerts`: live `event` and `alert:test` frames only (the hello backlog is ignored, so nothing replays after a reconnect), one card at
@@ -258,15 +273,62 @@ a time for `alertSeconds`, a queue of 20 (oldest waiting dropped beyond that), c
 `id=viewers`: the sum of `viewers` over the shown accounts that are live with a count (from hello `accounts[].stats`, then `stats`
 frames, coalesced over 1.2 s so one poll = one change), drawn by `public/assets/viewer-badge.js` (`viewerBadge({h, svg, format}).set(total)`:
 entry on the first call, +x / −x animation on every change, none after a settings change); `align` = the number inside the orb or beside it.
+`id=poll`: the poll from hello / `/api/state`, then `poll` and `poll:test` frames (`pollCard({t}).set(poll, platforms)` in
+`public/assets/overlay-widgets.js`): open = live shares and the time left; closed = the result for 15 s after `closedAt`, then the card leaves.
+`id=goal`: `goals` from hello, then `goal` and `goal:test` frames (`goalBars({t}).set(goals, kinds, gain)`), `goal` setting = which bars. `look` (both): `bars`, or `ring` (the poll's answers as arcs of one ring with the time
+round it and in its centre, where the winner shows at the end; each goal as a ring gauge round its medal, goals side by side);
+a change of `look` rebuilds the card, which enters again. Goal `color`: `tramevia` = the stream gradients, a hex colour tints the bar or ring
+(shades of it), the medal (dark disc ringed in it) and the reached state (instead of gold); `subsIcon` / `followsIcon` = the medal icon of
+each goal; a change of colour or icon rebuilds the card too. URL overrides: `look`, `color` (`tramevia`, `%23ff8800` or `ff8800`), `subsIcon`, `followsIcon`.
+Both draw at rest without any running animation (one-shot effects only; the poll's time line runs while it is open).
+Chat overlays skip messages with `flags.vote` (poll votes, §7.7).
+
+### 7.5 Commands and reminders (`src/chat/bot.js`)
+Settings key `bot` = `{commands: [{name, text}], timers: [{text, minutes}], offAccounts: [accountId]}`. `GET /api/bot`, `PUT /api/bot` (whole
+object; 400 on bad values). `name` 1–25 letters, digits, `-` or `_` (a leading `!` is dropped, stored lowercase, unique ignoring case and
+accents), at most 50 commands; `text` 1–500 chars, never starting with `!` or `/`; `minutes` 5–240, at most 10 timers. Only accounts whose caps
+include `chatSend` answer; `offAccounts` never do. A command (`!name` as the first word of a message) is answered in the chat it was typed in,
+`{user}` = the author's name, once per 30 s per command and account; a filtered (deleted) message gets no answer. A timer posts to
+every live channel every `minutes` (first post one interval after going live, timers staggered by one minute), and only to a channel where
+someone wrote since its last post. Texts are cut to the account's `caps.limits.chatMaxLength`. YouTube: each message costs 50 quota units.
+`ctx.bot.sayLive(text)` sends a text to every live channel that can send (used by the poll).
+
+### 7.6 Live sessions and Discord (`src/live.js`)
+A session starts when the first channel goes live (`startedAt` = the earliest live channel's start) and ends once every channel has been off
+for 5 min (a stream back within 5 min stays one session; `endedAt` = when it went off). It counts the peak of the total viewers, messages,
+distinct chatters (not the broadcaster, not bots), follows and subs per platform (`gains()` from goals.js, an event id counted once, test
+events never) and the 5 most active chatters. `GET /api/live` → `{current, last}` (`{startedAt, endedAt, peak, messages, chatters, top:
+[{name, platform, n}], platforms: [{platform, follows, subs, messages, peak}]}`; `last` stored in the settings key `live:last`). Admin topic
+`live` (the current session, at most every 5 s). Discord (settings key `discord`, webhook sealed with aad `discord`): `GET /api/discord` →
+`{announce, summary, message, webhook: bool, hint}`; `PUT /api/discord` (partial; `webhook` must be a `discord.com/api/webhooks/<id>/<token>` URL,
+`''` or `null` removes it); `POST /api/discord/test` → `{ok}` (400 without a webhook, 502 when Discord refuses). The announcement goes 60 s
+after a session starts (not in demo, not for a session started over 15 min ago: a restart mid-stream never announces again): `message`
+(`{name}`, `{title}`, `{category}`; `''` = built-in text) and an embed with every live channel's link. The summary goes when a session of
+1 min or more ends. The streamer's own `message` may mention (`@everyone`, roles, users); values from the platforms never do (`@` neutralised).
+
+### 7.7 Poll (`src/poll.js`)
+`POST /api/poll {question (1–120), options: [2–5 × 1–40 chars], seconds (15–1800), announce?}` → the poll (`409 poll_running` while one is
+open); `GET /api/poll` (read) → poll or `null`; `POST /api/poll/close` ends it now; `DELETE /api/poll` clears it. Poll = `{id, question,
+options: [{label, votes}], total, startedAt, endsAt, closedAt, announce}`, published on topic `poll` (read) on every change (votes at most every
+400 ms) and in hello / `/api/state`. `emitChat` hands every message to `ctx.poll.vote(msg)` before publishing: a message that is exactly one digit
+between 1 and the number of answers, while the poll is open, is a vote (`flags.vote = n`), one per `platform:author.id`, the first counts; deleted,
+filtered and own messages never vote. TikTok included. `announce`: the question at the start and the result at the end through `ctx.bot.sayLive`.
+Not stored: a restart forgets the poll.
+
+### 7.8 Goals (`src/goals.js`)
+Settings key `goals` = `{follows: {label, target, count}, subs: {label, target, count}}` (label ≤ 40 chars, target 1–10 000 000, count
+0–10 000 000). `GET /api/goals` (read), `PUT /api/goals` (partial by kind) → published on topic `goal` (read) and in hello / `/api/state`.
+Every `event` adds `gains(evt)`: follow → 1 follow; sub, resub, membership → 1 sub; giftsub, giftmembership → `count` subs (1–1000).
+An event id is counted once, test events never.
 
 ## 8. Realtime (`/ws`)
 
-Frames `{t, d}`. First frame `hello {access, version, accounts, ui, overlays, overlaysSaved, backlog: [{t, d}]}` (backlog = last 400 chat/event;
+Frames `{t, d}`. First frame `hello {access, version, accounts, ui, overlays, overlaysSaved, unlocked, poll, goals, backlog: [{t, d}]}` (backlog = last 400 chat/event;
 `overlays`/`overlaysSaved` as in `GET /api/overlays`, for every access level). `version` is sent
 to every access level: `connectHub` reloads the page when it differs from the first one seen (an update was installed).
 Close code `4001` = credentials rotated/revoked: pages with a header reload (login screen), overlays stop.
-Topics: `chat`, `chat:delete`, `event`, `stats`, `feature`, `overlay` (`{id, settings}` after a save or reset, §7.4), `alert:test`, `viewers:test` (§7.4) (read-only
-clients get only these; the last featured message is replayed after `hello`) and admin-only `accounts` (full list), `settings` (merged UI settings object;
+Topics: `chat`, `chat:delete`, `chat:clear`, `event`, `stats`, `feature`, `overlay` (`{id, settings}` after a save or reset, §7.4), `alert:test`, `viewers:test`, `poll`, `poll:test`, `goal`, `goal:test` (§7.4, §7.7, §7.8) (read-only
+clients get only these; the last featured message is replayed after `hello`) and admin-only `accounts` (full list), `live` (§7.6), `settings` (merged UI settings object;
 `PUT /api/settings` is a shallow merge, `null` deletes a key), `presets` (`{presets}` after any preset change), `update` (`UpdateStatus`, §11, on every change). Pages act through HTTP, never by sending WS frames.
 
 ## 9. Front-end conventions

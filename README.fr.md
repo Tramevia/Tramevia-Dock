@@ -2,11 +2,9 @@
 
 <a id="top"></a>
 
-<p align="center">
-  <img src="public/assets/logo.svg" alt="Logo de Tramevia Dock : un T violet clair sur fond violet foncé" width="96" height="96">
-</p>
-
-<h1 align="center">Tramevia Dock</h1>
+<h1 align="center">
+  <img src="docs/assets/tramevia-dock-banner.png" width="600" alt="Tramevia Dock : un T violet clair en 3D dans un anneau lumineux sur une scène de nuit, à côté du nom Tramevia Dock">
+</h1>
 
 <p align="center">
   <b>Un seul chat, toutes tes alertes et ton titre sur toutes tes chaînes, directement dans OBS.<br>Pour Twitch, Kick, YouTube et TikTok LIVE. Sur ton PC ou en ligne, gratuit, sans savoir coder.</b>
@@ -15,23 +13,23 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-AGPL--3.0-blue" alt="Licence AGPL-3.0"></a>
   <img src="https://img.shields.io/badge/Node.js-%E2%89%A5%2024.15-339933?logo=nodedotjs&logoColor=white" alt="Node.js 24.15 ou plus récent">
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-1.4.1-8b5cf6" alt="Version 1.4.1"></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/version-1.5.0-8b5cf6" alt="Version 1.5.0"></a>
   <img src="https://img.shields.io/badge/plateformes-Twitch%20%C2%B7%20Kick%20%C2%B7%20YouTube%20%C2%B7%20TikTok-6441a5" alt="Plateformes : Twitch, Kick, YouTube, TikTok">
   <img src="https://img.shields.io/badge/pens%C3%A9%20pour-OBS%20Studio-302e31?logo=obsstudio&logoColor=white" alt="Pensé pour OBS Studio">
   <a href="https://github.com/Tramevia/Tramevia-Dock/discussions"><img src="https://img.shields.io/badge/questions-GitHub%20Discussions-8b5cf6?logo=github&logoColor=white" alt="Pose tes questions dans les GitHub Discussions"></a>
 </p>
 
 <p align="center">
-  <a href="#choisir"><b>Installer</b></a> · <a href="#tuto-pc"><b>Tuto PC</b></a> · <a href="#tuto-railway"><b>Tuto Railway</b></a> · <a href="#alertes"><b>Alertes</b></a> · <a href="#fonctionnalites"><b>Fonctionnalités</b></a> · <a href="#faq"><b>FAQ</b></a> · <a href="#aide"><b>💬 Aide</b></a> · <a href="#soutenir"><b>💜 Soutenir (Soon)</b></a>
+  <a href="#choisir"><b>Installer</b></a> · <a href="#tuto-pc"><b>Tuto PC</b></a> · <a href="#tuto-railway"><b>Tuto Railway</b></a> · <a href="#alertes"><b>Alertes</b></a> · <a href="#fonctionnalites"><b>Fonctionnalités</b></a> · <a href="#faq"><b>FAQ</b></a> · <a href="#aide"><b>💬 Aide</b></a> · <a href="#soutenir"><b>💜 Soutenir</b></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/sponsors/Tramevia"><img src="https://img.shields.io/badge/Soutenir%20le%20projet%20(Soon)-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" height="36" alt="Soutenir le projet sur GitHub Sponsors (Soon)"></a><br>
+  <a href="https://buymeacoffee.com/tramevia"><img src="https://img.shields.io/badge/Soutenir%20le%20projet-Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=black" height="36" alt="Soutenir le projet sur Buy Me a Coffee"></a><br>
   <sub><b>Gratuit, sans pub, sans abonnement.</b> Si Tramevia Dock t’aide pour tes lives, le soutenir le fait vivre 💜</sub>
 </p>
 
 <p align="center">
-  <img src="docs/assets/screenshots/fr/docks.png" width="100%" alt="Les quatre docks de Tramevia Dock côte à côte, comme dans OBS : le chat unifié avec des messages de Twitch, Kick, YouTube et TikTok, le fil des événements (abonnements, Super Chat, cadeaux), la communauté avec 677 spectateurs au total, et les infos du live avec les comptes à modifier">
+  <img src="docs/assets/screenshots/fr/docks.png" width="100%" alt="Les quatre docks de Tramevia Dock côte à côte, comme dans OBS : le chat unifié avec des messages de Twitch, Kick, YouTube et TikTok, le fil des événements (abonnements, Super Chat, cadeaux), la communauté avec le total des spectateurs par chaîne, et les infos du live avec les comptes à modifier">
 </p>
 
 <p align="center"><sub>Les quatre docks, en mode démo. Un <b>dock</b>, c’est un petit panneau que tu ranges dans la fenêtre d’OBS, à côté de tes scènes : toi seul le vois.</sub></p>
@@ -46,7 +44,7 @@
 <table>
   <tr>
     <td width="50%" align="center">
-      <img src="docs/assets/screenshots/fr/chat-live.gif" width="300" alt="Animation du dock Chat unifié : les messages de Twitch, Kick, YouTube et TikTok arrivent en direct avec leurs émotes, un don de 500 Bits s’affiche dans le fil et une mention de la chaîne est mise en évidence">
+      <img src="docs/assets/screenshots/fr/chat-live.gif" width="300" alt="Animation du dock Chat unifié : les messages de Twitch, Kick, YouTube et TikTok arrivent dans une seule liste avec leurs émotes, des réponses et des cartes d’événements comme des abonnements offerts">
     </td>
     <td width="50%">
       <p><b>Tout ton chat dans un seul fil.</b><br>Les messages de toutes tes chaînes arrivent au même endroit, chacun avec l’icône de sa plateforme.</p>
@@ -57,12 +55,21 @@
   </tr>
 </table>
 
-## 🆕 Nouveau dans la 1.4
+## 🆕 Nouveau dans la 1.5
+
+- 🎨 **Huit styles d’alertes pour les soutiens.** Impact, Éclipse, Verre, Interrupteur, Vague, Prisme, Soie et Néon, débloqués d’un coup avec un code soutien. → [Voir les styles](#alertes) · [Soutenir](#soutenir)
+- 🗳️ **Des outils de live sur toutes tes plateformes.** Un sondage auquel on répond depuis n’importe quel chat, des objectifs de follows et d’abonnements, des `!commandes` et des rappels, et une annonce Discord avec un récap à la fin. → [Étape 8](#etape-8)
+- 📊 **Deux nouveaux overlays.** Le sondage et tes objectifs à l’écran, en barres ou en anneau, au dégradé Tramevia ou de la couleur de ton choix, avec 18 icônes. → [Étape 8](#etape-8)
+- 🛡️ **Des filtres automatiques.** Mots interdits, liens et spam supprimés sur Twitch, Kick et YouTube à la fois, avec un timeout si tu veux. → [Fonctionnalités](#fonctionnalites)
+- 🎛️ **Streamlabs Desktop.** Un guide pas à pas pour le dock et les overlays. → [Guide Streamlabs](docs/fr/streamlabs.md)
+- ⚡ **Plus léger, aux nouvelles couleurs Tramevia.** Environ trois fois moins à charger à la première ouverture (chaque overlay ne charge que ce qu’il affiche), et les anciens lives ne reviennent plus dans le dock chat.
+
+### 1.4
 
 - 🔔 **Des alertes à l’écran pour toutes tes plateformes.** Follows, subs, dons, raids, récompenses, cadeaux TikTok : une alerte à la fois, avec un son, dans **10 styles** animés. → [Voir les styles](#alertes)
 - 👁️ **Un compteur de spectateurs en direct.** Le total de toutes tes chaînes dans un orbe de particules lumineuses, avec chaque hausse (+x) et chaque baisse (−x) animée. → [Étape 6](#etape-6)
 - ☁️ **Installation en ligne en un clic.** Le bouton **Deploy on Railway** prépare tout ; tu ne choisis qu’un mot de passe. → [Tuto Railway](#tuto-railway)
-- 💜 **Soutenir le projet (Soon).** Un bouton GitHub Sponsors et des codes soutien qui débloquent les nouveaux styles d’alertes en avance, à partir de la 1.4.5. → [Soutenir](#soutenir)
+- 💜 **Soutenir le projet.** Un bouton Buy Me a Coffee et des codes soutien qui débloquent les styles d’alertes réservés aux soutiens. → [Soutenir](#soutenir)
 
 Le détail de chaque version : [CHANGELOG](CHANGELOG.md).
 
@@ -83,7 +90,7 @@ Le détail de chaque version : [CHANGELOG](CHANGELOG.md).
 Tramevia Dock est un petit programme qui tourne **sur ton PC** ou **sur un serveur en ligne à toi** (par exemple Railway). Il se connecte directement à tes chaînes et rassemble tout au même endroit. OBS l’affiche ensuite de deux façons :
 
 - des **docks** : des panneaux dans la fenêtre d’OBS (chat, événements, communauté, infos du live), visibles par toi seul ;
-- des **overlays** : des calques transparents posés sur ta scène, que tes spectateurs voient sur le stream (ton chat, un message mis en avant, tes alertes, ton compteur de spectateurs).
+- des **overlays** : des calques transparents posés sur ta scène, que tes spectateurs voient sur le stream (ton chat, un message mis en avant, tes alertes, ton compteur de spectateurs, un sondage, tes objectifs).
 
 Les deux sont de simples adresses web que tu colles une fois dans OBS.
 
@@ -263,11 +270,14 @@ Chaque dock reste sur sa propre page : pas d’onglets vers les autres pages dan
 > [!WARNING]
 > Ces adresses contiennent ta clé d’accès complète, c’est pour ça qu’elle est masquée à l’écran. **Ne les montre jamais en live** et ne les partage pas (même pas dans une question sur GitHub). En cas de fuite : **Paramètres → Sécurité → Clé des docks → « Régénérer »**, puis recopie les nouvelles adresses dans OBS.
 
+> [!TIP]
+> **Tu utilises Streamlabs Desktop ?** Le dock se place avec l’élément « Site Web » de l’éditeur de dispositions, et les overlays en « Source du navigateur » : suis le [guide Streamlabs](docs/fr/streamlabs.md).
+
 <a id="etape-4"></a>
 
 ## 💬 Étape 4 : affiche ton chat sur le stream
 
-Les overlays se règlent dans la même section **OBS**, juste sous les docks, dans la carte « Overlay de chat ». Il y en a quatre, chacun avec ses réglages et **sa propre adresse** : Chat, Message mis en avant, Alertes et Spectateurs. Une source Navigateur dans OBS pour chacun.
+Les overlays se règlent dans la même section **OBS**, juste sous les docks, dans la carte « Overlay de chat ». Il y en a six, chacun avec ses réglages et **sa propre adresse** : Chat, Message mis en avant, Alertes, Spectateurs, Sondage et Objectif. Une source Navigateur dans OBS pour chacun.
 
 1. Dans la carte « Overlay de chat », choisis « Chat », puis un **Thème**. L’« Aperçu en direct » te montre le résultat au fur et à mesure (le damier représente la transparence), et tes réglages s’enregistrent tout seuls.
 2. Copie l’« Adresse de l’overlay ».
@@ -306,23 +316,23 @@ Chaque follow, sub, sub offert, don (bits, KICKs, Super Chats, cadeaux TikTok et
 ### Les 10 styles
 
 <p align="center">
-  <img src="docs/assets/screenshots/fr/alert-styles.jpg" width="100%" alt="Les dix styles d’alertes, chacun sur une scène : Carte (une carte « Mélodie s’est abonné »), Grand texte (« captain_kirk suit désormais la chaîne » en grandes lettres), Impact (une étiquette violette « Baguette3000 a envoyé 500 bits »), Éclipse (deux parois de lumière autour d’un raid), Verre (une capsule rose « NoxModo a offert 5 abonnements »), Interrupteur (une carte noire avec des points lumineux), Vague (des particules blanches autour d’un Super Chat), Prisme (des barres de cristal au-dessus d’un nouveau membre), Soie (des voiles de fils verts et bleus autour de 100 KICKs) et Néon (un pseudo chromé sur un anneau). Carte et Grand texte portent l’étiquette Gratuit, les huit autres l’étiquette Soon avec le logo Tramevia">
+  <img src="docs/assets/screenshots/fr/alert-styles.jpg" width="100%" alt="Les dix styles d’alertes, chacun sur une scène : Carte (une carte « Mélodie s’est abonné »), Grand texte (« captain_kirk suit désormais la chaîne » en grandes lettres), Impact (une étiquette violette « Baguette3000 a envoyé 500 bits »), Éclipse (deux parois de lumière autour d’un raid), Verre (une capsule rose « NoxModo a offert 5 abonnements »), Interrupteur (une carte noire avec des points lumineux), Vague (des particules blanches autour d’un Super Chat), Prisme (des barres de cristal au-dessus d’un nouveau membre), Soie (des voiles de fils verts et bleus autour de 100 KICKs) et Néon (un pseudo chromé sur un anneau). Carte et Grand texte portent l’étiquette Gratuit, les huit autres l’étiquette Soutiens avec le logo Tramevia">
 </p>
 
 | Style | À quoi ça ressemble | |
 |---|---|---|
 | **Carte** | Une carte en verre qui flotte en 3D | Gratuit |
 | **Grand texte** | De grands mots posés sur ta scène, sans cadre | Gratuit |
-| **Impact** | Un plan produit : l’alerte tombe en trois tranches qui tournent, se recollent d’un coup et éclaboussent | Accès anticipé |
-| **Éclipse** | Rien que de la lumière : deux plans se croisent sur un anneau, puis deux grandes parois de lumière encadrent le texte | Accès anticipé |
-| **Verre** | Une capsule de verre dépoli devient une carte, une lumière chaude passe dessous | Accès anticipé |
-| **Interrupteur** | Un interrupteur bascule sur ON au son, la lumière jaillit et des points lumineux décomptent le temps | Accès anticipé |
-| **Vague** | Une vague de particules blanches déferle, le texte se forme dans la poussière | Accès anticipé |
-| **Prisme** | Des barres de cristal sur un sol de verre noir, qui bondissent sur chaque note comme un égaliseur | Accès anticipé |
-| **Soie** | Des voiles de fils très fins tissent une sphère autour de l’icône | Accès anticipé |
-| **Néon** | Ton pseudo en grosses lettres chromées sur un anneau qui tourne, éclairé au néon | Accès anticipé |
+| **Impact** | Un plan produit : l’alerte tombe en trois tranches qui tournent, se recollent d’un coup et éclaboussent | Soutiens |
+| **Éclipse** | Rien que de la lumière : deux plans se croisent sur un anneau, puis deux grandes parois de lumière encadrent le texte | Soutiens |
+| **Verre** | Une capsule de verre dépoli devient une carte, une lumière chaude passe dessous | Soutiens |
+| **Interrupteur** | Un interrupteur bascule sur ON au son, la lumière jaillit et des points lumineux décomptent le temps | Soutiens |
+| **Vague** | Une vague de particules blanches déferle, le texte se forme dans la poussière | Soutiens |
+| **Prisme** | Des barres de cristal sur un sol de verre noir, qui bondissent sur chaque note comme un égaliseur | Soutiens |
+| **Soie** | Des voiles de fils très fins tissent une sphère autour de l’icône | Soutiens |
+| **Néon** | Ton pseudo en grosses lettres chromées sur un anneau qui tourne, éclairé au néon | Soutiens |
 
-**Carte** et **Grand texte** sont gratuits pour tout le monde. Les huit autres sont en **accès anticipé (Soon)** : réservés aux soutiens à partir de la 1.4.5, puis gratuits pour tous. Date de déblocage : <img src="public/assets/logo.svg" width="16" height="16" alt="Tramevia"> **Soon** 😎. Un style verrouillé affiche un cadenas ; si tu le choisis, l’overlay affiche « Carte » à la place. Plus de détails dans [Soutenir](#soutenir).
+**Carte** et **Grand texte** sont gratuits pour tout le monde. Les huit autres sont **réservés aux soutiens** : un code soutien les débloque. Un style verrouillé affiche un cadenas ; si tu le choisis, l’overlay affiche « Carte » à la place. Plus de détails dans [Soutenir](#soutenir).
 
 > [!TIP]
 > **Le carillon ne s’entend pas sur le stream ?** Dans les propriétés de la source Navigateur, coche « Contrôler l’audio via OBS », et vérifie que la source n’est pas coupée dans le mixeur audio. Les alertes s’affichent seulement au moment où elles arrivent : quand OBS recharge la source, les anciennes ne repassent pas.
@@ -362,6 +372,17 @@ Ce que les plateformes ne permettent pas de changer à distance (le texte de not
 > [!TIP]
 > Tu fais souvent le même genre de live ? Clique sur « Enregistrer comme préréglage » (par exemple « Soirée ranked ») : la prochaine fois, un clic remplit tout le formulaire, et il ne te reste qu’à appliquer.
 
+<a id="etape-8"></a>
+
+## 🗳️ Étape 8 (facultatif) : sondage, objectifs, commandes et Discord
+
+Tout se règle dans la section **Live** du tableau de bord, pour toutes tes plateformes à la fois.
+
+- **Sondage** : écris une question et 2 à 5 réponses, choisis une durée, clique sur **« Lancer le sondage »**. Tes spectateurs votent en tapant 1, 2… dans n’importe quel chat, TikTok compris, une voix par personne. Pour l’afficher sur le stream, choisis **Sondage** dans la carte de l’overlay et ajoute son adresse en source Navigateur, largeur **600**, hauteur **400**. Le résultat reste 15 secondes, puis la carte s’en va. **Style** : Barres ou Anneau.
+- **Objectifs** : fixe un objectif de follows et un objectif d’abonnements. Ils comptent sur toutes tes plateformes à partir de là (un sub offert compte pour un, les membres YouTube comptent comme des abonnés). Sur le stream : choisis **Objectif** dans la carte de l’overlay, largeur **800**, hauteur **200**, puis abonnements, follows ou les deux, en style Barres ou Anneau, avec le dégradé Tramevia ou la couleur de ton choix, et une icône par objectif.
+- **Commandes et rappels** : `!discord`, `!réseaux`… reçoivent une réponse dans le chat où elles ont été tapées, et des messages réguliers partent pendant le live (toutes les 5 à 240 minutes) dans chaque chat qui accepte les messages, seulement si quelqu’un a écrit depuis le précédent. Sur YouTube, chaque message coûte 50 unités de quota.
+- **Discord** : colle le webhook d’un salon (dans Discord : *Modifier le salon → Intégrations → Webhooks → Nouveau webhook → Copier l’URL du webhook*). Tramevia Dock annonce ton live avec le lien de chaque chaîne en direct, puis publie le résumé à la fin : durée, pic de spectateurs, follows et abonnements par plateforme, les plus actifs du chat. Le même résumé s’affiche dans le tableau de bord.
+
 **Et voilà, tout est prêt. Bon live !** 🎉 Une question, une idée, envie de montrer ton setup ? [Rejoins les Discussions](https://github.com/Tramevia/Tramevia-Dock/discussions).
 
 <a id="fonctionnalites"></a>
@@ -371,12 +392,12 @@ Ce que les plateformes ne permettent pas de changer à distance (le texte de not
 <table>
   <tr>
     <td width="50%" align="center" valign="top">
-      <img src="docs/assets/screenshots/fr/chat-dock.png" width="240" alt="Le dock Chat unifié en largeur étroite : messages de Twitch, Kick, YouTube et TikTok, un raid, le choix des comptes destinataires et la zone d’envoi"><br>
+      <img src="docs/assets/screenshots/fr/chat-dock.png" width="240" alt="Le dock Chat unifié en largeur étroite : messages de Twitch, Kick, YouTube et TikTok, un premier message mis en avant, une carte de cadeau TikTok, le choix des comptes destinataires et la zone d’envoi"><br>
       <b>💬 Chat unifié</b><br>
       <sub>Lecture, envoi multi-comptes, réponses et modération</sub>
     </td>
     <td width="50%" align="center" valign="top">
-      <img src="docs/assets/screenshots/fr/community-dock.png" width="240" alt="Le dock Communauté : 676 spectateurs au total avec le détail par chaîne, une recherche de pseudo, les filtres 5, 15 et 60 minutes, et la liste officielle Twitch rangée par rôle"><br>
+      <img src="docs/assets/screenshots/fr/community-dock.png" width="240" alt="Le dock Communauté : le total des spectateurs avec le détail par chaîne, une recherche de pseudo, les filtres 5, 15 et 60 minutes, et la liste officielle Twitch rangée par rôle"><br>
       <b>👥 Communauté</b><br>
       <sub>Total de spectateurs et qui est dans ton chat</sub>
     </td>
@@ -416,6 +437,7 @@ Ce que les plateformes ne permettent pas de changer à distance (le texte de not
 - Émotes natives, plus 7TV, BTTV et FFZ selon la plateforme. Badges, cheermotes Twitch, liens et mentions.
 - Envoi sur plusieurs comptes à la fois (« Envoyer sur »), réponses, historique avec ↑ et autocomplétion des émotes avec Tab.
 - Modération depuis le chat (supprimer, exclure temporairement, bannir, débannir), dans la limite de ce que chaque plateforme permet.
+- Filtres automatiques : mots interdits, liens et spam (majuscules, message répété, flood d’émotes ou de symboles), sur toutes les plateformes (Paramètres → Filtres automatiques).
 - Fiche utilisateur : ses messages de la session et, sur Twitch, la date de création du compte et de follow.
 - Premiers messages, mentions et mots-clés mis en évidence, avec un son facultatif quand on te mentionne.
 - Fil d’événements : follows, abonnements, abonnements offerts, Bits, KICKs, Super Chats, Super Stickers, adhésions, Jewels, raids, points de chaîne, cadeaux TikTok…
@@ -437,11 +459,21 @@ Ce que les plateformes ne permettent pas de changer à distance (le texte de not
 
 **🖼️ Overlays**
 
-- Quatre overlays pour des sources Navigateur d’OBS, réglés dans le tableau de bord avec un aperçu en direct : les réglages s’appliquent en direct, chaque adresse se colle une seule fois dans OBS.
+- Six overlays pour des sources Navigateur d’OBS, réglés dans le tableau de bord avec un aperçu en direct : les réglages s’appliquent en direct, chaque adresse se colle une seule fois dans OBS.
 - **Chat** : trois thèmes (Transparent, Sombre, Clair), taille, disparition, bulles, contour, badges, avatars, filtres par plateforme et par compte.
 - **Message mis en avant** : tu choisis un message dans le dock Chat, il s’affiche à l’écran.
 - **Alertes** : follows, subs, subs offerts, dons, raids, récompenses, j’aime et partages TikTok de toutes tes plateformes, une alerte à la fois, avec un carillon, 10 styles et un bouton de test.
 - **Spectateurs** : le total de tes spectateurs en direct sur toutes tes plateformes, chaque hausse (+x, en vert) et chaque baisse (−x, en rouge) animée.
+- **Sondage** : le sondage en cours, ses votes en direct et le résultat, en barres ou en anneau.
+- **Objectif** : tes objectifs de follows et d’abonnements en barres lumineuses ou en anneaux, de la couleur de ton choix avec 18 icônes, avec une explosion quand l’un est atteint.
+
+**🗳️ Outils du live**
+
+- Un sondage sur toutes tes plateformes : les spectateurs tapent 1, 2… dans le chat, TikTok compris.
+- Des objectifs de follows et d’abonnements comptés sur toutes tes plateformes.
+- Des !commandes et des rappels réguliers envoyés depuis tes comptes.
+- Une annonce Discord quand ton live commence, et le résumé à la fin.
+- Le résumé du live dans le tableau de bord : durée, pic de spectateurs, follows et abonnements par plateforme, les plus actifs du chat.
 
 **🛡️ Installation et sécurité**
 
@@ -540,7 +572,7 @@ Installé avec `git clone` ? Lance `git pull` puis relance-le. Tous les détails
 <details>
 <summary><b>C’est vraiment gratuit ?</b></summary>
 
-Oui. Tramevia Dock est gratuit et libre. Les apps développeur de Twitch, Kick et Google sont gratuites, l’API YouTube aussi dans la limite du quota quotidien, et l’offre gratuite d’Euler Stream suffit en général pour TikTok. Seul un hébergement en ligne (Railway, serveur…) peut te coûter quelque chose ; sur ton PC, tout est gratuit. Les styles d’alertes en accès anticipé deviennent gratuits pour tous après leur période réservée aux soutiens.
+Oui. Tramevia Dock est gratuit et libre. Les apps développeur de Twitch, Kick et Google sont gratuites, l’API YouTube aussi dans la limite du quota quotidien, et l’offre gratuite d’Euler Stream suffit en général pour TikTok. Seul un hébergement en ligne (Railway, serveur…) peut te coûter quelque chose ; sur ton PC, tout est gratuit. Huit des dix styles d’alertes sont réservés aux soutiens.
 
 </details>
 
@@ -570,7 +602,7 @@ Ces accès (les « jetons ») et les secrets de tes apps sont chiffrés sur ton 
 <details>
 <summary><b>Pourquoi certains styles d’alertes ont un cadenas ?</b></summary>
 
-**Carte** et **Grand texte** sont gratuits pour tout le monde. Les huit autres styles sont en accès anticipé : à partir de la 1.4.5, un code soutien les débloque en avance, puis ils deviennent gratuits pour tous. Date de déblocage : <img src="public/assets/logo.svg" width="16" height="16" alt="Tramevia"> **Soon** 😎. D’ici là, un style verrouillé s’affiche comme « Carte ». Voir [Soutenir](#soutenir).
+**Carte** et **Grand texte** sont gratuits pour tout le monde. Les huit autres styles sont réservés aux soutiens : un code soutien les débloque. Sans code, un style verrouillé s’affiche comme « Carte ». Voir [Soutenir](#soutenir).
 
 </details>
 
@@ -592,7 +624,7 @@ Toujours rien ? [Pose ta question](https://github.com/Tramevia/Tramevia-Dock/dis
 <details>
 <summary><b>Ça marche avec Streamlabs ou un autre logiciel qu’OBS ?</b></summary>
 
-Tramevia Dock est pensé pour **OBS Studio 31 ou plus récent** et ses docks de navigateur personnalisés. Le tableau de bord et les docks sont de simples pages web : tu peux aussi les ouvrir dans ton navigateur, à côté de n’importe quel logiciel. Les overlays sont des adresses prévues pour une source Navigateur d’OBS ; les autres logiciels de stream ne sont pas testés.
+Oui avec **OBS Studio 31 ou plus récent** et avec **Streamlabs Desktop**. Dans Streamlabs, le dock se place avec l’élément « Site Web » de l’éditeur de dispositions et les overlays en « Source du navigateur » : voir le [guide Streamlabs](docs/fr/streamlabs.md). Le tableau de bord et les docks sont aussi de simples pages web : tu peux les ouvrir dans ton navigateur, à côté de n’importe quel logiciel. Les autres logiciels de stream ne sont pas testés.
 
 </details>
 
@@ -617,7 +649,7 @@ Si le chat ne se connecte pas, tu peux saisir le numéro de ton salon de chat à
 
 Google accorde **10 000 unités par jour** à chaque projet Google Cloud. Envoyer un message coûte 50 unités, une action de modération aussi, et changer le titre environ 51. Une journée avec un live de 4 heures consomme environ 830 unités sans compter tes messages ; 40 messages envoyés, c’est 2 000 unités de plus.
 
-Tramevia Dock affiche une estimation sur ta carte de compte (« Quota API : … unités ») et met l’envoi, la modération et la modification des infos en pause à 95 % de la limite, jusqu’à minuit heure du Pacifique (vers 9 h du matin en France). Voir [le quota quotidien](docs/fr/platforms.md#le-quota-quotidien).
+Tramevia Dock affiche une estimation sur ta carte de compte (« Quota API : … unités ») et met l’envoi, la modération et la modification des infos en pause à 95 % de la limite, jusqu’à minuit heure du Pacifique (vers 9 h du matin en France). Si tu actives les filtres automatiques, chaque message YouTube filtré coûte aussi 50 unités (100 avec une exclusion). Chaque réponse à une commande, rappel ou annonce de sondage envoyé sur YouTube coûte 50 unités. Voir [le quota quotidien](docs/fr/platforms.md#le-quota-quotidien).
 
 </details>
 
@@ -635,7 +667,7 @@ Tu changes simplement de PC ? Copie le dossier `data` en entier, avec `secret.ke
 
 D’autres questions ? La [FAQ et dépannage](docs/fr/faq.md) reprend les messages d’erreur un par un, et les [Discussions](https://github.com/Tramevia/Tramevia-Dock/discussions/categories/q-a) sont là pour tout le reste.
 
-📚 Les guides complets : [Installation](docs/fr/install.md) · [Plateformes](docs/fr/platforms.md) · [OBS](docs/fr/obs.md) · [En ligne](docs/fr/cloud.md) · [FAQ](docs/fr/faq.md)
+📚 Les guides complets : [Installation](docs/fr/install.md) · [Plateformes](docs/fr/platforms.md) · [OBS](docs/fr/obs.md) · [Streamlabs](docs/fr/streamlabs.md) · [En ligne](docs/fr/cloud.md) · [FAQ](docs/fr/faq.md)
 
 <a id="aide"></a>
 
@@ -674,7 +706,7 @@ D’autres questions ? La [FAQ et dépannage](docs/fr/faq.md) reprend les messag
 - **Local par défaut.** Sans `ADMIN_PASSWORD`, le serveur n’écoute que sur `127.0.0.1` et ne répond qu’à ton ordinateur. Dès que Tramevia Dock est joignable depuis le réseau (en ligne, réseau local, tunnel), `ADMIN_PASSWORD` est obligatoire, avec 12 caractères minimum, et les tentatives de connexion sont limitées.
 - **Clés d’accès.** Les adresses des docks contiennent une clé d’accès complet ; celles des overlays, une clé séparée en lecture seule. Traite-les comme des mots de passe : tu peux les régénérer dans **Paramètres → Sécurité**.
 - **Protégé des autres sites.** Une page web que tu visites ne peut ni lire ni piloter ton Tramevia Dock : les requêtes venant d’autres sites sont refusées.
-- **Codes soutien vérifiés hors ligne.** Un code soutien est vérifié par une signature, directement dans Tramevia Dock : rien n’est envoyé nulle part pour le valider.
+- **Code soutien : seulement pour télécharger les styles soutiens.** Un code soutien est vérifié par une signature, directement dans Tramevia Dock. Pour télécharger les styles soutiens, ton Tramevia Dock l’envoie au serveur Tramevia (au démarrage, puis une fois par jour), et rien d’autre : ni chaîne, ni chat, ni compte.
 - **Déconnecter** un compte efface ses jetons, et Tramevia Dock essaie aussi de révoquer son accès auprès de la plateforme.
 - **Mises à jour vérifiées.** Uniquement les versions officielles de ce dépôt, contrôlées par SHA-256 avant de remplacer quoi que ce soit (voir [Mises à jour](#mises-a-jour)).
 
@@ -684,9 +716,9 @@ D’autres questions ? La [FAQ et dépannage](docs/fr/faq.md) reprend les messag
 <details>
 <summary><b>Le détail : ce qui est enregistré, et ce qui sort de ton PC</b></summary>
 
-**Données enregistrées** (dans `data/tramevia-dock.db`) : tes réglages, ceux des overlays, tes préréglages, les identifiants chiffrés de tes apps, les clés des docks et de l’overlay, et pour chaque compte connecté son pseudo, son avatar, les permissions accordées et ses jetons chiffrés. S’y ajoutent les identifiants des personnes qui ont déjà écrit dans ton chat (pour repérer les premiers messages), ceux des bannissements YouTube faits depuis Tramevia Dock (pour pouvoir les lever), un compteur de quota YouTube et le numéro de ton salon de chat Kick. Les messages du chat et les événements restent en mémoire uniquement (les 400 derniers) et ne sont pas écrits sur le disque.
+**Données enregistrées** (dans `data/tramevia-dock.db`) : tes réglages, ceux des overlays, tes préréglages, les identifiants chiffrés de tes apps, les clés des docks et de l’overlay, et pour chaque compte connecté son pseudo, son avatar, les permissions accordées et ses jetons chiffrés. S’y ajoutent les identifiants des personnes qui ont déjà écrit dans ton chat (pour repérer les premiers messages), ceux des bannissements YouTube faits depuis Tramevia Dock (pour pouvoir les lever), un compteur de quota YouTube, le numéro de ton salon de chat Kick, tes commandes et rappels, tes objectifs, le résumé de ton dernier live et ton webhook Discord (chiffré). Les messages du chat et les événements restent en mémoire uniquement (les 400 derniers) et ne sont pas écrits sur le disque.
 
-**Connexions sortantes** : les plateformes elles-mêmes (Twitch, Kick, Google/YouTube, TikTok), le socket Pusher qu’utilise kick.com (chat Kick en mode non officiel), les services d’émotes 7TV, BTTV et FFZ (avec l’identifiant de ta chaîne), le serveur de signature Euler Stream pour TikTok, et GitHub une fois par jour pour vérifier s’il existe une nouvelle version (désactivable dans **Paramètres → À propos**, ou avec `UPDATE_CHECK=0`). À part les plateformes que tu connectes, aucun de ces services ne reçoit tes jetons ni tes mots de passe.
+**Connexions sortantes** : les plateformes elles-mêmes (Twitch, Kick, Google/YouTube, TikTok), le socket Pusher qu’utilise kick.com (chat Kick en mode non officiel), les services d’émotes 7TV, BTTV et FFZ (avec l’identifiant de ta chaîne), le serveur de signature Euler Stream pour TikTok, Discord seulement si tu colles un webhook (l’annonce et le résumé), et GitHub une fois par jour pour vérifier s’il existe une nouvelle version (désactivable dans **Paramètres → À propos**, ou avec `UPDATE_CHECK=0`). À part les plateformes que tu connectes, aucun de ces services ne reçoit tes jetons ni tes mots de passe.
 
 </details>
 
@@ -696,22 +728,22 @@ D’autres questions ? La [FAQ et dépannage](docs/fr/faq.md) reprend les messag
 
 <a id="soutenir"></a>
 
-## 💜 Soutenir Tramevia Dock (Soon)
+## 💜 Soutenir Tramevia Dock
 
 > [!TIP]
 > **Tramevia Dock est gratuit et le restera : pas de pub, pas d’abonnement.**
 > Il est fait par un streamer, pour les streamers. S’il te fait gagner du temps avant chaque live, le soutenir aide le projet à vivre et à grandir.
 
-**Comment ça marchera (à partir de la 1.4.5) :**
+**Comment ça marche :**
 
-1. Tu soutiens le projet sur [GitHub Sponsors](https://github.com/sponsors/Tramevia).
-2. Tu reçois un **code soutien** personnel.
-3. Tu le colles dans **Paramètres → À propos** : les styles d’alertes en accès anticipé se débloquent aussitôt, sans connexion à un serveur (le code est vérifié hors ligne).
+1. Tu deviens membre sur [Buy Me a Coffee](https://buymeacoffee.com/tramevia), à partir de 5 $ par mois.
+2. Tu reçois un **code soutien** personnel par e-mail, en quelques minutes. Il marche tant que ton abonnement est actif ; si tu arrêtes, les styles restent jusqu’à la fin du mois déjà payé.
+3. Tu le colles dans **Paramètres → À propos** : ton Tramevia Dock télécharge les styles d’alertes réservés aux soutiens (quelques secondes) et ils se débloquent aussitôt. Une installation cloud les garde dans son volume ; tu n’installes jamais rien à la main.
 
-Chaque style en accès anticipé devient ensuite **gratuit pour tout le monde**. Date de déblocage : <img src="public/assets/logo.svg" width="16" height="16" alt="Tramevia"> **Soon** 😎. **Carte** et **Grand texte** restent gratuits pour tous, dès maintenant.
+**Carte** et **Grand texte** restent gratuits pour tout le monde.
 
 <p align="center">
-  <a href="https://github.com/sponsors/Tramevia"><img src="https://img.shields.io/badge/Soutenir%20le%20projet%20(Soon)-GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" height="48" alt="Soutenir le projet sur GitHub Sponsors (Soon)"></a>
+  <a href="https://buymeacoffee.com/tramevia"><img src="https://img.shields.io/badge/Soutenir%20le%20projet-Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=black" height="48" alt="Soutenir le projet sur Buy Me a Coffee"></a>
 </p>
 
 <p align="center"><sub>Pas de budget ? Mettre une étoile ⭐ au dépôt, en parler à un autre streamer, <a href="https://github.com/Tramevia/Tramevia-Dock/discussions/categories/show-and-tell">montrer ton setup</a> ou signaler un bug aide beaucoup aussi.</sub></p>

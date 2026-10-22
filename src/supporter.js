@@ -1,4 +1,4 @@
-// Supporter code (settings key 'supporter'): unlocks the alert styles still in early access (EARLY in overlay-settings.js).
+// Supporter code (settings key 'supporter'): unlocks the supporter alert styles (SUPPORTER_STYLES in overlay-settings.js).
 // A code is TD1-<payload>.<signature>: payload = base64url JSON { n: name, x?: 'YYYY-MM-DD' expiry }, signed with the
 // project's Ed25519 key. Only the public key ships here; codes are made with a tool kept outside the repository.
 import { createPublicKey, verify } from 'node:crypto';

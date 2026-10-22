@@ -28,6 +28,7 @@
     position: sticky; top: calc(var(--header-h) + 16px);
     max-height: calc(100vh - var(--header-h) - 32px); overflow-y: auto; overscroll-behavior: contain;
     padding: 0 2px 2px; margin: 0 -2px;
+    mask-image: linear-gradient(#000 calc(100% - var(--fade)), transparent); animation: fade-edge linear both; animation-timeline: scroll(self block);
   }
 }
 @media (max-width: 480px) {

@@ -61,6 +61,7 @@ span.msg-avatar {
 .msg.mention-me { --stripe: var(--danger); background: color-mix(in srgb, var(--danger) 13%, transparent); }
 .msg.featured { --stripe: var(--warn); background: color-mix(in srgb, var(--warn) 10%, transparent); outline: 1px solid color-mix(in srgb, var(--warn) 35%, transparent); outline-offset: -1px; }
 .msg.deleted { opacity: 0.6; }
+.msg-tag.filtered { color: var(--danger); }
 .msg.deleted .msg-text { text-decoration: line-through; text-decoration-color: var(--danger); }
 .msg.deleted .emote { filter: grayscale(1); opacity: 0.5; }
 
@@ -117,11 +118,12 @@ body[data-page="chat"] .toasts { bottom: 112px; }
   border-bottom: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 0.8rem;
 }
 .ls-items { flex: 1; min-width: 0; display: flex; gap: 12px; overflow-x: auto; scrollbar-width: none; }
+.ls-items, .filters, .targets { mask-image: linear-gradient(90deg, #000 calc(100% - var(--fade)), transparent); animation: fade-edge linear both; animation-timeline: scroll(self inline); }
 .ls-item { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .ls-item .pf-icon { width: 18px; height: 18px; border-radius: 5px; }
 .ls-item .pf-icon svg { width: 11px; height: 11px; }
 .ls-item .status-dot { width: 6px; height: 6px; }
-.ls-item .status-dot.live { box-shadow: 0 0 0 2px rgb(233 25 22 / 25%); }
+.ls-item .status-dot.live { box-shadow: 0 0 0 2px var(--live-soft); }
 .ls-num { color: var(--text); font-weight: 600; }
 .ls-item.stale, .ls-total.stale { opacity: 0.5; }
 .ls-item.stale .status-dot { animation: none; box-shadow: none; }
@@ -151,7 +153,7 @@ body[data-page="chat"] .toasts { bottom: 112px; }
 .fchip .pf-icon svg, .tchip .pf-icon svg { width: 11px; height: 11px; }
 .fchip-name, .tchip-name { overflow: hidden; text-overflow: ellipsis; }
 /* Narrow docks keep only the icon, plus a 3-letter label when two accounts share a platform (.dup). */
-.chip-short { display: none; font-size: 0.72rem; font-weight: 700; }
+.chip-short { display: none; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; }
 @container (max-width: 420px) {
   .fchip { padding: 0 3px; }
   .fchip-name { display: none; }
@@ -194,7 +196,7 @@ body[data-page="chat"] .toasts { bottom: 112px; }
   font: inherit; font-size: 0.8rem; font-weight: 650; white-space: nowrap; cursor: pointer;
   box-shadow: 0 6px 20px rgb(0 0 0 / 35%); animation: pill-in 0.16s ease-out;
 }
-.new-pill:hover { background: color-mix(in srgb, var(--accent) 88%, white); }
+.new-pill:hover { background: color-mix(in srgb, var(--accent) 80%, white); }
 .new-pill:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .new-pill .arrow { font-size: 1rem; line-height: 1; }
 @keyframes pill-in { from { opacity: 0; transform: translate(-50%, 6px); } }

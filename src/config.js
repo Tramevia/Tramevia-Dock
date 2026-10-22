@@ -23,6 +23,8 @@ export const config = {
   secure: publicUrl.startsWith('https://'),
   loopbackOnly: LOOPBACK.has(host),
   dataDir: env.DATA_DIR || (cloud ? '/data' : './data'),
+  // Where a supporter code downloads the supporter styles (src/premium.js); PREMIUM_URL= (empty) turns it off.
+  premiumUrl: (env.PREMIUM_URL ?? 'https://tramevia-dock-premium.trameviadock.workers.dev').trim().replace(/\/+$/, ''),
   adminPassword: env.ADMIN_PASSWORD || env.DOCK_PASSWORD || '', // DOCK_PASSWORD = v1 name
   tokenKey: env.TOKEN_KEY || '',
   allowedHosts: (env.ALLOWED_HOSTS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean),
