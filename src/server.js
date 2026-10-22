@@ -15,6 +15,8 @@ import { createHub } from './hub.js';
 import { createAccounts } from './accounts.js';
 import { createOverlays } from './overlays.js';
 import { createSupporter } from './supporter.js';
+import { createPremium } from './premium.js';
+import { createAutomod } from './chat/automod.js';
 import { OVERLAY_IDS, alertCategory } from '../public/assets/overlay-settings.js';
 import { request, ApiError } from './net.js';
 import { adapters, platformMeta, PLATFORMS } from './platforms/index.js';
@@ -27,7 +29,7 @@ async function load(path, fallback) {
 const { tokenize, loadEmotes } = await load('./chat/emotes.js', {
   tokenize: ({ fragments }) => fragments, loadEmotes: async () => {},
 });
-const featureModules = await Promise.all(['./chat/routes.js', './community.js', './stream-info.js'].map(p => load(p, {})));
+const featureModules = await Promise.all(['./chat/routes.js', './chat/bot.js', './community.js', './stream-info.js', './goals.js', './live.js', './poll.js'].map(p => load(p, {})));
 
 const PUBLIC_DIR = fileURLToPath(new URL('../public/', import.meta.url));
 const PAGES = {
@@ -87,6 +89,8 @@ const ctx = {
   },
   emitChat(msg) {
     if (msg.flags.first === undefined && msg.author?.id && !msg.flags.self) msg.flags.first = ctx.isFirstChatter(msg.platform, msg.author.id);
+    ctx.automod.check(msg);
+    ctx.poll?.vote(msg);
     hub.publish('chat', msg);
   },
   emitEvent: evt => hub.publish('event', evt),
@@ -96,7 +100,11 @@ const ctx = {
 };
 ctx.accounts = createAccounts(ctx);
 ctx.supporter = createSupporter({ settings });
-ctx.overlays = createOverlays({ settings, hub, unlocked: ctx.supporter.unlocked });
+// The supporter styles pack, downloaded with the code (src/premium.js); a new or removed pack reloads the alerts overlays.
+ctx.premium = createPremium({ dir: resolve(config.dataDir, 'premium'), url: config.premiumUrl, log, onChange: () => ctx.overlays.republish(),
+  code: () => (ctx.supporter.unlocked() ? settings.get('supporter') : null) });
+ctx.automod = createAutomod(ctx);
+ctx.overlays = createOverlays({ settings, hub, unlocked: ctx.supporter.unlocked, premium: ctx.premium.version });
 
 function adapterFor(account) {
   return adapters.get(account.demo ? 'demo' : account.platform);
@@ -136,7 +144,12 @@ router.get('/api/state', ({ access }) => {
       : accounts.map(({ id, platform, login, displayName, avatar, stats }) => ({ id, platform, login, displayName, avatar, stats })),
     ui: settings.get('ui', {}),
     overlays: ctx.overlays.all(), overlaysSaved: ctx.overlays.saved(),
-    unlocked: ctx.supporter.unlocked(), supporter: access === 'admin' ? ctx.supporter.info() : null,
+    unlocked: ctx.supporter.unlocked(), supporter: access === 'admin' ? ctx.supporter.info() : null, premium: ctx.premium.info(),
+    automod: access === 'admin' ? ctx.automod.get() : null,
+    // The live tools' settings ride along: the dashboard then opens with 4 requests at once, under the browser's 6 per server.
+    bot: access === 'admin' ? ctx.bot?.get() ?? null : null, discord: access === 'admin' ? ctx.live?.discord() ?? null : null,
+    live: access === 'admin' ? ctx.live?.state() ?? null : null,
+    poll: ctx.poll?.get() ?? null, goals: ctx.goals?.get() ?? null,
   };
 }, { access: 'read' });
 
@@ -170,15 +183,16 @@ router.put('/api/overlays/:id', ({ params, body }) => {
   return { id, settings: ctx.overlays.save(id, body) };
 });
 router.delete('/api/overlays/:id', ({ params }) => { const id = overlayId(params.id); return { id, settings: ctx.overlays.reset(id) }; });
-// Supporter code: unlocks the alert styles still in early access (src/supporter.js).
-router.put('/api/supporter', ({ body }) => {
+// Supporter code: unlocks the supporter alert styles (src/supporter.js).
+router.put('/api/supporter', async ({ body }) => {
   const info = ctx.supporter.set(body?.code);
   if (!info) throw new HttpError(400, ctx.t('Ce code soutien n’est pas valide.', 'This supporter code is not valid.'), 'invalid_code');
   if (info.expired) throw new HttpError(400, ctx.t('Ce code soutien a expiré.', 'This supporter code has expired.'), 'expired_code');
   ctx.overlays.republish();
-  return { supporter: info };
+  await ctx.premium.sync(); // the styles are there when the dashboard says the code is active
+  return { supporter: info, premium: ctx.premium.info() };
 });
-router.delete('/api/supporter', () => { ctx.supporter.clear(); ctx.overlays.republish(); return { supporter: null }; });
+router.delete('/api/supporter', async () => { ctx.supporter.clear(); ctx.overlays.republish(); await ctx.premium.sync(); return { supporter: null, premium: ctx.premium.info() }; });
 // Test alert: a sample event sent only to alerts overlays (topic alert:test, never the docks, never stored). Picks a category the user kept on.
 const SAMPLE_ALERTS = [
   { type: 'follow' }, { type: 'sub', tier: '1000' }, { type: 'giftsub', count: 5, tier: '1000' }, { type: 'cheer', amount: 500, text: 'Cheer500 GG !' },
@@ -326,6 +340,7 @@ function liveState() {
   const v = ctx.accounts.list().filter(a => a.status !== 'disabled').map(a => ctx.accounts.stats(a.id)?.live);
   return v.includes(true) ? 'live' : v.every(x => x === false) ? 'off' : 'unknown';
 }
+ctx.liveState = liveState; // src/live.js
 const updateStatus = () => ({
   type: update.type, current: config.version,
   latest: update.latest && { version: update.latest.version, notesUrl: update.latest.notesUrl },
@@ -334,7 +349,13 @@ const updateStatus = () => ({
 });
 const publishUpdate = () => hub.publish('update', updateStatus());
 let lastLive = null;
-hub.on(t => { if ((t === 'stats' || t === 'accounts') && liveState() !== lastLive) { lastLive = liveState(); publishUpdate(); } });
+hub.on(t => {
+  if ((t !== 'stats' && t !== 'accounts') || liveState() === lastLive) return;
+  const was = lastLive;
+  lastLive = liveState();
+  if (was === 'off' && lastLive === 'live') hub.clear(); // a new stream starts: the last one's chat is not replayed
+  publishUpdate();
+});
 
 let checking = null, lastCheck = 0, checkFailed = false;
 /** GitHub releases/latest (UPDATE_CHECK=0 = no network call at all). One request at a time. */
@@ -416,7 +437,7 @@ function callbackPage(lang, ok, detail) {
   const esc = s => String(s).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
   const title = ok ? (lang === 'fr' ? 'Compte connecté' : 'Account connected') : (lang === 'fr' ? 'Connexion impossible' : 'Connection failed');
   const hint = ok ? (lang === 'fr' ? 'Tu peux fermer cet onglet et revenir dans OBS : le dock se met à jour tout seul.' : 'You can close this tab and go back to OBS: the dock updates by itself.') : '';
-  return `<!doctype html><html lang="${lang}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} · Tramevia Dock</title><link rel="stylesheet" href="/assets/ui.css"><link rel="icon" href="/assets/logo.svg"><body class="center-page"><main class="card callback ${ok ? 'ok' : 'fail'}"><img src="/assets/logo.svg" alt="" width="48" height="48"><h1>${ok ? '✓ ' : '⚠ '}${esc(title)}</h1><p>${esc(detail)}</p><p class="muted">${esc(hint)}</p><a class="btn" href="/">${lang === 'fr' ? 'Ouvrir le tableau de bord' : 'Open dashboard'}</a></main></body></html>`;
+  return `<!doctype html><html lang="${lang}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} · Tramevia Dock</title><link rel="stylesheet" href="/assets/ui.css"><link rel="icon" href="/assets/logo.svg"><body class="center-page"><main class="card callback ${ok ? 'ok' : 'fail'}"><img src="/assets/logo-3d.webp" alt="" width="48" height="48"><h1>${ok ? '✓ ' : '⚠ '}${esc(title)}</h1><p>${esc(detail)}</p><p class="muted">${esc(hint)}</p><a class="btn" href="/">${lang === 'fr' ? 'Ouvrir le tableau de bord' : 'Open dashboard'}</a></main></body></html>`;
 }
 
 async function handle(req, res) {
@@ -443,6 +464,9 @@ async function handle(req, res) {
     if (req.method === 'GET') {
       if (PAGES[url.pathname] && await serveStatic(res, PUBLIC_DIR, PAGES[url.pathname])) return;
       if (url.pathname.startsWith('/assets/') && await serveStatic(res, PUBLIC_DIR, url.pathname.slice(1), url.searchParams.get('v'))) return;
+      // ponytail: anyone who knows a supporter's dock address can fetch the pack (as with a shared file); a per-overlay key if it leaks.
+      if (url.pathname.startsWith('/premium/') && ctx.supporter.unlocked()
+        && await serveStatic(res, resolve(config.dataDir, 'premium'), `assets/${url.pathname.slice(9)}`, url.searchParams.get('v'))) return;
       if (url.pathname === '/favicon.ico' && await serveStatic(res, PUBLIC_DIR, 'assets/logo.svg')) return;
     }
     throw new HttpError(404, 'Not found', 'not_found');
@@ -480,7 +504,8 @@ server.on('upgrade', (req, socket, head) => {
       accounts: level === 'admin' ? ctx.accounts.list().map(ctx.accounts.describe)
         : ctx.accounts.list().map(a => ({ id: a.id, platform: a.platform, login: a.login, displayName: a.displayName, avatar: a.avatar, stats: ctx.accounts.stats(a.id) })),
       ui: settings.get('ui', {}),
-      overlays: ctx.overlays.all(), overlaysSaved: ctx.overlays.saved(), unlocked: ctx.supporter.unlocked(),
+      overlays: ctx.overlays.all(), overlaysSaved: ctx.overlays.saved(), unlocked: ctx.supporter.unlocked(), premium: ctx.premium.version(),
+      poll: ctx.poll?.get() ?? null, goals: ctx.goals?.get() ?? null,
     }), () => auth.access(req, url));
   } catch {
     socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');
@@ -513,6 +538,8 @@ server.listen(config.port, config.host, () => {
     tick();
     setInterval(tick, 86_400_000).unref();
   }, 60_000).unref();
+  ctx.premium.sync(); // a new pack version (or a revoked code) is picked up at start and every day
+  setInterval(() => ctx.premium.sync(), 86_400_000).unref();
   setInterval(autoInstall, 600_000).unref(); // local only: installs a pending update once every account is off-live
 });
 

@@ -5,6 +5,8 @@ import { h, svg, t, addI18n, fmt, icon, platformIcon, lang } from '/assets/core.
 addI18n({
   fr: {
     'chat.first': 'Premier message', 'chat.replyTo': 'En réponse', 'chat.deletedTag': 'supprimé',
+    'chat.filtered.word': 'Filtré : mot interdit', 'chat.filtered.link': 'Filtré : lien', 'chat.filtered.caps': 'Filtré : majuscules',
+    'chat.filtered.repeat': 'Filtré : message répété', 'chat.filtered.emotes': 'Filtré : trop d’émotes', 'chat.filtered.symbols': 'Filtré : symboles',
     'chat.role.broadcaster': 'Streamer', 'chat.role.moderator': 'Modérateur', 'chat.role.vip': 'VIP',
     'chat.role.subscriber': 'Abonné', 'chat.role.member': 'Membre', 'chat.role.verified': 'Vérifié',
     'chat.role.bot': 'Bot', 'chat.role.staff': 'Staff',
@@ -28,6 +30,8 @@ addI18n({
   },
   en: {
     'chat.first': 'First message', 'chat.replyTo': 'Replying', 'chat.deletedTag': 'deleted',
+    'chat.filtered.word': 'Filtered: banned word', 'chat.filtered.link': 'Filtered: link', 'chat.filtered.caps': 'Filtered: capitals',
+    'chat.filtered.repeat': 'Filtered: repeated message', 'chat.filtered.emotes': 'Filtered: too many emotes', 'chat.filtered.symbols': 'Filtered: symbols',
     'chat.role.broadcaster': 'Broadcaster', 'chat.role.moderator': 'Moderator', 'chat.role.vip': 'VIP',
     'chat.role.subscriber': 'Subscriber', 'chat.role.member': 'Member', 'chat.role.verified': 'Verified',
     'chat.role.bot': 'Bot', 'chat.role.staff': 'Staff',
@@ -63,6 +67,7 @@ export function safeUrl(u) {
   } catch { return ''; }
 }
 const cls = s => String(s || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+const FILTERED = ['word', 'link', 'caps', 'repeat', 'emotes', 'symbols']; // auto filter reasons (src/chat/automod.js)
 
 // ------------------------------------------------------------------ colors
 // Worst-case row backgrounds in chat.css: the lightest dark one (.keyword tint) and the darkest light one (.mention-me tint).
@@ -226,6 +231,7 @@ export function renderMessage(msg, o = {}) {
     reply && h('div.msg-reply', icon('reply', 12),
       h('span.ellipsis', reply.author ? h('b', '@' + String(reply.author)) : t('chat.replyTo'), reply.text ? ' ' + String(reply.text) : '')),
     flags.first && o.firstTag !== false && h('div.msg-tag', icon('star', 11), t('chat.first')),
+    flags.filtered && h('div.msg-tag.filtered', icon('filter', 11), t(`chat.filtered.${FILTERED.includes(flags.filtered) ? flags.filtered : 'word'}`)),
     h('div.msg-line',
       o.timestamps !== false && msg.ts ? h('time.msg-time', { dateTime: new Date(msg.ts).toISOString() }, fmt.time(msg.ts)) : null,
       o.icons !== false && platformIcon(cls(msg.platform)),

@@ -2,6 +2,8 @@
 import { createHash } from 'node:crypto';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { extname, join, resolve, sep } from 'node:path';
+import { promisify } from 'node:util';
+import { brotliCompress, gzip, constants as zlib } from 'node:zlib';
 import { LOOPBACK } from './config.js';
 
 export class HttpError extends Error {
@@ -126,16 +128,37 @@ const TYPES = {
 };
 
 /** Fingerprint of root/assets (names, sizes, dates): changes with every update or edit of any asset. */
+const stamps = new Map(); // root → { at, value }
 async function assetStamp(root) {
+  // ponytail: 2 s cache, so a page load (a dozen requests) lists the folder once; an edit shows up 2 s later at most.
+  const hit = stamps.get(root);
+  if (hit && Date.now() - hit.at < 2000) return hit.value;
   const dir = join(root, 'assets');
   const hash = createHash('sha256');
   for (const name of (await readdir(dir)).sort()) {
     const s = await stat(join(dir, name));
     hash.update(`${name} ${s.size} ${s.mtimeMs}\n`);
   }
-  return hash.digest('base64url').slice(0, 12);
+  const value = hash.digest('base64url').slice(0, 12);
+  stamps.set(root, { at: Date.now(), value });
+  return value;
 }
-const ASSET_REF = /(["'])\/assets\/([\w.-]+\.(?:js|css|svg))\1/g;
+const ASSET_REF = /(["'])\/assets\/([\w.-]+\.(?:js|css|svg|png|webp|woff2|wav))\1/g;
+const STAMPED = new Set(['.html', '.js', '.css']); // files whose /assets/ references get the stamp
+const COMPRESSIBLE = new Set(['.html', '.js', '.css', '.svg', '.json']);
+const packed = new Map(); // "file encoding" → compressed body, for the current stamp only
+let packedStamp = '';
+const brotli = promisify(brotliCompress), gz = promisify(gzip);
+
+/** Brotli (or gzip) body of a text file, compressed once per asset version: about 4× fewer bytes for a remote dashboard. */
+async function compressed(file, stamp, data, accept) {
+  const enc = /\bbr\b/.test(accept) ? 'br' : /\bgzip\b/.test(accept) ? 'gzip' : null;
+  if (!enc || data.length < 1024) return null;
+  if (packedStamp !== stamp) { packed.clear(); packedStamp = stamp; }
+  const key = `${file} ${enc}`;
+  if (!packed.has(key)) packed.set(key, await (enc === 'br' ? brotli(data, { params: { [zlib.BROTLI_PARAM_QUALITY]: 9 } }) : gz(data, { level: 9 })));
+  return { enc, body: packed.get(key) };
+}
 
 /**
  * Serve a file from `root`, refusing path traversal. Returns false when not found.
@@ -151,9 +174,19 @@ export async function serveStatic(res, root, path, v = null) {
   const type = TYPES[extname(file)] || 'application/octet-stream';
   const html = type.startsWith('text/html');
   const stamp = await assetStamp(base);
-  if (html || extname(file) === '.js') data = String(data).replace(ASSET_REF, (_, q, name) => `${q}/assets/${name}?v=${stamp}${q}`);
-  res.writeHead(200, { 'Content-Type': type, 'Cache-Control': html ? 'no-store' : v === stamp ? 'public, max-age=31536000, immutable' : 'no-cache' });
-  res.end(data);
+  const ext = extname(file);
+  const headers = { 'Content-Type': type, 'Cache-Control': html ? 'no-store' : v === stamp ? 'public, max-age=31536000, immutable' : 'no-cache' };
+  // Unstamped requests (dynamic imports, the chime) revalidate against the stamp, the version of every asset at once.
+  if (!html) {
+    headers.ETag = `"${stamp}"`;
+    if (res.req?.headers['if-none-match'] === headers.ETag) { res.writeHead(304, headers); res.end(); return true; }
+  }
+  if (STAMPED.has(ext)) data = Buffer.from(String(data).replace(ASSET_REF, (_, q, name) => `${q}/assets/${name}?v=${stamp}${q}`));
+  const packedBody = COMPRESSIBLE.has(ext) ? await compressed(file, stamp, data, res.req?.headers['accept-encoding'] || '') : null;
+  if (COMPRESSIBLE.has(ext)) headers.Vary = 'Accept-Encoding';
+  if (packedBody) headers['Content-Encoding'] = packedBody.enc;
+  res.writeHead(200, headers);
+  res.end(packedBody ? packedBody.body : data);
   return true;
 }
 

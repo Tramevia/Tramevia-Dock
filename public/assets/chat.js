@@ -40,6 +40,9 @@ addI18n({
     'chat.set.timestamps': 'Heure des messages', 'chat.set.avatars': 'Avatars', 'chat.set.badges': 'Badges', 'chat.set.icons': 'Icônes de plateforme',
     'chat.set.readable': 'Couleurs lisibles', 'chat.set.showDeleted': 'Montrer les messages supprimés', 'chat.set.sound': 'Son quand on me mentionne',
     'chat.set.keywords': 'Mots-clés à surligner', 'chat.set.keywordsHint': 'Séparés par des virgules, ex. : giveaway, discord',
+    'chat.clear': 'Vider l’historique', 'chat.clearTitle': 'Vider l’historique du chat ?',
+    'chat.clearBody': 'Les messages et événements affichés disparaissent de tous les docks et de l’overlay chat. Rien n’est supprimé sur les plateformes. L’historique se vide aussi tout seul quand un live commence.',
+    'chat.cleared': 'Historique vidé',
     'chat.card.messages': 'Messages pendant cette session', 'chat.card.noMessages': 'Aucun message pendant cette session.',
     'chat.card.created': 'Compte créé', 'chat.card.followed': 'Suit depuis', 'chat.card.infoError': 'Infos du profil indisponibles : {error}',
     'chat.card.on': 'sur {channel}', 'chat.card.mod': 'Modération', 'chat.card.count': '{n} message', 'chat.card.count|plural': '{n} messages',
@@ -81,6 +84,9 @@ addI18n({
     'chat.set.timestamps': 'Timestamps', 'chat.set.avatars': 'Avatars', 'chat.set.badges': 'Badges', 'chat.set.icons': 'Platform icons',
     'chat.set.readable': 'Readable colors', 'chat.set.showDeleted': 'Show deleted messages', 'chat.set.sound': 'Sound when mentioned',
     'chat.set.keywords': 'Highlight keywords', 'chat.set.keywordsHint': 'Comma-separated, e.g. giveaway, discord',
+    'chat.clear': 'Clear history', 'chat.clearTitle': 'Clear the chat history?',
+    'chat.clearBody': 'Shown messages and events disappear from every dock and from the chat overlay. Nothing is deleted on the platforms. The history also clears itself when a stream starts.',
+    'chat.cleared': 'History cleared',
     'chat.card.messages': 'Messages this session', 'chat.card.noMessages': 'No messages this session.',
     'chat.card.created': 'Account created', 'chat.card.followed': 'Following since', 'chat.card.infoError': 'Profile info unavailable: {error}',
     'chat.card.on': 'on {channel}', 'chat.card.mod': 'Moderation', 'chat.card.count': '{n} message', 'chat.card.count|plural': '{n} messages',
@@ -129,12 +135,13 @@ function blockReason(a) {
 }
 /** 3-letter label telling apart accounts of the same platform in compact chips ('' when the platform is unique). */
 function shortName(a) {
-  const names = accounts.filter(x => x.platform === a.platform).map(x => String(x.displayName || x.login || '').toLowerCase());
-  if (names.length < 2) return '';
+  const others = accounts.filter(x => x.platform === a.platform && x !== a).map(x => String(x.displayName || x.login || '').toLowerCase());
+  if (!others.length) return '';
   const name = String(a.displayName || a.login || '');
-  let i = 0;
-  while (i < name.length && names.every(n => n[i] === name[i].toLowerCase())) i++; // drop the shared prefix (TrameviaTV / TrameviaGaming)
-  return [...(name.slice(i) || name)].slice(0, 3).join('');
+  const low = name.toLowerCase();
+  // Drop the longest prefix shared with a sibling: tramevia / TrameviaTV → "tra" / "TV", TrameviaTV / TrameviaGaming → "TV" / "Gam".
+  const shared = Math.max(...others.map(n => { let i = 0; while (i < low.length && n[i] === low[i]) i++; return i; }));
+  return [...(name.slice(shared) || name)].slice(0, 3).join('');
 }
 const authorName = m => m.author?.name || m.author?.login || '?';
 const isLight = () => getComputedStyle(document.documentElement).colorScheme === 'light';
@@ -734,8 +741,14 @@ function openSettings() {
       sw('icons', t('chat.set.icons')), sw('readable', t('chat.set.readable')),
       sw('showDeleted', t('chat.set.showDeleted'), applyLayoutPrefs),
       !EVENTS_ONLY && sw('sound', t('chat.set.sound'), () => { if (prefs.sound) beep(); })),
-    !EVENTS_ONLY && h('label.field', h('span.label', t('chat.set.keywords')), kw, h('span.hint', { id: 'kw-hint' }, t('chat.set.keywordsHint'))));
+    !EVENTS_ONLY && h('label.field', h('span.label', t('chat.set.keywords')), kw, h('span.hint', { id: 'kw-hint' }, t('chat.set.keywordsHint'))),
+    h('button.btn.sm.danger', { type: 'button', onclick: e => clearHistory(e.currentTarget) }, icon('trash'), t('chat.clear')));
   openMenu(settingsBtn, t('chat.settings'), [panel], true);
+}
+
+async function clearHistory(btn) {
+  if (!await confirmDialog({ title: t('chat.clearTitle'), body: t('chat.clearBody'), confirm: t('chat.clear'), danger: true })) return;
+  await busy(btn, async () => { await api('/api/chat/clear', { body: {} }); toast(t('chat.cleared'), 'ok', 2200); });
 }
 
 function applyLayoutPrefs() {
@@ -893,6 +906,7 @@ input.addEventListener('keydown', e => {
   }
 });
 input.addEventListener('input', () => { histPos = -1; syncCounter(); });
+window.addEventListener('resize', syncCounter); // a panel loaded hidden (Streamlabs) measured the box at zero width
 input.addEventListener('blur', () => setTimeout(closeSuggest, 150));
 
 // ------------------------------------------------------------------ list interactions
@@ -976,6 +990,7 @@ function onFrame({ t: type, d }) {
   if (type === 'hello') { setOverlays(d.overlays); setFeatured(null); setAccounts(d.accounts); resetList(d.backlog); }
   else if (type === 'chat' || type === 'event') push({ kind: type, d });
   else if (type === 'chat:delete') applyDelete(d);
+  else if (type === 'chat:clear') resetList([]);
   else if (type === 'stats') { stats.set(d.accountId, d); renderStrip(); if (d.quota) renderTargets(); }
   else if (type === 'accounts') setAccounts(d);
   else if (type === 'feature') setFeatured(d, replayed);

@@ -186,6 +186,24 @@ test('pages and scripts stamp their asset URLs; only a current stamp is cached f
   }
 });
 
+test('assets: stylesheets stamp their font, text is compressed, unstamped files revalidate with 304', async () => {
+  const srv = await startServer();
+  try {
+    const css = await fetch(srv.base + '/assets/ui.css', { headers: { 'accept-encoding': 'br' } });
+    assert.equal(css.headers.get('content-encoding'), 'br');
+    const stamp = (await css.text()).match(/\/assets\/manrope\.woff2\?v=([\w-]+)"/)?.[1]; // fetch decodes br
+    assert.ok(stamp, 'the font URL in ui.css carries the stamp');
+    assert.equal((await fetch(`${srv.base}/assets/ui.css`, { headers: { 'accept-encoding': 'gzip' } })).headers.get('content-encoding'), 'gzip');
+    const font = await fetch(`${srv.base}/assets/manrope.woff2?v=${stamp}`);
+    assert.equal(font.headers.get('cache-control'), 'public, max-age=31536000, immutable');
+    assert.equal(font.headers.get('content-encoding'), null); // woff2 is already compressed
+    const again = await fetch(`${srv.base}/assets/chime.wav`, { headers: { 'if-none-match': `"${stamp}"` } });
+    assert.equal(again.status, 304);
+  } finally {
+    await srv.stop();
+  }
+});
+
 test('saved overlays: read key reads + gets live frames, only admin writes, validated body', async () => {
   const srv = await startServer({ ADMIN_PASSWORD: 'correct-horse-battery', UPDATE_CHECK: '0' });
   try {
@@ -212,7 +230,7 @@ test('saved overlays: read key reads + gets live frames, only admin writes, vali
 
     const got = await reader('GET', '/api/overlays');
     assert.equal(got.status, 200);
-    assert.deepEqual(Object.keys((await got.json()).overlays).sort(), ['alerts', 'chat', 'featured', 'viewers']);
+    assert.deepEqual(Object.keys((await got.json()).overlays).sort(), ['alerts', 'chat', 'featured', 'goal', 'poll', 'viewers']);
     assert.equal((await reader('PUT', '/api/overlays/chat', { max: 5 })).status, 403);
     assert.equal((await reader('DELETE', '/api/overlays/chat')).status, 403);
 

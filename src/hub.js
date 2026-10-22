@@ -3,7 +3,7 @@
 import { WebSocketServer } from 'ws';
 
 // Topics a read-only (overlay) client may receive. Everything else is admin-only.
-const READ_TOPICS = new Set(['chat', 'chat:delete', 'event', 'stats', 'feature', 'overlay', 'alert:test', 'viewers:test']);
+const READ_TOPICS = new Set(['chat', 'chat:delete', 'event', 'stats', 'feature', 'overlay', 'alert:test', 'viewers:test', 'chat:clear', 'poll', 'poll:test', 'goal', 'goal:test']);
 const BACKLOG_TOPICS = new Set(['chat', 'event']);
 
 export function createHub({ backlogSize = 400 } = {}) {
@@ -71,6 +71,8 @@ export function createHub({ backlogSize = 400 } = {}) {
     upgrade,
     on: fn => { listeners.add(fn); return () => listeners.delete(fn); },
     backlog: () => backlog.slice(),
+    /** Forget the chat/event history (pages that connect later get none) and tell open pages to empty their lists. */
+    clear() { backlog.length = 0; publish('chat:clear', {}); },
     /** After a key/session rotation: close sockets whose credentials no longer grant the same access. */
     revalidate() {
       for (const ws of clients) {

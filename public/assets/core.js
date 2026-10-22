@@ -112,7 +112,7 @@ export function applyI18n(root = document) {
 
 addI18n({
   fr: {
-    'nav.home': 'Tableau de bord', 'nav.chat': 'Chat', 'nav.community': 'Communauté', 'nav.stream': 'Infos du live', 'nav.support': 'Soutenir le projet (Soon)',
+    'nav.home': 'Tableau de bord', 'nav.chat': 'Chat', 'nav.community': 'Communauté', 'nav.stream': 'Infos du live', 'nav.support': 'Soutenir le projet',
     'login.title': 'Tramevia Dock', 'login.subtitle': 'Saisis le mot de passe administrateur (ADMIN_PASSWORD).',
     'login.password': 'Mot de passe', 'login.submit': 'Se connecter', 'login.error': 'Mot de passe incorrect.',
     'common.save': 'Enregistrer', 'common.cancel': 'Annuler', 'common.close': 'Fermer', 'common.copy': 'Copier',
@@ -128,7 +128,7 @@ addI18n({
     'err.forbidden': 'Action non autorisée avec cette clé (lecture seule).',
   },
   en: {
-    'nav.home': 'Dashboard', 'nav.chat': 'Chat', 'nav.community': 'Community', 'nav.stream': 'Stream info', 'nav.support': 'Support the project (Soon)',
+    'nav.home': 'Dashboard', 'nav.chat': 'Chat', 'nav.community': 'Community', 'nav.stream': 'Stream info', 'nav.support': 'Support the project',
     'login.title': 'Tramevia Dock', 'login.subtitle': 'Enter the admin password (ADMIN_PASSWORD).',
     'login.password': 'Password', 'login.submit': 'Sign in', 'login.error': 'Wrong password.',
     'common.save': 'Save', 'common.cancel': 'Cancel', 'common.close': 'Close', 'common.copy': 'Copy',
@@ -362,6 +362,10 @@ const ICONS = {
   lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
   heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>',
   gift: '<path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
+  radio: '<circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 16.24a6 6 0 0 1 0-8.49M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14"/>',
+  chart: '<path d="M18 20V10M12 20V4M6 20v-6"/>',
+  target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  megaphone: '<path d="m3 11 18-5v12L3 14z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
 };
 export function icon(name, size = 16) {
   return svg(`<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ICONS.info}</svg>`);
@@ -384,7 +388,7 @@ export async function openAuth(platform, reconnect = null) {
 }
 
 // ---------------------------------------------------------------- Page boot
-export const SPONSOR_URL = 'https://github.com/sponsors/Tramevia';
+export const SPONSOR_URL = 'https://buymeacoffee.com/tramevia';
 
 /** "Support the project" button with its soft halo (dashboard header, About card, locked alert styles). */
 export const supportButton = (cls = '') => h(`a.btn.sm.support${cls}`, { href: SPONSOR_URL, target: '_blank', rel: 'noopener noreferrer' },
@@ -404,7 +408,7 @@ function header(page) {
       attrs: { 'aria-current': item.href === page ? 'page' : false, title: t(item.key), 'data-i18n-title': item.key },
     }, icon(item.icon), h('span', { dataset: { i18n: item.key } }, t(item.key)))));
   return h('header.app-header',
-    h('a.brand', { href: withKey('/'), title: 'Tramevia Dock' }, h('img', { src: '/assets/logo.svg', alt: '' }), h('span', 'Tramevia Dock')),
+    h('a.brand', { href: withKey('/'), title: 'Tramevia Dock' }, h('img', { src: '/assets/logo-3d.webp', alt: '' }), h('span', 'Tramevia Dock')),
     nav, h('div.spacer'),
     page === '/' && supportButton('.support-head'),
     // The hub may already be connected when the header is built.
@@ -423,7 +427,7 @@ function loginScreen(onSuccess) {
         try { await api('/api/login', { body: { password: input.value } }); onSuccess(); } catch (err) { error.textContent = err.status === 403 ? t('login.error') : err.message; }
       });
     } },
-    h('img', { src: '/assets/logo.svg', alt: '' }), h('h1', t('login.title')), h('p.muted', t('login.subtitle')), input, error, button);
+    h('img', { src: '/assets/logo-3d.webp', alt: '' }), h('h1', t('login.title')), h('p.muted', t('login.subtitle')), input, error, button);
   return h('main.center-page', form);
 }
 
@@ -438,6 +442,9 @@ function loginScreen(onSuccess) {
 export async function boot({ page, title, header: withHeader = true, admin = true, ownTheme = false, onReady, onFrame }) {
   document.documentElement.lang = currentLang;
   if (inObs) document.documentElement.classList.add('dock-mode');
+  // LIVE dots blink by a class flip every 0.8 s: two tiny repaints per cycle. A CSS animation, even opacity only, kept the
+  // compositor drawing 60 frames a second (stream dock: ~10 → ~30 % of a core in software rendering).
+  if (withHeader && !matchMedia('(prefers-reduced-motion: reduce)').matches) setInterval(() => document.documentElement.classList.toggle('live-dim'), 800);
   if (title) document.title = `${title} · Tramevia Dock`;
   const root = $('#app') || document.body.appendChild(h('main#app'));
   // Session, state and realtime hub all at once: one round trip to the server before the page shows, not three.
@@ -472,7 +479,7 @@ export async function boot({ page, title, header: withHeader = true, admin = tru
   }
   // First visit: tell the server which language to use for its own messages (account errors…).
   if (!state.ui?.lang && state.access === 'admin') api('/api/settings', { method: 'PUT', body: { lang: currentLang } }).catch(() => {});
-  if (state.demo && withHeader) document.body.insertBefore(h('div.banner.info.small', { style: { 'border-radius': '0', 'justify-content': 'center' }, dataset: { i18n: 'common.demo' } }, t('common.demo')), root);
+  if (state.demo && withHeader) document.body.insertBefore(h('div.demo-strip', { dataset: { i18n: 'common.demo' } }, t('common.demo')), root);
   await onReady?.(state, root);
   applyI18n();
   let updated = null; // set by connectHub just before the reload that follows an update

@@ -1,5 +1,6 @@
 // Chat HTTP API: send, moderate, user card, featured message, Twitch-style quick actions. SPEC.md §7.1.
 import { HttpError } from '../http.js';
+import { validate } from './automod.js';
 
 const MOD_CAPS = { delete: 'deleteMessage', timeout: 'timeout', ban: 'ban', unban: 'unban' };
 const MAX_TIMEOUT = 1_209_600; // 14 days, in seconds
@@ -111,6 +112,20 @@ export function register(router, ctx) {
     const r = await ctx.adapterFor(account).moderate(ctx, account, action);
     if (r?.ok === false) throw new HttpError(502, r.error || ctx.t('La plateforme a refusé cette action.', 'The platform refused this action.'), 'platform_error');
     return { ok: true };
+  });
+
+  router.post('/api/chat/clear', () => {
+    ctx.hub.clear();
+    return { ok: true };
+  });
+
+  router.get('/api/automod', () => ctx.automod.get());
+  // Whole settings object each time (the dashboard sends what it shows): missing fields go back to their defaults.
+  router.put('/api/automod', ({ body }) => {
+    const { settings, error } = validate(body);
+    if (error) throw invalid(...error);
+    ctx.automod.set(settings);
+    return settings;
   });
 
   router.get('/api/chat/user', async ({ query }) => {

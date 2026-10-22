@@ -24,7 +24,7 @@ test('overlays: defaults until saved, save merges + validates + persists + publi
   assert.deepEqual(out.offPlatforms, ['kick']);
   assert.ok(!('bogus' in out));
   assert.equal(overlays.saved(), true);
-  assert.deepEqual(settings.get('overlays'), { chat: out, featured: DEFAULTS.featured, alerts: DEFAULTS.alerts, viewers: DEFAULTS.viewers });
+  assert.deepEqual(settings.get('overlays'), { chat: out, featured: DEFAULTS.featured, alerts: DEFAULTS.alerts, viewers: DEFAULTS.viewers, poll: DEFAULTS.poll, goal: DEFAULTS.goal });
   assert.deepEqual(published, [{ t: 'overlay', d: { id: 'chat', settings: out } }]);
 
   const merged = overlays.save('chat', { align: 'right' }); // patch keeps earlier values
@@ -43,6 +43,19 @@ test('overlays: reset restores defaults (persisted + published), unknown id thro
   assert.deepEqual(published.at(-1), { t: 'overlay', d: { id: 'featured', settings: out } });
   assert.throws(() => overlays.save('nope', {}));
   assert.throws(() => overlays.reset('__proto__'));
+});
+
+test('overlays: goal overlay keeps a known goal setting, anything else is the default', () => {
+  const { overlays } = setup();
+  assert.equal(overlays.save('goal', { goal: 'both' }).goal, 'both');
+  assert.equal(overlays.save('goal', { goal: 'raids' }).goal, DEFAULTS.goal.goal);
+  assert.equal(overlays.save('poll', { size: 32 }).size, 32);
+  assert.equal(overlays.save('poll', { look: 'ring' }).look, 'ring');
+  assert.equal(overlays.save('goal', { look: 'donut' }).look, DEFAULTS.goal.look);
+  assert.equal(overlays.save('goal', { color: '#FF8800' }).color, '#ff8800');
+  assert.equal(overlays.save('goal', { color: 'red' }).color, DEFAULTS.goal.color);
+  assert.equal(overlays.save('goal', { subsIcon: 'rocket', followsIcon: 'nope' }).subsIcon, 'rocket');
+  assert.equal(overlays.all().goal.followsIcon, DEFAULTS.goal.followsIcon);
 });
 
 test('overlays: corrupt stored value falls back to defaults', () => {
