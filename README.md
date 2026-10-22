@@ -50,7 +50,7 @@
 <table>
   <tr>
     <td width="50%" align="center">
-      <img src="docs/assets/screenshots/en/chat-live.gif" width="320" alt="Animated chat dock: messages from Twitch, Kick, YouTube and TikTok arrive in one list, each with its platform icon, with a reply and a new subscriber card">
+      <img src="docs/assets/screenshots/en/chat-live.gif" width="320" alt="Animated chat dock: messages from Twitch, Kick, YouTube and TikTok arrive in one list, each with its platform icon, with replies and event cards such as a gifted subs card">
     </td>
     <td width="50%">
       <ul>
@@ -386,12 +386,12 @@ Everything is in the dashboard's **Live** section, for all your platforms at onc
 <table>
   <tr>
     <td width="50%" align="center" valign="top">
-      <img src="docs/assets/screenshots/en/chat-dock.png" width="260" alt="The Unified chat dock: viewer counts per channel, messages from Twitch, Kick, YouTube and TikTok, a highlighted first message, a resub card and the message box"><br>
+      <img src="docs/assets/screenshots/en/chat-dock.png" width="260" alt="The Unified chat dock: viewer counts per channel, messages from Twitch, Kick, YouTube and TikTok, a highlighted first message, a TikTok gift card and the message box"><br>
       <b>💬 Unified chat</b><br>
       <sub>Every chat in one list, with emotes, badges, replies and moderation.</sub>
     </td>
     <td width="50%" align="center" valign="top">
-      <img src="docs/assets/screenshots/en/community-dock.png" width="260" alt="The Community dock: 672 viewers in total split by channel, and the official Twitch chatter list grouped by broadcaster, moderators, VIPs, bots and viewers"><br>
+      <img src="docs/assets/screenshots/en/community-dock.png" width="260" alt="The Community dock: total viewers split by channel, and the official Twitch chatter list grouped by broadcaster, moderators, VIPs, bots and viewers"><br>
       <b>👥 Community</b><br>
       <sub>Total viewers and who is in your chat, by role.</sub>
     </td>

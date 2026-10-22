@@ -29,7 +29,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/screenshots/fr/docks.png" width="100%" alt="Les quatre docks de Tramevia Dock côte à côte, comme dans OBS : le chat unifié avec des messages de Twitch, Kick, YouTube et TikTok, le fil des événements (abonnements, Super Chat, cadeaux), la communauté avec 677 spectateurs au total, et les infos du live avec les comptes à modifier">
+  <img src="docs/assets/screenshots/fr/docks.png" width="100%" alt="Les quatre docks de Tramevia Dock côte à côte, comme dans OBS : le chat unifié avec des messages de Twitch, Kick, YouTube et TikTok, le fil des événements (abonnements, Super Chat, cadeaux), la communauté avec le total des spectateurs par chaîne, et les infos du live avec les comptes à modifier">
 </p>
 
 <p align="center"><sub>Les quatre docks, en mode démo. Un <b>dock</b>, c’est un petit panneau que tu ranges dans la fenêtre d’OBS, à côté de tes scènes : toi seul le vois.</sub></p>
@@ -44,7 +44,7 @@
 <table>
   <tr>
     <td width="50%" align="center">
-      <img src="docs/assets/screenshots/fr/chat-live.gif" width="300" alt="Animation du dock Chat unifié : les messages de Twitch, Kick, YouTube et TikTok arrivent en direct avec leurs émotes, un don de 500 Bits s’affiche dans le fil et une mention de la chaîne est mise en évidence">
+      <img src="docs/assets/screenshots/fr/chat-live.gif" width="300" alt="Animation du dock Chat unifié : les messages de Twitch, Kick, YouTube et TikTok arrivent dans une seule liste avec leurs émotes, des réponses et des cartes d’événements comme des abonnements offerts">
     </td>
     <td width="50%">
       <p><b>Tout ton chat dans un seul fil.</b><br>Les messages de toutes tes chaînes arrivent au même endroit, chacun avec l’icône de sa plateforme.</p>
@@ -392,12 +392,12 @@ Tout se règle dans la section **Live** du tableau de bord, pour toutes tes plat
 <table>
   <tr>
     <td width="50%" align="center" valign="top">
-      <img src="docs/assets/screenshots/fr/chat-dock.png" width="240" alt="Le dock Chat unifié en largeur étroite : messages de Twitch, Kick, YouTube et TikTok, un raid, le choix des comptes destinataires et la zone d’envoi"><br>
+      <img src="docs/assets/screenshots/fr/chat-dock.png" width="240" alt="Le dock Chat unifié en largeur étroite : messages de Twitch, Kick, YouTube et TikTok, un premier message mis en avant, une carte de cadeau TikTok, le choix des comptes destinataires et la zone d’envoi"><br>
       <b>💬 Chat unifié</b><br>
       <sub>Lecture, envoi multi-comptes, réponses et modération</sub>
     </td>
     <td width="50%" align="center" valign="top">
-      <img src="docs/assets/screenshots/fr/community-dock.png" width="240" alt="Le dock Communauté : 676 spectateurs au total avec le détail par chaîne, une recherche de pseudo, les filtres 5, 15 et 60 minutes, et la liste officielle Twitch rangée par rôle"><br>
+      <img src="docs/assets/screenshots/fr/community-dock.png" width="240" alt="Le dock Communauté : le total des spectateurs avec le détail par chaîne, une recherche de pseudo, les filtres 5, 15 et 60 minutes, et la liste officielle Twitch rangée par rôle"><br>
       <b>👥 Communauté</b><br>
       <sub>Total de spectateurs et qui est dans ton chat</sub>
     </td>
