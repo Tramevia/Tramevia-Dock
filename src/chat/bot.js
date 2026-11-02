@@ -80,8 +80,10 @@ export function createBot(ctx, now = Date.now) {
     const key = `${account.id}:${command.name}`;
     if (now() - (cooldown.get(key) || 0) < COOLDOWN) return;
     cooldown.set(key, now());
+    // A name put first ("{user} …") must not make the answer start with ! or / either.
+    const answer = command.text.replaceAll('{user}', msg.author?.name || msg.author?.login || '').replace(/^[\s!/]+/, '');
     // After the command's own publish: the answer must reach the pages after the question.
-    queueMicrotask(() => say(account, command.text.replaceAll('{user}', msg.author?.name || msg.author?.login || '')));
+    if (answer) queueMicrotask(() => say(account, answer));
   }
 
   function tick() {

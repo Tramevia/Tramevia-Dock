@@ -146,18 +146,17 @@ async function assetStamp(root) {
 const ASSET_REF = /(["'])\/assets\/([\w.-]+\.(?:js|css|svg|png|webp|woff2|wav))\1/g;
 const STAMPED = new Set(['.html', '.js', '.css']); // files whose /assets/ references get the stamp
 const COMPRESSIBLE = new Set(['.html', '.js', '.css', '.svg', '.json']);
-const packed = new Map(); // "file encoding" → compressed body, for the current stamp only
-let packedStamp = '';
+const packed = new Map(); // "file encoding" → { src, body }: the last body served and its compressed copy
 const brotli = promisify(brotliCompress), gz = promisify(gzip);
 
-/** Brotli (or gzip) body of a text file, compressed once per asset version: about 4× fewer bytes for a remote dashboard. */
-async function compressed(file, stamp, data, accept) {
-  const enc = /\bbr\b/.test(accept) ? 'br' : /\bgzip\b/.test(accept) ? 'gzip' : null;
-  if (!enc || data.length < 1024) return null;
-  if (packedStamp !== stamp) { packed.clear(); packedStamp = stamp; }
+/** Brotli (or gzip) body of a text file, compressed once per content (any edit, or a new stamp in it, compresses again):
+ * about 4× fewer bytes for a remote dashboard. */
+async function compressed(file, enc, data) {
   const key = `${file} ${enc}`;
-  if (!packed.has(key)) packed.set(key, await (enc === 'br' ? brotli(data, { params: { [zlib.BROTLI_PARAM_QUALITY]: 9 } }) : gz(data, { level: 9 })));
-  return { enc, body: packed.get(key) };
+  if (!packed.get(key)?.src.equals(data)) {
+    packed.set(key, { src: data, body: await (enc === 'br' ? brotli(data, { params: { [zlib.BROTLI_PARAM_QUALITY]: 9 } }) : gz(data, { level: 9 })) });
+  }
+  return packed.get(key).body;
 }
 
 /**
@@ -165,7 +164,7 @@ async function compressed(file, stamp, data, accept) {
  * Pages and scripts get their /assets/ references stamped (?v=): a stamped asset is cached for good (tab switches in
  * a dock load nothing again), and any changed asset changes every stamp, so a browser never mixes old and new files.
  */
-export async function serveStatic(res, root, path, v = null) {
+export async function serveStatic(res, root, path, v = null, assets = root) {
   const base = resolve(root);
   const file = resolve(join(base, path));
   if (file !== base && !file.startsWith(base + sep)) return false;
@@ -173,20 +172,24 @@ export async function serveStatic(res, root, path, v = null) {
   try { data = await readFile(file); } catch { return false; }
   const type = TYPES[extname(file)] || 'application/octet-stream';
   const html = type.startsWith('text/html');
-  const stamp = await assetStamp(base);
   const ext = extname(file);
+  const stamp = await assetStamp(base);
+  // /assets/ references get the stamp of the folder that serves /assets/ (`assets`: PUBLIC_DIR for the /premium/ files).
+  const refStamp = resolve(assets) === base ? stamp : await assetStamp(resolve(assets));
+  const accept = res.req?.headers['accept-encoding'] || '';
+  const enc = !COMPRESSIBLE.has(ext) || data.length < 1024 ? null : /\bbr\b/.test(accept) ? 'br' : /\bgzip\b/.test(accept) ? 'gzip' : null;
   const headers = { 'Content-Type': type, 'Cache-Control': html ? 'no-store' : v === stamp ? 'public, max-age=31536000, immutable' : 'no-cache' };
+  if (COMPRESSIBLE.has(ext)) headers.Vary = 'Accept-Encoding';
   // Unstamped requests (dynamic imports, the chime) revalidate against the stamp, the version of every asset at once.
+  // One ETag per encoding: a cache never answers a gzip-only client with the br body.
   if (!html) {
-    headers.ETag = `"${stamp}"`;
+    headers.ETag = `"${refStamp === stamp ? stamp : `${stamp}.${refStamp}`}${enc ? `-${enc}` : ''}"`;
     if (res.req?.headers['if-none-match'] === headers.ETag) { res.writeHead(304, headers); res.end(); return true; }
   }
-  if (STAMPED.has(ext)) data = Buffer.from(String(data).replace(ASSET_REF, (_, q, name) => `${q}/assets/${name}?v=${stamp}${q}`));
-  const packedBody = COMPRESSIBLE.has(ext) ? await compressed(file, stamp, data, res.req?.headers['accept-encoding'] || '') : null;
-  if (COMPRESSIBLE.has(ext)) headers.Vary = 'Accept-Encoding';
-  if (packedBody) headers['Content-Encoding'] = packedBody.enc;
+  if (STAMPED.has(ext)) data = Buffer.from(String(data).replace(ASSET_REF, (_, q, name) => `${q}/assets/${name}?v=${refStamp}${q}`));
+  if (enc) { headers['Content-Encoding'] = enc; data = await compressed(file, enc, data); }
   res.writeHead(200, headers);
-  res.end(packedBody ? packedBody.body : data);
+  res.end(data);
   return true;
 }
 

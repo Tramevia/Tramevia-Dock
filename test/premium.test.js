@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { rename } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createPremium } from '../src/premium.js';
 
@@ -56,6 +57,25 @@ test('unreachable server keeps the pack; refused or removed code deletes it', as
   await premium.sync();
   assert.deepEqual(premium.info(), { version: null, status: 'none' });
   assert.equal(state.calls.length, 5); // no request without a code
+});
+
+test('a failed swap keeps the old pack in place, with nothing left beside it', async () => {
+  const dir = join(mkdtempSync(join(tmpdir(), 'premium-')), 'premium');
+  let pack = PACK, held = false;
+  const premium = createPremium({ dir, url: 'https://premium.test', log: quiet, code: () => 'TD1-x.y', fetch: async () => new Response(JSON.stringify(pack)),
+    rename: async (from, to) => { if (held && from.endsWith('.new')) throw Object.assign(new Error('EPERM'), { code: 'EPERM' }); return rename(from, to); } });
+  await premium.sync();
+  pack = { ...PACK, version: '1.5.1', files: { ...PACK.files, 'alerts.css': '.y{}' } };
+  held = true;
+  await premium.sync();
+  assert.deepEqual(premium.info(), { version: '1.5.0', status: 'offline' });
+  assert.equal(readFileSync(join(dir, 'assets', 'alerts.css'), 'utf8'), '.x{}');
+  assert.equal(existsSync(`${dir}.old`), false);
+  held = false;
+  await premium.sync();
+  assert.equal(premium.info().version, '1.5.1');
+  assert.equal(readFileSync(join(dir, 'assets', 'alerts.css'), 'utf8'), '.y{}');
+  assert.equal(existsSync(`${dir}.old`), false);
 });
 
 test('a malformed pack or a file name leaving the folder is ignored', async () => {

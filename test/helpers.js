@@ -14,7 +14,7 @@ export function fakeCtx({ app = { clientId: 'cid', clientSecret: 'csecret' }, to
   const ctx = {
     config: { publicUrl: 'http://localhost:8787', secure: false, loopbackOnly: true, demo: false, ...config },
     db, settings: settingsStore(db), published, statuses, stats,
-    hub: { publish: (t, d) => published.push({ t, d }), on: () => () => {}, backlog: () => published.filter(f => f.t === 'chat' || f.t === 'event') },
+    hub: { publish: (t, d) => published.push({ t, d }), on: () => () => {}, backlog: () => published.filter(f => f.t === 'chat' || f.t === 'event'), clear: () => published.push({ t: 'chat:clear', d: {} }) },
     log: { info() {}, warn() {}, error() {} },
     request, ApiError,
     app: () => app,

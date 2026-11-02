@@ -349,13 +349,7 @@ const updateStatus = () => ({
 });
 const publishUpdate = () => hub.publish('update', updateStatus());
 let lastLive = null;
-hub.on(t => {
-  if ((t !== 'stats' && t !== 'accounts') || liveState() === lastLive) return;
-  const was = lastLive;
-  lastLive = liveState();
-  if (was === 'off' && lastLive === 'live') hub.clear(); // a new stream starts: the last one's chat is not replayed
-  publishUpdate();
-});
+hub.on(t => { if ((t === 'stats' || t === 'accounts') && liveState() !== lastLive) { lastLive = liveState(); publishUpdate(); } }); // a new stream's empty chat: src/live.js
 
 let checking = null, lastCheck = 0, checkFailed = false;
 /** GitHub releases/latest (UPDATE_CHECK=0 = no network call at all). One request at a time. */
@@ -466,7 +460,7 @@ async function handle(req, res) {
       if (url.pathname.startsWith('/assets/') && await serveStatic(res, PUBLIC_DIR, url.pathname.slice(1), url.searchParams.get('v'))) return;
       // ponytail: anyone who knows a supporter's dock address can fetch the pack (as with a shared file); a per-overlay key if it leaks.
       if (url.pathname.startsWith('/premium/') && ctx.supporter.unlocked()
-        && await serveStatic(res, resolve(config.dataDir, 'premium'), `assets/${url.pathname.slice(9)}`, url.searchParams.get('v'))) return;
+        && await serveStatic(res, resolve(config.dataDir, 'premium'), `assets/${url.pathname.slice(9)}`, url.searchParams.get('v'), PUBLIC_DIR)) return;
       if (url.pathname === '/favicon.ico' && await serveStatic(res, PUBLIC_DIR, 'assets/logo.svg')) return;
     }
     throw new HttpError(404, 'Not found', 'not_found');

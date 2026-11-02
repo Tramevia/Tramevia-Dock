@@ -9,7 +9,7 @@ export const PREMIUM_API = 1; // the contract with the pack: init({ h, svg }) in
 const NAME = /^[\w-]+(\.[\w-]+)*\.(js|css)$/;
 
 /** code(): the active supporter code or null. onChange(): the pack appeared, changed or went away. */
-export function createPremium({ dir, url, code, fetch = globalThis.fetch, onChange = () => {}, log = console }) {
+export function createPremium({ dir, url, code, fetch = globalThis.fetch, rename: move = rename, onChange = () => {}, log = console }) {
   let version = null;
   let status = 'none'; // none | ok | refused (code refused by the server) | offline (unreachable, pack kept) | outdated (dock too old)
   const loaded = readFile(join(dir, 'version.json'), 'utf8').then(s => { version = JSON.parse(s).version || null; }).catch(() => {});
@@ -41,14 +41,20 @@ export function createPremium({ dir, url, code, fetch = globalThis.fetch, onChan
     const files = Object.entries(pack?.files ?? {});
     if (typeof pack?.version !== 'string' || !files.length || !files.every(([n, body]) => NAME.test(n) && typeof body === 'string')
       || !pack.files['decor.js'] || !pack.files['alerts.css']) { status = 'offline'; return log.warn('[premium] malformed pack, ignored'); }
-    // Written next to the pack, then swapped in: an overlay never loads half a pack.
-    const tmp = `${dir}.new`;
+    // Written next to the pack, then swapped in with two renames: an overlay never loads half a pack. A failed swap (Windows:
+    // a file held by OBS or an antivirus) puts the old pack back.
+    const tmp = `${dir}.new`, old = `${dir}.old`;
     await rm(tmp, { recursive: true, force: true });
     await mkdir(join(tmp, 'assets'), { recursive: true });
     for (const [n, body] of files) await writeFile(join(tmp, 'assets', n), body);
     await writeFile(join(tmp, 'version.json'), JSON.stringify({ version: pack.version }));
-    await rm(dir, { recursive: true, force: true });
-    await rename(tmp, dir);
+    await rm(old, { recursive: true, force: true });
+    await move(dir, old).catch(err => { if (err.code !== 'ENOENT') throw err; });
+    try { await move(tmp, dir); } catch (err) {
+      await move(old, dir).catch(() => { if (version) { version = null; onChange(); } }); // no pack left: download it whole next time
+      throw err;
+    }
+    await rm(old, { recursive: true, force: true });
     version = pack.version;
     status = 'ok';
     log.info(`[premium] supporter styles ${version} downloaded`);

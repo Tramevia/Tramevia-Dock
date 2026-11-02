@@ -55,6 +55,10 @@ export function createLive(ctx, { now = Date.now, post = null } = {}) {
   });
 
   const live = () => ctx.accounts.list().filter(a => a.status !== 'disabled' && ctx.accounts.stats(a.id)?.live === true);
+  /** Off: every channel says so, or none is live and one says off (an account in error must not keep the stream open). */
+  const isOff = state => state === 'off' || (state === 'unknown' && !live().length
+    && ctx.accounts.list().some(a => a.status !== 'disabled' && ctx.accounts.stats(a.id)?.live === false));
+  let wasOff = false; // seen off since the last start: the next stream starts with an empty chat
   const platform = pf => (session.platforms[pf] ||= { follows: 0, subs: 0, messages: 0, peak: 0 });
 
   function publish() {
@@ -71,6 +75,8 @@ export function createLive(ctx, { now = Date.now, post = null } = {}) {
     const startedAt = starts.length ? Math.min(...starts) : now();
     session = { startedAt, peak: 0, messages: 0, platforms: {}, chatters: new Map(), seen: new Set() };
     for (const a of channels) platform(a.platform);
+    if (wasOff) ctx.hub.clear(); // a new stream: the last one's chat is not replayed (not after a restart mid-stream)
+    wasOff = false;
     // ponytail: a restart mid-stream starts the counts again (the duration stays right, from the platform's start time).
     // Announce only a stream that has just started (not the one already running when Tramevia Dock starts, nor the demo).
     if (!ctx.config.demo && now() - startedAt < ANNOUNCE_MAX_AGE && discord().announce && webhook()) {
@@ -106,10 +112,13 @@ export function createLive(ctx, { now = Date.now, post = null } = {}) {
       session.peak = Math.max(session.peak, total);
       for (const [pf, v] of Object.entries(by)) platform(pf).peak = Math.max(platform(pf).peak, v);
       publishSoon();
-    } else if (state === 'off' && session && !offSince) {
-      offSince = now();
-      endTimer = setTimeout(end, GRACE);
-      endTimer.unref?.();
+    } else if (isOff(state)) {
+      wasOff = true;
+      if (session && !offSince) {
+        offSince = now();
+        endTimer = setTimeout(end, GRACE);
+        endTimer.unref?.();
+      }
     }
   }
 

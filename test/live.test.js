@@ -50,6 +50,11 @@ test('bot: a command is answered in its own chat, after the question, with a coo
   bot.onChat(chat({ text: '!reseaux', accountId: 'yt', platform: 'youtube' }));
   await tick();
   assert.equal(ctx.sent.length, 2, 'cooldown per channel: Twitch waits, YouTube answers');
+  bot.set({ ...bot.get(), commands: [...bot.get().commands, { name: 'gg', text: '{user} gagne' }] });
+  bot.onChat(chat({ text: '!gg', author: { id: 'u2', name: '!raid /ban', roles: [] } }));
+  await tick();
+  assert.deepEqual(ctx.sent.at(-1), ['tw', 'raid /ban gagne'], 'a name put first never makes the answer a command');
+  ctx.sent.pop();
   bot.onChat(chat({ text: '!reseaux', accountId: 'tw', deleted: true }));
   bot.set({ ...bot.get(), offAccounts: ['tw'] });
   t += 60_000;
@@ -177,6 +182,31 @@ test('live summary: duration, peaks, follows and subs per platform, top chatters
   const a = live.announceMessage();
   assert.equal(a.content, '🔴 Streamer is live: Ranked @​everyone', 'a title never pings');
   assert.match(a.embeds[0].description, /\*\*Twitch\*\* · https:\/\/www\.twitch\.tv\/streamer\n\*\*YouTube\*\* · https:\/\/www\.youtube\.com\/channel\/UCx+\/live\n\*\*TikTok\*\*/);
+});
+
+test('live: a channel off and another one in error (unknown) ends the stream; the next one starts with an empty chat', () => {
+  let t = Date.now();
+  const ctx = liveCtx();
+  ctx.liveState = () => (Object.values(ctx.statsOf).some(s => s.live === true) ? 'live'
+    : Object.values(ctx.statsOf).every(s => s.live === false) ? 'off' : 'unknown');
+  const live = createLive(ctx, { now: () => t });
+  live.onStats();
+  assert.ok(live.state().current);
+  assert.ok(!ctx.published.some(f => f.t === 'chat:clear'), 'a restart mid-stream keeps the chat');
+  Object.assign(ctx.statsOf.tw, { live: false });
+  ctx.statsOf.yt.live = undefined; // YouTube quota gone: unknown
+  ctx.statsOf.tt.live = false;
+  live.onStats();
+  const offAt = t;
+  t += 5 * 60_000;
+  live.end();
+  assert.equal(live.state().last.endedAt, offAt, 'the grace period started when Twitch went off');
+  ctx.statsOf.yt.live = undefined;
+  live.onStats();
+  ctx.statsOf.tw.live = true;
+  live.onStats();
+  assert.ok(ctx.published.some(f => f.t === 'chat:clear'));
+  live.end();
 });
 
 test('discord settings: webhook checked, sealed, never sent back', async () => {
