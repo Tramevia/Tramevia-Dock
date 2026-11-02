@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.1 — new supporter server address and fixes
+
+- **New address for the supporter styles**: Tramevia Dock now downloads them from `premium.tramevia.com`. Nothing to do: your supporter code stays the same, and the old address keeps answering for docks not updated yet.
+- **Stream recap no longer stuck**: when one channel went offline while another account was in error (YouTube quota used up, account to reconnect), the stream never ended, so the recap stayed open, Discord got no summary and the next stream was added to it. It now ends once no channel is live and one of them is offline. The chat history still clears itself when the next stream starts.
+- **Commands**: an answer that starts with `{user}` no longer turns into a chat command (or triggers the bot itself) when a viewer's name starts with `!` or `/`.
+- **Supporter styles kept on update**: if Windows holds a file while a new version of the supporter styles is being put in place (OBS, an antivirus), the previous version stays instead of disappearing.
+- **Pages always up to date**: an edited page is no longer served in its old compressed version, each compression gets its own cache tag (a proxy in front of a hosted install can't mix them up), and the supporter styles no longer make the other files compress again on every alerts overlay load.
+
 ## 1.5.0 — supporter alert styles, live tools, auto filters and Streamlabs
 
 - **Eight supporter alert styles** (OBS → Overlay → *Alerts*): one supporter code from [Buy Me a Coffee](https://buymeacoffee.com/tramevia) unlocks all eight at once, next to the free Card and Big text.
