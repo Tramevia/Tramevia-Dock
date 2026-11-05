@@ -158,6 +158,15 @@
 .bot-name-box { position: relative; flex: 0 0 min(34%, 150px); display: flex; }
 .bot-name-box .bot-name { width: 100%; padding-left: 22px; }
 .bot-bang { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--accent); font-weight: 800; pointer-events: none; }
+.gw-kw { max-width: 240px; }
+.gw-kw input { width: 100%; padding-left: 22px; }
+.gw-total { font-variant-numeric: tabular-nums; }
+.gw-names { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.gw-names li { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 3px 10px 3px 4px; border-radius: 99px; background: var(--surface-2); font-size: 0.88rem; font-weight: 600; }
+.al-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; max-height: 320px; overflow-y: auto; }
+.al-row { display: grid; grid-template-columns: auto minmax(0, max-content) minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid var(--border); }
+.al-row:first-child { border-top: 0; }
+.al-row time { font-variant-numeric: tabular-nums; }
 .dc-url input { flex: 1; min-width: 0; }
 .set-grid .tiny svg { vertical-align: -2px; }
 

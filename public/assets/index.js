@@ -3,7 +3,7 @@ import {
   boot, h, api, t, addI18n, lang, setLang, applyTheme, openAuth, copy, copyField, toast, busy,
   confirmDialog, fmt, icon, platformIcon, store, withKey, accessKey, query, $, $$, supportButton,
 } from '/assets/core.js';
-import { OVERLAY_IDS, ALERT_TYPES, STYLES, GOALS, LOOKS, GOAL_COLORS, GOAL_ICONS, isLocked, DEFAULTS as OV_DEFAULTS, cleanOverlay } from '/assets/overlay-settings.js';
+import { OVERLAY_IDS, ALERT_TYPES, STYLES, GOALS, LOOKS, GOAL_COLORS, GOAL_ICONS, CREDIT_MOTIONS, CREDIT_FONTS, CREDIT_FX, isLocked, DEFAULTS as OV_DEFAULTS, cleanOverlay } from '/assets/overlay-settings.js';
 import { goalIcon } from '/assets/overlay-widgets.js';
 
 addI18n({
@@ -196,7 +196,7 @@ addI18n({
     'home.am.emotes': 'Flood d’émotes', 'home.am.emotesDesc': 'Plus de 10 émotes ou emojis dans un message.',
     'home.am.symbols': 'Flood de symboles', 'home.am.symbolsDesc': 'Au moins 15 symboles, plus de la moitié du message (!!!!!, ░▒▓…).',
     'home.nav.live': 'Live',
-    'home.live.title': 'Outils du live', 'home.live.sub': 'Sondage, objectifs, commandes et Discord, sur toutes tes plateformes à la fois.',
+    'home.live.title': 'Outils du live', 'home.live.sub': 'Sondage, tirage au sort, objectifs, alertes, générique, commandes et Discord, sur toutes tes plateformes à la fois.',
     'home.sum.current': 'Live en cours', 'home.sum.last': 'Dernier live', 'home.sum.since': 'depuis {d}', 'home.sum.when': '{date} · {d}',
     'home.sum.peak': 'Pic de spectateurs', 'home.sum.messages': 'Messages', 'home.sum.chatters': 'Personnes dans le chat',
     'home.sum.follows': 'follows', 'home.sum.subs': 'abonnements', 'home.sum.top': 'Les plus actifs',
@@ -243,6 +243,41 @@ addI18n({
     'home.ovl.ic.star': 'Étoile', 'home.ovl.ic.heart': 'Cœur', 'home.ovl.ic.user-plus': 'Nouvel abonné', 'home.ovl.ic.users': 'Communauté', 'home.ovl.ic.trophy': 'Trophée', 'home.ovl.ic.crown': 'Couronne', 'home.ovl.ic.award': 'Médaille', 'home.ovl.ic.flag': 'Drapeau', 'home.ovl.ic.target': 'Cible', 'home.ovl.ic.rocket': 'Fusée', 'home.ovl.ic.zap': 'Éclair', 'home.ovl.ic.flame': 'Flamme', 'home.ovl.ic.gem': 'Diamant', 'home.ovl.ic.sparkles': 'Étincelles', 'home.ovl.ic.gamepad': 'Manette', 'home.ovl.ic.music': 'Musique', 'home.ovl.ic.coffee': 'Café', 'home.ovl.ic.gift': 'Cadeau',
     'home.ovl.testPoll': 'Tester un sondage', 'home.ovl.testedPoll': 'Sondage de test envoyé : il se joue dans l’aperçu et ta source OBS, sans rien compter.',
     'home.ovl.testGoal': 'Tester une progression', 'home.ovl.testedGoal': 'Progression de test envoyée : la barre avance quelques secondes dans l’aperçu et ta source OBS, puis revient.',
+    'home.gw.title': 'Tirage au sort',
+    'home.gw.desc': 'Tes spectateurs participent en tapant le mot-clé dans n’importe quel chat, TikTok compris. Une participation par personne, tes propres messages et les bots ne comptent pas. À l’écran avec l’overlay Tirage au sort (section OBS).',
+    'home.gw.keyword': 'Mot-clé', 'home.gw.keywordHint': 'Tes spectateurs tapent !{k} pour participer.', 'home.gw.defaultKeyword': 'participer',
+    'home.gw.prize': 'Lot (facultatif)', 'home.gw.prizePh': 'Une clé Steam',
+    'home.gw.announce': 'Annoncer dans les chats',
+    'home.gw.announceDesc': 'L’ouverture, la clôture et le gagnant, dans chaque chat en live qui accepte les messages (pas TikTok). Sur YouTube, chaque message coûte 50 unités de quota.',
+    'home.gw.start': 'Ouvrir les participations', 'home.gw.close': 'Fermer les participations', 'home.gw.draw': 'Tirer au sort', 'home.gw.again': 'Tirer un autre gagnant',
+    'home.gw.new': 'Nouveau tirage', 'home.gw.open': 'Ouvert · tapez !{k}', 'home.gw.closed': 'Participations closes',
+    'home.gw.entries': '{v} participant', 'home.gw.entries|plural': '{v} participants', 'home.gw.winners': 'Gagnants', 'home.gw.recent': 'Derniers inscrits',
+    'home.al.title': 'Alertes',
+    'home.al.desc': 'Les 30 dernières alertes depuis le démarrage de Tramevia Dock (sans les j’aime TikTok). Rejoue celle que tu as ratée, passe celle à l’écran ou mets la file en pause pendant une cinématique.',
+    'home.al.pause': 'Mettre en pause', 'home.al.resume': 'Reprendre', 'home.al.skip': 'Passer celle à l’écran', 'home.al.replay': 'Rejouer',
+    'home.al.replayTitle': 'Rejouer l’alerte de {name}', 'home.al.paused': 'En pause : les nouvelles alertes attendent (20 au plus) et passeront à la reprise.',
+    'home.al.empty': 'Aucune alerte pour l’instant.', 'home.al.replayed': 'Alerte rejouée sur l’overlay Alertes.', 'home.al.skipped': 'Alerte passée.',
+    'home.al.type.follow': 'follow', 'home.al.type.sub': 'abonnement', 'home.al.type.resub': 'réabonnement', 'home.al.type.membership': 'membre',
+    'home.al.type.giftsub': 'abonnements offerts', 'home.al.type.giftmembership': 'abonnements offerts', 'home.al.type.cheer': 'bits', 'home.al.type.kicks': 'KICKs',
+    'home.al.type.superchat': 'Super Chat', 'home.al.type.supersticker': 'Super Sticker', 'home.al.type.gift': 'cadeau', 'home.al.type.raid': 'raid',
+    'home.al.type.redemption': 'récompense', 'home.al.type.share': 'partage',
+    'home.cr.title': 'Générique de fin',
+    'home.cr.desc': 'Fait défiler les abonnements, soutiens, raids, nouveaux follows et les plus actifs du chat, du live en cours, sinon du dernier. À l’écran avec l’overlay Générique (section OBS).',
+    'home.cr.roll': 'Lancer le générique', 'home.cr.rolled': 'Générique lancé sur l’overlay Générique.',
+    'home.cr.tip': 'Dans OBS, coche « Actualiser le navigateur lorsque la scène devient active » sur la source Générique : il démarre tout seul quand tu passes sur ta scène de fin.',
+    'home.cr.current': 'Live en cours : {s}', 'home.cr.last': 'Dernier live ({date}) : {s}', 'home.cr.none': 'Pas encore de live : le générique n’affichera que le remerciement.',
+    'home.cr.counts': '{n} nom', 'home.cr.counts|plural': '{n} noms',
+    'home.ovl.mode.giveaway': 'Tirage au sort', 'home.ovl.mode.credits': 'Générique',
+    'home.ovl.hint.giveaway': 'Affiche le tirage au sort ouvert, le nombre de participants et les derniers inscrits, puis la roulette et le gagnant. Lance-le depuis la section Live.',
+    'home.ovl.hint.credits': 'Fait défiler le générique du live quand la source s’affiche, et quand tu le lances depuis la section Live.',
+    'home.ovl.motion': 'Animation', 'home.ovl.motion.scenes': 'Scènes', 'home.ovl.motion.roll': 'Défilement', 'home.ovl.motion.warp': 'Vortex', 'home.ovl.motion.arcade': 'Arcade',
+    'home.ovl.font': 'Police', 'home.ovl.font.auto': 'Par défaut', 'home.ovl.font.display': 'Affiche', 'home.ovl.font.rounded': 'Arrondie',
+    'home.ovl.font.serif': 'Élégante', 'home.ovl.font.mono': 'Rétro', 'home.ovl.font.hand': 'Manuscrite',
+    'home.ovl.fx': 'Effets', 'home.ovl.fx.none': 'Aucun', 'home.ovl.fx.confetti': 'Confettis', 'home.ovl.fx.sparkles': 'Étincelles', 'home.ovl.fx.bokeh': 'Lumières',
+    'home.ovl.emoji': 'Emojis 🎉',
+    'home.ovl.rollSeconds': 'Durée du générique (s)', 'home.ovl.loop': 'En boucle', 'home.ovl.creditRoll': 'Petite mention « Générique : Tramevia Dock » (merci 💜)',
+    'home.ovl.testGiveaway': 'Tester un tirage', 'home.ovl.testedGiveaway': 'Tirage de test envoyé : il se joue dans l’aperçu et ta source OBS, sans rien enregistrer.',
+    'home.ovl.testCredits': 'Tester le générique', 'home.ovl.testedCredits': 'Générique de test lancé dans l’aperçu et ta source OBS (noms inventés).',
     'home.sec.title': 'Sécurité',
     'home.sec.local': 'Mode local sans mot de passe : le tableau de bord n’est accessible que depuis cet ordinateur.',
     'home.sec.password': 'Accès protégé par mot de passe (ADMIN_PASSWORD).',
@@ -486,7 +521,7 @@ addI18n({
     'home.am.emotes': 'Emote flood', 'home.am.emotesDesc': 'More than 10 emotes or emoji in one message.',
     'home.am.symbols': 'Symbol flood', 'home.am.symbolsDesc': 'At least 15 symbols, over half of the message (!!!!!, ░▒▓…).',
     'home.nav.live': 'Live',
-    'home.live.title': 'Live tools', 'home.live.sub': 'Poll, goals, commands and Discord, on all your platforms at once.',
+    'home.live.title': 'Live tools', 'home.live.sub': 'Poll, giveaway, goals, alerts, credits, commands and Discord, on all your platforms at once.',
     'home.sum.current': 'Live now', 'home.sum.last': 'Last stream', 'home.sum.since': 'for {d}', 'home.sum.when': '{date} · {d}',
     'home.sum.peak': 'Peak viewers', 'home.sum.messages': 'Messages', 'home.sum.chatters': 'People in chat',
     'home.sum.follows': 'follows', 'home.sum.subs': 'subs', 'home.sum.top': 'Most active',
@@ -533,6 +568,41 @@ addI18n({
     'home.ovl.ic.star': 'Star', 'home.ovl.ic.heart': 'Heart', 'home.ovl.ic.user-plus': 'New follower', 'home.ovl.ic.users': 'Community', 'home.ovl.ic.trophy': 'Trophy', 'home.ovl.ic.crown': 'Crown', 'home.ovl.ic.award': 'Medal', 'home.ovl.ic.flag': 'Flag', 'home.ovl.ic.target': 'Target', 'home.ovl.ic.rocket': 'Rocket', 'home.ovl.ic.zap': 'Lightning', 'home.ovl.ic.flame': 'Flame', 'home.ovl.ic.gem': 'Diamond', 'home.ovl.ic.sparkles': 'Sparkles', 'home.ovl.ic.gamepad': 'Gamepad', 'home.ovl.ic.music': 'Music', 'home.ovl.ic.coffee': 'Coffee', 'home.ovl.ic.gift': 'Gift',
     'home.ovl.testPoll': 'Test a poll', 'home.ovl.testedPoll': 'Test poll sent: it plays in the preview and your OBS source, without counting anything.',
     'home.ovl.testGoal': 'Test progress', 'home.ovl.testedGoal': 'Test progress sent: the bar moves for a few seconds in the preview and your OBS source, then comes back.',
+    'home.gw.title': 'Giveaway',
+    'home.gw.desc': 'Viewers enter by typing the keyword in any chat, TikTok included. One entry per person; your own messages and bots don’t count. On screen with the Giveaway overlay (OBS section).',
+    'home.gw.keyword': 'Keyword', 'home.gw.keywordHint': 'Viewers type !{k} to enter.', 'home.gw.defaultKeyword': 'join',
+    'home.gw.prize': 'Prize (optional)', 'home.gw.prizePh': 'A Steam key',
+    'home.gw.announce': 'Announce in the chats',
+    'home.gw.announceDesc': 'The opening, the closing and the winner, in every live chat that accepts messages (not TikTok). On YouTube, each message costs 50 quota units.',
+    'home.gw.start': 'Open entries', 'home.gw.close': 'Close entries', 'home.gw.draw': 'Draw a winner', 'home.gw.again': 'Draw another winner',
+    'home.gw.new': 'New giveaway', 'home.gw.open': 'Open · type !{k}', 'home.gw.closed': 'Entries closed',
+    'home.gw.entries': '{v} entry', 'home.gw.entries|plural': '{v} entries', 'home.gw.winners': 'Winners', 'home.gw.recent': 'Latest entries',
+    'home.al.title': 'Alerts',
+    'home.al.desc': 'The last 30 alerts since Tramevia Dock started (TikTok likes left out). Replay the one you missed, skip the one on screen, or pause the queue during a cutscene.',
+    'home.al.pause': 'Pause', 'home.al.resume': 'Resume', 'home.al.skip': 'Skip the one on screen', 'home.al.replay': 'Replay',
+    'home.al.replayTitle': 'Replay {name}’s alert', 'home.al.paused': 'Paused: new alerts wait (20 at most) and play when you resume.',
+    'home.al.empty': 'No alerts yet.', 'home.al.replayed': 'Alert replayed on the Alerts overlay.', 'home.al.skipped': 'Alert skipped.',
+    'home.al.type.follow': 'follow', 'home.al.type.sub': 'sub', 'home.al.type.resub': 'resub', 'home.al.type.membership': 'member',
+    'home.al.type.giftsub': 'gifted subs', 'home.al.type.giftmembership': 'gifted memberships', 'home.al.type.cheer': 'bits', 'home.al.type.kicks': 'KICKs',
+    'home.al.type.superchat': 'Super Chat', 'home.al.type.supersticker': 'Super Sticker', 'home.al.type.gift': 'gift', 'home.al.type.raid': 'raid',
+    'home.al.type.redemption': 'reward', 'home.al.type.share': 'share',
+    'home.cr.title': 'End credits',
+    'home.cr.desc': 'Rolls the subs, supporters, raids, new followers and most active chatters of the running stream, else the last one. On screen with the Credits overlay (OBS section).',
+    'home.cr.roll': 'Roll the credits', 'home.cr.rolled': 'Credits rolling on the Credits overlay.',
+    'home.cr.tip': 'In OBS, tick “Refresh browser when scene becomes active” on the Credits source: they start on their own when you switch to your ending scene.',
+    'home.cr.current': 'Running stream: {s}', 'home.cr.last': 'Last stream ({date}): {s}', 'home.cr.none': 'No stream yet: the credits will only show the thank-you.',
+    'home.cr.counts': '{n} name', 'home.cr.counts|plural': '{n} names',
+    'home.ovl.mode.giveaway': 'Giveaway', 'home.ovl.mode.credits': 'Credits',
+    'home.ovl.hint.giveaway': 'Shows the open giveaway, the entry count and the latest entries, then the roulette and the winner. Start it from the Live section.',
+    'home.ovl.hint.credits': 'Rolls the stream’s credits when the source shows, and when you roll them from the Live section.',
+    'home.ovl.motion': 'Motion', 'home.ovl.motion.scenes': 'Scenes', 'home.ovl.motion.roll': 'Scroll', 'home.ovl.motion.warp': 'Vortex', 'home.ovl.motion.arcade': 'Arcade',
+    'home.ovl.font': 'Font', 'home.ovl.font.auto': 'Default', 'home.ovl.font.display': 'Poster', 'home.ovl.font.rounded': 'Rounded',
+    'home.ovl.font.serif': 'Elegant', 'home.ovl.font.mono': 'Retro', 'home.ovl.font.hand': 'Handwritten',
+    'home.ovl.fx': 'Effects', 'home.ovl.fx.none': 'None', 'home.ovl.fx.confetti': 'Confetti', 'home.ovl.fx.sparkles': 'Sparkles', 'home.ovl.fx.bokeh': 'Lights',
+    'home.ovl.emoji': 'Emoji 🎉',
+    'home.ovl.rollSeconds': 'Credits duration (s)', 'home.ovl.loop': 'Loop', 'home.ovl.creditRoll': 'Small “Credits by Tramevia Dock” mention (thank you 💜)',
+    'home.ovl.testGiveaway': 'Test a giveaway', 'home.ovl.testedGiveaway': 'Test giveaway sent: it plays in the preview and your OBS source, without saving anything.',
+    'home.ovl.testCredits': 'Test the credits', 'home.ovl.testedCredits': 'Test credits rolling in the preview and your OBS source (made-up names).',
     'home.sec.title': 'Security',
     'home.sec.local': 'Local mode without password: the dashboard is only reachable from this computer.',
     'home.sec.password': 'Access protected by a password (ADMIN_PASSWORD).',
@@ -910,14 +980,18 @@ function paintSummary() {
   ].filter(c => c instanceof Node));
 }
 
-// ---------------------------------------------------------------- 2. live tools: poll, goals, commands, Discord
+// ---------------------------------------------------------------- 2. live tools: poll, giveaway, goals, alerts, credits, commands, Discord
 function renderLive() {
   if (!el.live) return;
   el.live.replaceChildren(
     sectionHead('radio', t('home.live.title'), t('home.live.sub')),
-    h('div.set-grid', el.pollCard = h('div.card'), el.goalCard = h('div.card'), el.botCard = h('div.card'), el.dcCard = h('div.card')));
+    h('div.set-grid', el.pollCard = h('div.card'), el.gwCard = h('div.card'), el.goalCard = h('div.card'), el.alCard = h('div.card'),
+      el.crCard = h('div.card'), el.botCard = h('div.card'), el.dcCard = h('div.card')));
   renderPoll();
+  renderGiveaway();
   renderGoals();
+  renderAlerts();
+  renderCredits();
   renderBot();
   renderDiscord();
 }
@@ -988,6 +1062,105 @@ function paintPoll() {
     li.querySelector('.progress > span').style.setProperty('--p', `${share * 100}%`);
   });
   el.pollMeta.textContent = [t('home.poll.votes', { n: p.total }), p.closedAt ? t('home.poll.closed') : t('home.poll.left', { d: clock(p.endsAt - Date.now()) })].join(' · ');
+}
+
+const gwDraft = { keyword: '', title: '', announce: true }; // the form survives re-renders ('' keyword = the default word of the language)
+
+/** The open or closed giveaway (count, last entries, winners, actions), else the form to open one. 'giveaway' frames re-render it. */
+function renderGiveaway() {
+  const box = el.gwCard;
+  if (!box) return;
+  const g = S.state.giveaway;
+  const head = [h('h3.card-title', icon('gift'), t('home.gw.title')), h('p.small.muted', t('home.gw.desc'))];
+  const act = (path, method = 'POST') => e => busy(e.currentTarget, async () => {
+    const r = await api(path, method === 'DELETE' ? { method } : { body: {} });
+    S.state.giveaway = method === 'DELETE' ? null : r;
+    renderGiveaway();
+  });
+  if (g) {
+    const names = list => h('ul.gw-names', list.map(n => h('li', platformIcon(n.platform), h('span.ellipsis', n.name))));
+    const btn = (key, path, cls = '', ic = 'check', method) => h(`button.btn.sm${cls}`, { type: 'button', dataset: { focus: `gw:${key}` }, onclick: act(path, method) }, icon(ic), t(`home.gw.${key}`));
+    keepFocus(() => box.replaceChildren(...[...head,
+      h('div.row', h('span', { class: `badge ${g.open ? 'live' : ''}` }, g.open ? t('home.gw.open', { k: g.keyword }) : t('home.gw.closed')), h('span.spacer'),
+        h('strong.gw-total', t('home.gw.entries', { n: g.count, v: fmt.number(g.count) }))),
+      g.title ? h('strong.poll-q', g.title) : null,
+      g.winners.length ? h('div.stack.tight', h('span.label', t('home.gw.winners')), names(g.winners)) : null,
+      g.open && g.recent.length ? h('div.stack.tight', h('span.label', t('home.gw.recent')), names(g.recent)) : null,
+      h('div.row', g.open ? btn('close', '/api/giveaway/close', '', 'pause') : null,
+        g.count > g.winners.length ? btn(g.winners.length ? 'again' : 'draw', '/api/giveaway/draw', '.primary', 'star') : null,
+        !g.open ? btn('new', '/api/giveaway', '.ghost', 'plus', 'DELETE') : null),
+    ].filter(c => c instanceof Node)));
+    return;
+  }
+  const d = gwDraft;
+  const kw = h('input', { id: 'gw-kw', type: 'text', maxLength: 26, value: d.keyword, placeholder: t('home.gw.defaultKeyword'), dataset: { focus: 'gw:kw' },
+    oninput: () => { d.keyword = kw.value; hint.textContent = t('home.gw.keywordHint', { k: (kw.value.trim().replace(/^!+/, '') || t('home.gw.defaultKeyword')).toLowerCase() }); } });
+  const hint = h('p.tiny.muted', t('home.gw.keywordHint', { k: (d.keyword.trim().replace(/^!+/, '') || t('home.gw.defaultKeyword')).toLowerCase() }));
+  const prize = h('input', { id: 'gw-prize', type: 'text', maxLength: 60, value: d.title, placeholder: t('home.gw.prizePh'), dataset: { focus: 'gw:prize' }, oninput: () => { d.title = prize.value; } });
+  keepFocus(() => box.replaceChildren(...head,
+    h('form.stack', { onsubmit: e => { e.preventDefault(); startGiveaway(e.submitter); } },
+      h('div.field', h('label', { htmlFor: kw.id }, t('home.gw.keyword')), h('div.bot-name-box.gw-kw', h('span.bot-bang', { attrs: { 'aria-hidden': 'true' } }, '!'), kw), hint),
+      h('div.field', h('label', { htmlFor: prize.id }, t('home.gw.prize')), prize),
+      h('label.set-row.set-toggle', h('span.set-row-text', h('strong', t('home.gw.announce')), h('span.small.muted', t('home.gw.announceDesc'))),
+        h('span.switch', h('input', { type: 'checkbox', checked: d.announce, dataset: { focus: 'gw:announce' }, onchange: e => { d.announce = e.target.checked; } }), h('span'))),
+      h('div', h('button.btn.primary', { type: 'submit', dataset: { focus: 'gw:start' } }, icon('play'), t('home.gw.start'))))));
+}
+
+async function startGiveaway(button) {
+  const d = gwDraft;
+  await busy(button, async () => {
+    S.state.giveaway = await api('/api/giveaway', { body: { keyword: d.keyword.trim() || t('home.gw.defaultKeyword'), title: d.title, announce: d.announce } });
+    renderGiveaway();
+  });
+}
+
+/** One alert of the history: platform, name, what it was, when; Replay sends it again to the alerts overlays. */
+function alertRow(e) {
+  const type = e.type === 'tiktok_gift' ? 'gift' : e.type;
+  const amount = Number(e.amount) || 0;
+  const money = amount && /^[A-Z]{3}$/.test(String(e.currency || '')) ? (() => { try { return new Intl.NumberFormat(lang(), { style: 'currency', currency: e.currency }).format(amount); } catch { return `${amount} ${e.currency}`; } })() : null;
+  const detail = money || (type === 'redemption' ? e.label : amount ? fmt.number(amount) : Number(e.count) > 1 ? `×${fmt.number(Number(e.count))}` : '');
+  const name = e.user?.name || e.user?.login || '?';
+  return h('li.al-row', platformIcon(e.platform), h('strong.ellipsis', name),
+    h('span.small.muted.ellipsis', [t(`home.al.type.${type}`), detail].filter(Boolean).join(' · ')),
+    h('time.tiny.muted', fmt.time(e.ts || Date.now())),
+    h('button.btn.sm.ghost', { type: 'button', title: t('home.al.replayTitle', { name }), dataset: { focus: `al:${e.accountId}:${e.id}` },
+      onclick: ev => busy(ev.currentTarget, async () => { await api('/api/alerts/replay', { body: { key: `${e.accountId}:${e.id}` } }); toast(t('home.al.replayed'), 'ok'); }) }, icon('refresh'), t('home.al.replay')));
+}
+
+/** Alert history, pause and skip. 'alerts' frames re-render it. */
+function renderAlerts() {
+  const box = el.alCard;
+  if (!box) return;
+  box.hidden = !S.alerts;
+  if (!S.alerts) return;
+  const { paused, history } = S.alerts;
+  const pause = h('button.btn.sm', { type: 'button', dataset: { focus: 'al:pause' }, onclick: e => busy(e.currentTarget, async () => { S.alerts = await api('/api/alerts/pause', { method: 'PUT', body: { paused: !paused } }); renderAlerts(); }) },
+    icon(paused ? 'play' : 'pause'), t(paused ? 'home.al.resume' : 'home.al.pause'));
+  const skip = h('button.btn.sm.ghost', { type: 'button', dataset: { focus: 'al:skip' }, onclick: e => busy(e.currentTarget, async () => { await api('/api/alerts/skip', { body: {} }); toast(t('home.al.skipped'), 'ok'); }) }, icon('x'), t('home.al.skip'));
+  keepFocus(() => box.replaceChildren(...[
+    h('h3.card-title', icon('zap'), t('home.al.title')), h('p.small.muted', t('home.al.desc')),
+    h('div.row', pause, skip),
+    paused ? banner('warn', t('home.al.paused')) : null,
+    history.length ? h('ul.al-list', history.map(alertRow)) : h('p.small.muted', t('home.al.empty')),
+  ].filter(c => c instanceof Node)));
+}
+
+/** End credits: what they will roll (running or last stream) and a button to roll them now. */
+function renderCredits() {
+  const box = el.crCard;
+  if (!box) return;
+  const what = h('p.small');
+  keepFocus(() => box.replaceChildren(
+    h('h3.card-title', icon('film'), t('home.cr.title')), h('p.small.muted', t('home.cr.desc')), what,
+    h('div.row', h('button.btn.sm.primary', { type: 'button', dataset: { focus: 'cr:roll' }, onclick: e => busy(e.currentTarget, async () => { await api('/api/overlays/credits/roll', { body: {} }); toast(t('home.cr.rolled'), 'ok'); }) }, icon('play'), t('home.cr.roll'))),
+    h('p.tiny.muted', t('home.cr.tip'))));
+  api('/api/credits').then(c => {
+    if (!c) { what.textContent = t('home.cr.none'); return; }
+    const n = ['subs', 'gifts', 'tips', 'raids', 'follows', 'top'].reduce((sum, k) => sum + (c[k]?.length || 0), 0);
+    const s = t('home.cr.counts', { n });
+    what.textContent = c.live ? t('home.cr.current', { s }) : t('home.cr.last', { s, date: new Date(c.startedAt).toLocaleDateString(lang(), { weekday: 'long', day: 'numeric', month: 'long' }) });
+  }, () => {});
 }
 
 /** Follow and sub goals: title, count and goal saved on change; bars repainted by 'goal' frames. */
@@ -1614,8 +1787,8 @@ function renderOverlayForm() {
   const featured = id === 'featured';
   const alerts = id === 'alerts';
   const viewers = id === 'viewers';
-  const poll = id === 'poll', goal = id === 'goal';
-  const widget = viewers || poll || goal; // draws its own figure: no chat filters, display switches or theme hint
+  const poll = id === 'poll', goal = id === 'goal', giveaway = id === 'giveaway', credits = id === 'credits';
+  const widget = viewers || poll || goal || giveaway || credits; // draws its own figure: no chat filters, display switches or theme hint
   const set = (key, value) => { o[key] = value; saveOverlay(id, key); };
   const num = (key, min, max) => {
     const input = h('input', {
@@ -1629,7 +1802,7 @@ function renderOverlayForm() {
     });
     return h('div.field', h('label', { htmlFor: input.id }, t(`home.ovl.${key}`)), input);
   };
-  const toggle = key => h('label.switch', h('input', { type: 'checkbox', checked: o[key], dataset: { focus: `ov:${key}` }, onchange: e => set(key, e.target.checked) }), h('span'), h('span', t(`home.ovl.${key}`)));
+  const toggle = (key, label = key) => h('label.switch', h('input', { type: 'checkbox', checked: o[key], dataset: { focus: `ov:${key}` }, onchange: e => set(key, e.target.checked) }), h('span'), h('span', t(`home.ovl.${label}`)));
   const chip = (list, all, item, label, iconEl) => h('button.toggle-chip', {
     type: 'button', dataset: { focus: `ov:${list}:${item}` }, attrs: { 'aria-pressed': String(!o[list].includes(item)) },
     onclick: e => {
@@ -1681,24 +1854,25 @@ function renderOverlayForm() {
 
   const src = overlayUrl(id);
   if (el.ovFrame.getAttribute('src') !== src) el.ovFrame.src = src;
-  el.overlay.classList.toggle('ov-scene', alerts); // alerts are made for a source the size of the scene: a wide 16:9 preview
+  el.overlay.classList.toggle('ov-scene', alerts || credits); // alerts and credits are made for a source the size of the scene: a wide 16:9 preview
   el.ovFrame.style.setProperty('color-scheme', o.theme === 'light' ? 'light' : 'dark'); // must match the overlay page or the iframe turns opaque
   keepFocus(() => el.ovForm.replaceChildren(...[ // replaceChildren() would print a skipped (false/null) item as text
     h('div.field', h('span.label', t('home.ovl.mode')),
       segmented(t('home.ovl.mode'), OVERLAY_IDS.map(v => [v, t(`home.ovl.mode.${v}`)]), id, v => { ovId = v; renderOverlayForm(); }, 'ov:mode')),
     h('p.small.muted', t(`home.ovl.hint.${id}`)),
     h('div.stack.tight', h('span.label', t('home.ovl.url', { name: t(`home.ovl.mode.${id}`) })), secretField(overlayUrl(id, S.state.publicUrl), 'ov:url'),
-      h('p.small.muted', t('home.ovl.how', { w: alerts ? 1920 : poll ? 600 : goal ? 800 : 400, h: alerts ? 1080 : viewers || poll ? 400 : goal ? 200 : 600, scene: alerts ? t('home.ovl.scene') : '' })), h('p.tiny.muted', icon('shield', 12), ' ', t('home.ovl.readonly'))),
+      h('p.small.muted', t('home.ovl.how', { w: alerts || credits ? 1920 : poll || giveaway ? 600 : goal ? 800 : 400, h: alerts || credits ? 1080 : viewers || poll || giveaway ? 400 : goal ? 200 : 600, scene: alerts || credits ? t('home.ovl.scene') : '' })), h('p.tiny.muted', icon('shield', 12), ' ', t('home.ovl.readonly'))),
     h('div.row.ov-choices', choice('theme', ['transparent', 'dark', 'light'], true),
       alerts ? [choice('position', ['top', 'center', 'bottom']), styleChoice()]
-        : viewers ? choice('align', ['left', 'center', 'right'], false, 'number') : goal ? [choice('goal', GOALS, true), choice('look', LOOKS)] : poll ? choice('look', LOOKS) : choice('align', ['left', 'right'])),
-    goal && colorChoice(),
+        : viewers ? choice('align', ['left', 'center', 'right'], false, 'number') : goal ? [choice('goal', GOALS, true), choice('look', LOOKS)] : poll ? choice('look', LOOKS) : credits ? choice('motion', CREDIT_MOTIONS) : giveaway ? null : choice('align', ['left', 'right'])),
+    credits && h('div.row.ov-choices', choice('font', CREDIT_FONTS), choice('fx', CREDIT_FX)),
+    (goal || credits) && colorChoice(),
     goal && h('div.row.ov-choices', (o.goal === 'follows' ? ['follows'] : o.goal === 'both' ? ['subs', 'follows'] : ['subs']).map(iconChoice)),
     alerts && locked.length && h('div.row.early-note', h('p.small.muted', icon('lock', 12), ' ',
       t('home.ovl.early', { styles: locked.map(styleName).join(', ') })), supportButton()),
     !widget && h('p.small.muted', t(`home.ovl.themeHint.${o.theme}`)),
     h('div.ov-fields',
-      alerts ? [num('alertSeconds', 1, 60), num('volume', 0, 100)] : featured ? num('featureSeconds', 0, 300) : widget ? null : [num('max', 1, 100), num('fade', 0, 600)],
+      alerts ? [num('alertSeconds', 1, 60), num('volume', 0, 100)] : featured ? num('featureSeconds', 0, 300) : credits ? num('rollSeconds', 10, 300) : widget ? null : [num('max', 1, 100), num('fade', 0, 600)],
       num('size', 10, 48)),
     alerts && h('div.stack.tight', h('span.label', t('home.ovl.types')),
       h('div.row.tight', Object.keys(ALERT_TYPES).map((c, _, all) => chip('offTypes', all, c, t(`home.ovl.type.${c}`))))),
@@ -1706,13 +1880,15 @@ function renderOverlayForm() {
       h('div.ov-switches', (alerts ? ['icons', 'credit'] : ['badges', 'icons', 'avatars', ...(textOnly ? ['bubble', 'outline'] : []), 'credit']).map(toggle))),
     !featured && !alerts && !widget ? h('div.stack.tight', h('span.label', t('home.ovl.filters')),
       h('div.ov-switches', ['hideBots', 'hideCommands', 'events'].map(toggle))) : null,
-    !featured && !poll && !goal && h('div.stack.tight', h('span.label', t('home.ovl.platforms')),
+    credits && h('div.ov-switches', toggle('emoji'), toggle('loop'), toggle('credit', 'creditRoll')),
+    !featured && !poll && !goal && !giveaway && !credits && h('div.stack.tight', h('span.label', t('home.ovl.platforms')),
       h('div.row.tight', S.state.platforms.map((p, _, all) => chip('offPlatforms', all.map(x => x.id), p.id, p.name, platformIcon(p.id))))),
-    !featured && !poll && !goal && S.accounts.length > 1 && h('div.stack.tight', h('span.label', t('home.ovl.accounts')),
+    !featured && !poll && !goal && !giveaway && !credits && S.accounts.length > 1 && h('div.stack.tight', h('span.label', t('home.ovl.accounts')),
       h('div.row.tight', S.accounts.map((a, _, all) => chip('offAccounts', all.map(x => x.id), a.id, a.displayName, platformIcon(a.platform))))),
     alerts && h('button.btn.sm', { type: 'button', dataset: { focus: 'ov:test' }, onclick: e => testAlert(e.currentTarget) }, icon('zap'), t('home.ovl.test')),
     viewers && h('button.btn.sm', { type: 'button', dataset: { focus: 'ov:test' }, onclick: e => testViewers(e.currentTarget) }, icon('zap'), t('home.ovl.testViewers')),
-    (poll || goal) && h('button.btn.sm', { type: 'button', dataset: { focus: 'ov:test' }, onclick: e => testWidget(id, e.currentTarget) }, icon('zap'), t(poll ? 'home.ovl.testPoll' : 'home.ovl.testGoal')),
+    (poll || goal || giveaway || credits) && h('button.btn.sm', { type: 'button', dataset: { focus: 'ov:test' }, onclick: e => testWidget(id, e.currentTarget) }, icon('zap'),
+      t(poll ? 'home.ovl.testPoll' : goal ? 'home.ovl.testGoal' : giveaway ? 'home.ovl.testGiveaway' : 'home.ovl.testCredits')),
     el.ovStatus = h('p.small.muted', { attrs: { role: 'status' } }),
   ].filter(c => c instanceof Node)));
 }
@@ -1735,7 +1911,7 @@ async function testViewers(button) {
 async function testWidget(id, button) {
   const s = ovSyncOf(id);
   await busy(button, () => (s.queue = s.queue.then(() => api(`/api/overlays/${id}/test`, { method: 'POST' }))));
-  ovStatus(t(id === 'poll' ? 'home.ovl.testedPoll' : 'home.ovl.testedGoal'));
+  ovStatus(t({ poll: 'home.ovl.testedPoll', goal: 'home.ovl.testedGoal', giveaway: 'home.ovl.testedGiveaway', credits: 'home.ovl.testedCredits' }[id]));
 }
 
 /** 'hello' / 'overlay' frames: settings changed elsewhere (another tab, a reset). Our own echoes are skipped. */
@@ -1994,13 +2170,17 @@ function onFrame({ t: topic, d }) {
     setAccounts(d.accounts); refreshUpdate(); setOverlays(d.overlays); if ('overlaysSaved' in d) S.state.overlaysSaved = d.overlaysSaved; migrateOverlay();
     if ('poll' in d) { S.state.poll = d.poll; renderPoll(); }
     if (d.goals) { S.state.goals = d.goals; paintGoals(); }
+    if ('giveaway' in d) { S.state.giveaway = d.giveaway; renderGiveaway(); }
     api('/api/live').then(r => { S.live = r; paintSummary(); }, () => {});
+    api('/api/alerts').then(r => { S.alerts = r; renderAlerts(); }, () => {});
   }
   else if (topic === 'accounts') setAccounts(d);
   else if (topic === 'update') setUpdate(d);
   else if (topic === 'live') { S.live = d; paintSummary(); }
   else if (topic === 'poll') { const was = S.state.poll; S.state.poll = d; if (!d || !was || d.id !== was.id || Boolean(d.closedAt) !== Boolean(was.closedAt)) renderPoll(); else paintPoll(); }
   else if (topic === 'goal') { S.state.goals = d; paintGoals(); }
+  else if (topic === 'giveaway') { S.state.giveaway = d; renderGiveaway(); }
+  else if (topic === 'alerts') { S.alerts = d; renderAlerts(); }
   else if (topic === 'overlay' && OVERLAY_IDS.includes(d?.id)) setOverlays({ [d.id]: d.settings });
   else if (topic === 'stats') {
     const a = S.accounts.find(x => x.id === d.accountId);
@@ -2019,7 +2199,7 @@ async function load() {
   el.root.replaceChildren(skeleton());
   try {
     // bot, discord and live come with the state (null: that module failed to load).
-    ({ bot: S.bot = null, discord: S.discord = null, live: S.live = null } = S.state);
+    ({ bot: S.bot = null, discord: S.discord = null, live: S.live = null, alerts: S.alerts = null } = S.state);
     [S.apps, S.keys, S.session, S.update] = await Promise.all([api('/api/apps'), api('/api/keys'), api('/api/session'), api('/api/update').catch(() => null)]);
     render();
   } catch (err) {

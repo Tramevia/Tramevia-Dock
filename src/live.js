@@ -1,13 +1,19 @@
 // Live sessions: one stream on every platform together, and its summary (duration, peak viewers, follows and subs per
 // platform, most active chatters). Discord webhook: an announcement when the stream starts, the summary when it ends.
 // Settings keys 'discord' (webhook sealed) and 'live:last' (last summary). SPEC.md §7.6.
+// The session also keeps who followed, subscribed, gifted, tipped and raided (at most 100 names each): the credits overlay
+// (id=credits, SPEC.md §7.11) rolls them with the most active chatters.
 // A session starts when a channel goes live and ends once every channel has been off for GRACE: a stream that drops and
 // comes back within 5 minutes stays one session.
 import { seal, unseal } from './crypto.js';
 import { HttpError } from './http.js';
 import { gains } from './goals.js';
 
-const GRACE = 5 * 60_000, ANNOUNCE_DELAY = 60_000, ANNOUNCE_MAX_AGE = 15 * 60_000, TOP = 5, PUBLISH_EVERY = 5_000;
+const GRACE = 5 * 60_000, ANNOUNCE_DELAY = 60_000, ANNOUNCE_MAX_AGE = 15 * 60_000, TOP = 5, PUBLISH_EVERY = 5_000, CREDITS_MAX = 100;
+const CREDIT_TOP = 10; // chatters in the credits
+/** The credits list an event goes to. Amounts of tips add up per person, type and currency; gifts per person. */
+const CREDIT_LIST = { follow: 'follows', sub: 'subs', resub: 'subs', membership: 'subs', giftsub: 'gifts', giftmembership: 'gifts',
+  cheer: 'tips', kicks: 'tips', superchat: 'tips', supersticker: 'tips', gift: 'tips', tiktok_gift: 'tips', raid: 'raids' };
 const WEBHOOK = /^https:\/\/(?:(?:ptb|canary)\.)?discord(?:app)?\.com\/api\/webhooks\/\d{5,30}\/[\w-]{20,200}$/;
 export const DISCORD_DEFAULTS = { webhook: null, announce: true, summary: true, message: '' }; // message '' = built-in text
 const NAMES = { twitch: 'Twitch', kick: 'Kick', youtube: 'YouTube', tiktok: 'TikTok' };
@@ -28,12 +34,16 @@ const duration = ms => {
 const quiet = s => String(s ?? '').replace(/@/g, '@​');
 const cut = (s, n) => ([...s].length > n ? [...s].slice(0, n - 1).join('') + '…' : s);
 
-/** A summary as stored and sent to the dashboard (no Map, no Set). */
-function snapshot(s, end = null) {
-  const top = [...s.chatters.values()].sort((a, b) => b.n - a.n).slice(0, TOP);
+const active = s => [...s.chatters.values()].sort((a, b) => b.n - a.n);
+/** Names for the credits overlay: { follows, subs, gifts, tips, raids: [{ name, platform, n?, amount?, currency?, unit?, type? }], top }. */
+const creditLists = s => ({ ...Object.fromEntries(Object.entries(s.credits).map(([k, m]) => [k, [...m.values()]])), top: active(s).slice(0, CREDIT_TOP) });
+
+/** A summary as stored and sent to the dashboard (no Map, no Set). credits: only in the stored copy (the dashboard has no use for it). */
+function snapshot(s, end = null, credits = false) {
   return {
-    startedAt: s.startedAt, endedAt: end, peak: s.peak, messages: s.messages, chatters: s.chatters.size, top,
+    startedAt: s.startedAt, endedAt: end, peak: s.peak, messages: s.messages, chatters: s.chatters.size, top: active(s).slice(0, TOP),
     platforms: Object.entries(s.platforms).map(([platform, p]) => ({ platform, ...p })),
+    ...(credits ? { credits: creditLists(s) } : {}),
   };
 }
 
@@ -73,7 +83,8 @@ export function createLive(ctx, { now = Date.now, post = null } = {}) {
     const channels = live();
     const starts = channels.map(a => ctx.accounts.stats(a.id)?.startedAt).filter(Number.isFinite);
     const startedAt = starts.length ? Math.min(...starts) : now();
-    session = { startedAt, peak: 0, messages: 0, platforms: {}, chatters: new Map(), seen: new Set() };
+    session = { startedAt, peak: 0, messages: 0, platforms: {}, chatters: new Map(), seen: new Set(),
+      credits: { follows: new Map(), subs: new Map(), gifts: new Map(), tips: new Map(), raids: new Map() } };
     for (const a of channels) platform(a.platform);
     if (wasOff) ctx.hub.clear(); // a new stream: the last one's chat is not replayed (not after a restart mid-stream)
     wasOff = false;
@@ -87,11 +98,12 @@ export function createLive(ctx, { now = Date.now, post = null } = {}) {
 
   function end() {
     if (!session) return;
-    const summary = snapshot(session, offSince || now());
+    const summary = snapshot(session, offSince || now(), true);
     session = null;
     offSince = 0;
     clearTimeout(announceTimer);
     ctx.settings.set('live:last', summary);
+    delete summary.credits; // stored for the credits overlay, not sent to the dashboard
     publish();
     if (discord().summary && webhook() && summary.endedAt - summary.startedAt >= 60_000) {
       send(summaryMessage(summary)).catch(err => ctx.log.warn(`[discord] summary failed: ${err.message}`));
@@ -123,15 +135,47 @@ export function createLive(ctx, { now = Date.now, post = null } = {}) {
   }
 
   function onEvent(evt) {
-    const add = session && gains(evt);
-    if (!add) return;
+    if (!session || !evt || evt.test) return;
+    const add = gains(evt), list = CREDIT_LIST[evt.type];
+    if (!add && !list) return;
     const key = `${evt.accountId}:${evt.id}`;
     if (evt.id && session.seen.has(key)) return;
     if (evt.id) session.seen.add(key);
+    if (list) credit(list, evt);
+    if (!add) return;
     const p = platform(evt.platform);
     p.follows += add.follows || 0;
     p.subs += add.subs || 0;
     publishSoon();
+  }
+
+  /** One name in a credits list (the first 100 people; later amounts still add up to someone already listed). */
+  function credit(list, evt) {
+    const name = evt.user?.name || evt.user?.login;
+    if (!name) return; // an anonymous gift or cheer has no name to thank
+    const type = evt.type === 'tiktok_gift' ? 'gift' : evt.type;
+    const unit = type === 'gift' ? evt.unit || (evt.platform === 'youtube' ? 'jewels' : 'diamonds') : undefined;
+    const key = `${evt.platform}:${evt.user?.id || name}${list === 'tips' ? `:${type}:${evt.currency || unit || ''}` : ''}`;
+    const m = session.credits[list];
+    let c = m.get(key);
+    if (!c) {
+      if (m.size >= CREDITS_MAX) return;
+      c = { name, platform: evt.platform };
+      if (list === 'tips') Object.assign(c, { type, amount: 0, ...(evt.currency ? { currency: evt.currency } : {}), ...(unit ? { unit } : {}) });
+      if (list === 'gifts' || list === 'raids') c.n = 0;
+      m.set(key, c);
+    }
+    if (list === 'tips') c.amount = Math.round((c.amount + (Number(evt.amount) || 0) * (type === 'gift' ? Math.max(1, Number(evt.count) || 1) : 1)) * 100) / 100;
+    if (list === 'gifts') c.n += Math.min(Math.max(1, Math.floor(Number(evt.count)) || 1), 1000);
+    if (list === 'raids') c.n = Math.max(c.n, Number(evt.count) || 0);
+  }
+
+  /** What the credits overlay rolls: the running stream, else the last one (null before any stream). */
+  function credits() {
+    const s = session ? { ...snapshot(session), credits: creditLists(session) } : ctx.settings.get('live:last', null);
+    if (!s) return null;
+    const { credits: c = {}, platforms: _, ...rest } = s;
+    return { ...rest, follows: c.follows || [], subs: c.subs || [], gifts: c.gifts || [], tips: c.tips || [], raids: c.raids || [], top: c.top || s.top || [], live: Boolean(session) };
   }
 
   function onChat(msg) {
@@ -188,7 +232,11 @@ export function createLive(ctx, { now = Date.now, post = null } = {}) {
   }
 
   /** What the dashboard shows: the running stream (null when off) and the last finished one. */
-  const state = () => ({ current: session && snapshot(session), last: ctx.settings.get('live:last', null) });
+  const state = () => {
+    const last = ctx.settings.get('live:last', null);
+    if (last) delete last.credits;
+    return { current: session && snapshot(session), last };
+  };
 
   ctx.hub.on((t, d) => {
     if (t === 'stats' || t === 'accounts') onStats();
@@ -197,10 +245,25 @@ export function createLive(ctx, { now = Date.now, post = null } = {}) {
   });
 
   return {
-    state, end, onStats, onEvent, onChat, announceMessage, summaryMessage,
+    state, end, onStats, onEvent, onChat, announceMessage, summaryMessage, credits,
     discord: () => { const { webhook: _, ...rest } = discord(); const url = webhook(); return { ...rest, webhook: Boolean(url), hint: url ? `…/${url.split('/').at(-2).slice(-4)}` : '' }; },
     setDiscord(patch) { ctx.settings.set('discord', { ...discord(), ...patch }); },
     test: () => send({ content: ctx.t('✅ Tramevia Dock est relié à ce salon.', '✅ Tramevia Dock is connected to this channel.') }),
+  };
+}
+
+/** Made-up credits for the overlay's test button. */
+function sampleCredits() {
+  const t = Date.now();
+  const p = (name, platform, more = {}) => ({ name, platform, ...more });
+  return {
+    startedAt: t - 3 * 3600_000 - 12 * 60_000, endedAt: t, peak: 248, messages: 3120, chatters: 187, live: false, test: true,
+    follows: [p('PixelNova', 'twitch'), p('Kaori', 'tiktok'), p('LeoStream', 'kick'), p('mira.yt', 'youtube'), p('Shadowfox', 'twitch'), p('Nico_92', 'tiktok')],
+    subs: [p('Mamoune', 'twitch'), p('Zephyr', 'kick'), p('Lou', 'youtube')],
+    gifts: [p('Kaze', 'twitch', { n: 10 }), p('Brume', 'kick', { n: 5 })],
+    tips: [p('Orion', 'youtube', { type: 'superchat', amount: 20, currency: 'EUR' }), p('Ayla', 'twitch', { type: 'cheer', amount: 1500 }), p('Tako', 'tiktok', { type: 'gift', amount: 299, unit: 'diamonds' })],
+    raids: [p('GrandeOurse', 'twitch', { n: 64 })],
+    top: [p('Pixel', 'twitch', { n: 214 }), p('Kaori', 'tiktok', { n: 167 }), p('Zephyr', 'kick', { n: 121 }), p('mira.yt', 'youtube', { n: 98 }), p('Nico_92', 'tiktok', { n: 75 })],
   };
 }
 
@@ -208,6 +271,10 @@ export function register(router, ctx) {
   ctx.live = createLive(ctx);
   router.get('/api/live', () => ctx.live.state());
   router.get('/api/discord', () => ctx.live.discord());
+  router.get('/api/credits', () => ctx.live.credits(), { access: 'read' });
+  // Roll the credits on the credits overlays now (topic credits:roll): the running stream, else the last one.
+  router.post('/api/overlays/credits/roll', () => { ctx.hub.publish('credits:roll', { credits: ctx.live.credits() }); return { ok: true }; });
+  router.post('/api/overlays/credits/test', () => { ctx.hub.publish('credits:roll', { credits: sampleCredits(), test: true }); return { ok: true }; });
   // Partial: only what is sent changes. webhook: a Discord webhook address, '' or null = remove it.
   router.put('/api/discord', ({ body }) => {
     const b = body && typeof body === 'object' && !Array.isArray(body) ? body : {};

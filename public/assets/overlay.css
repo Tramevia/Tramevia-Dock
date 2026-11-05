@@ -692,3 +692,154 @@ html, body { height: 100%; overflow: hidden; }
 :root.ov-goal .gl.tinted .done .gl-medal { color: var(--gc-ink); }
 :root.ov-goal[data-overlay="light"] .gl.tinted { --gl-done: color-mix(in srgb, var(--gc) 75%, #000); }
 :root.ov-goal[data-overlay="light"] .gl.tinted .gl-medal { color: color-mix(in srgb, var(--gc) 78%, #000); background: color-mix(in srgb, var(--gc) 12%, #fff); }
+
+/* Giveaway (id=giveaway): a poll card (.pl, .pl-card: frame, tag, foot and themes from the Poll section; the root also has
+   .ov-poll) with the entry count in the head, the prize as the question, and a body where the last names come in, replaced
+   by the roulette at the draw (overlay-extras.js giveawayCard). The roulette moves by transform; the winner gets a gold row,
+   a ring of light and the gold tag. */
+:root.ov-giveaway #app.ov { padding: 0; }
+:root.ov-giveaway .gw { --n: 4; --gw-row: 1.9em; }
+:root.ov-giveaway .gw-tally { display: inline-flex; align-items: baseline; gap: 0.4em; padding: 0.25em 0.75em; border-radius: 99em; background: rgb(255 255 255 / 7%); }
+:root.ov-giveaway .gw-count { display: inline-block; font-size: 1.05em; font-weight: 800; font-variant-numeric: tabular-nums; }
+:root.ov-giveaway .gw-count.hit { animation: pl-hit 0.45s cubic-bezier(0.2, 0.9, 0.25, 1.4); }
+:root.ov-giveaway .gw-count-label { font-size: 0.72em; font-weight: 700; color: var(--pl-muted); }
+:root.ov-giveaway .gw-title.gw-untitled { display: none; }
+:root.ov-giveaway .gw-body { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); min-height: calc(var(--gw-row) * 3 + 0.8em); margin: 0.7em 0 0; }
+:root.ov-giveaway .gw-recent, :root.ov-giveaway .gw-strip { list-style: none; margin: 0; padding: 0; }
+:root.ov-giveaway .gw-recent { display: grid; gap: 0.35em; align-content: start; transition: opacity 0.4s ease; }
+:root.ov-giveaway .gw-recent li, :root.ov-giveaway .gw-strip li {
+  display: flex; align-items: center; gap: 0.55em; min-width: 0; height: var(--gw-row); padding: 0 0.7em 0 0.4em; border-radius: 0.6em;
+  font-weight: 700; background: var(--pl-track);
+}
+:root.ov-giveaway .gw-recent li span, :root.ov-giveaway .gw-strip li span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:root.ov-giveaway .gw-recent li:nth-child(n + 4) { opacity: 0.55; }
+:root.ov-giveaway .gw-recent li.gw-in:first-child { animation: pl-row 0.45s cubic-bezier(0.2, 0.9, 0.25, 1) backwards; }
+:root.ov-giveaway .gw .pf-icon { width: 1.35em; height: 1.35em; border-radius: 0.4em; }
+:root.ov-giveaway .gw .pf-icon svg { width: 0.8em; height: 0.8em; }
+:root.ov-giveaway .gw-reel { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; }
+:root.ov-giveaway .gw-window { /* the roulette has its own, bigger row */
+  position: relative; width: 100%; height: var(--gw-row); overflow: hidden; border-radius: 0.7em; font-size: 1.35em;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 18%), 0 0 0 0.3em rgb(156 102 255 / 14%);
+}
+:root.ov-giveaway .gw-strip { will-change: transform; }
+:root.ov-giveaway .gw-strip li { justify-content: center; border-radius: 0; background: var(--pl-lead); color: #fff; }
+:root.ov-giveaway .gw.drawing .gw-recent { opacity: 0; }
+:root.ov-giveaway .gw.drawing .gw-reel { display: flex; }
+:root.ov-giveaway .gw.landed .gw-window { box-shadow: inset 0 0 0 1px rgb(255 224 138 / 70%), 0 0 0 0.3em rgb(255 176 60 / 25%), 0 0.4em 1.8em rgb(255 154 60 / 35%); }
+:root.ov-giveaway .gw.landed .gw-strip li:last-child { background: linear-gradient(140deg, #ffe08a, #ff9a3c); color: #3a1a00; }
+:root.ov-giveaway .gw.landed .gw-strip li:last-child .pf-icon { background: rgb(58 26 0 / 14%); color: #3a1a00; }
+:root.ov-giveaway .gw-burst { position: absolute; left: 50%; top: 50%; width: 6em; height: 6em; margin: -3em; border-radius: 50%; pointer-events: none; opacity: 0; box-shadow: 0 0 0 0.25em #ffd27a; }
+:root.ov-giveaway .gw.won .gw-burst { animation: gw-burst 0.9s cubic-bezier(0.2, 0.7, 0.3, 1); }
+:root.ov-giveaway .gw.won .gw-window { animation: pl-win 0.7s cubic-bezier(0.2, 0.9, 0.25, 1.3); }
+@keyframes gw-burst { from { opacity: 0.9; transform: scale(0.4); } to { opacity: 0; transform: scale(2.6); } }
+:root.ov-giveaway .gw-how { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:root.ov-giveaway .gw-winner { display: inline-flex; align-items: center; gap: 0.45em; min-width: 0; color: var(--pl-ink); }
+:root.ov-giveaway .gw-winner b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:root.ov-giveaway .gw-winner > svg { flex: none; color: #ffc65c; }
+:root.ov-giveaway .gw.landed .pl-tag-icon { background: linear-gradient(140deg, #ffe08a, #ff9a3c); color: #3a1a00; box-shadow: inset 0 0.08em 0 rgb(255 255 255 / 40%), 0 0.3em 0.9em rgb(255 154 60 / 40%); }
+:root.ov-giveaway .gw.in .gw-body { animation: pl-rise 0.5s cubic-bezier(0.2, 0.9, 0.25, 1) 0.24s backwards; }
+:root.ov-giveaway[data-overlay="transparent"] .gw-tally { background: rgb(8 9 14 / 60%); }
+:root.ov-giveaway[data-overlay="transparent"] .gw-recent li { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%); }
+:root.ov-giveaway[data-overlay="light"] .gw-tally { background: rgb(23 25 35 / 6%); }
+:root.ov-giveaway[data-overlay="light"] .gw-strip li { color: #171923; }
+
+/* Credits (id=credits): overlay-extras.js creditsRoll, made for a source the size of the scene. .cr = a particle canvas (.cr-fx) under a
+   stage; data-motion = roll (one column scrolling up) · scenes (one centred page per section, names as chips) · warp (titles zooming
+   at the centre, names flying out) · arcade (high-score pages, scanlines); data-font = one of CREDIT_FONTS (system fonts, nothing to
+   download). --cr-g1…g4 = the title gradient (Tramevia, or shades of the chosen colour), --cr-head / --cr-head-ink = the section titles.
+   transparent: white text with a shadow on the scene · dark / light: a soft band (roll) or a soft halo (the other motions) behind. */
+:root.ov-credits #app.ov { padding: 0; }
+:root.ov-credits .cr {
+  position: absolute; inset: 0; overflow: hidden; font-size: min(var(--ov-fs, 28px), 4.2vw);
+  --cr-ink: #fff; --cr-muted: rgb(236 234 250 / 72%); --cr-head: #cdbdff; --cr-chip: rgb(255 255 255 / 8%);
+  --cr-g1: #74a4ff; --cr-g2: #9c66ff; --cr-g3: #ff4bb4; --cr-g4: #ff8236;
+}
+:root.ov-credits .cr-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+:root.ov-credits .cr-stage { position: absolute; inset: 0; color: var(--cr-ink); text-align: center; }
+:root.ov-credits .cr-kicker { display: inline-block; font-size: 0.6em; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; color: var(--cr-head); }
+:root.ov-credits .cr-emo { display: block; font-size: 2.2em; line-height: 1.1; margin: 0.15em 0 0; font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; text-shadow: none; filter: drop-shadow(0 0.08em 0.15em rgb(0 0 0 / 45%)); }
+:root.ov-credits .cr h2 {
+  margin: 0.25em 0 0.3em; font-size: 2em; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; text-shadow: none;
+  background: linear-gradient(100deg, var(--cr-g1), var(--cr-g2) 35%, var(--cr-g3) 65%, var(--cr-g4), var(--cr-g1)) 0 0 / 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0.04em 0.06em rgb(0 0 0 / 55%)); animation: cr-shine 6s linear infinite;
+}
+@keyframes cr-shine { to { background-position: -200% 0; } }
+:root.ov-credits .cr-stats { margin: 0; font-size: 0.7em; font-weight: 600; color: var(--cr-muted); }
+:root.ov-credits .cr h3 { margin: 0 0 0.55em; font-size: 0.62em; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--cr-head); }
+:root.ov-credits .cr-name { display: flex; align-items: center; justify-content: center; gap: 0.45em; font-size: 0.95em; font-weight: 700; line-height: 1.3; }
+:root.ov-credits .cr-name span { max-width: 70%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:root.ov-credits .cr-name em, :root.ov-credits .cr-row em { font-style: normal; font-size: 0.75em; font-weight: 700; color: var(--cr-muted); font-variant-numeric: tabular-nums; }
+:root.ov-credits .cr .pf-icon { flex: none; width: 1.15em; height: 1.15em; border-radius: 0.32em; }
+:root.ov-credits .cr .pf-icon svg { width: 0.7em; height: 0.7em; }
+:root.ov-credits .cr-foot { margin: 0.6em 0 0; font-size: 0.55em; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--cr-muted); }
+
+/* roll */
+:root.ov-credits .cr-col { position: absolute; left: 0; right: 0; top: 0; width: min(24em, 92%); margin: 0 auto; will-change: transform; transform: translateY(100vh); }
+:root.ov-credits .cr-head { padding: 1em 0 1.6em; }
+:root.ov-credits .cr-sec { padding: 0 0 1.5em; }
+:root.ov-credits .cr-sec h3 .cr-emo { display: inline; font-size: 1.6em; margin: 0 0.35em 0 0; vertical-align: -0.15em; }
+:root.ov-credits .cr-sec ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.3em; }
+:root.ov-credits .cr-end { padding: 1em 0 2em; }
+:root.ov-credits .cr[data-motion="roll"] .cr-stage { -webkit-mask-image: linear-gradient(transparent, #000 9%, #000 91%, transparent); mask-image: linear-gradient(transparent, #000 9%, #000 91%, transparent); }
+
+/* scenes and arcade: one page at a time, centred */
+:root.ov-credits .cr-page { position: absolute; left: 50%; top: 50%; width: min(30em, 92%); transform: translate(-50%, -50%); font-size: 1.35em; }
+:root.ov-credits .cr-page h3 { font-size: 0.9em; margin-bottom: 0.9em; }
+:root.ov-credits .cr-grid { list-style: none; margin: 0 auto; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.45em 0.6em; max-width: 22em; }
+:root.ov-credits .cr-grid.wide { max-width: 30em; font-size: 0.85em; }
+:root.ov-credits .cr-grid .cr-name { padding: 0.3em 0.75em 0.3em 0.4em; border-radius: 99em; background: var(--cr-chip); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 12%); }
+:root.ov-credits .cr-grid .cr-name span { max-width: 12em; }
+
+/* arcade: ranks typed in, scanlines over everything */
+:root.ov-credits .cr[data-motion="arcade"]::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgb(0 0 0 / 22%) 0 2px, transparent 2px 4px), radial-gradient(ellipse at center, transparent 60%, rgb(0 0 0 / 35%));
+}
+:root.ov-credits .cr[data-motion="arcade"] .cr-stage { animation: cr-flicker 3.2s steps(1) infinite; }
+@keyframes cr-flicker { 0%, 100% { opacity: 1; } 47% { opacity: 0.92; } 48% { opacity: 1; } 81% { opacity: 0.95; } }
+:root.ov-credits .cr[data-motion="arcade"] h2 { animation: none; background-size: 100% 100%; filter: drop-shadow(0 0 0.25em var(--cr-g2)); }
+:root.ov-credits .cr[data-motion="arcade"] h3 { color: var(--cr-g4); text-shadow: 0 0 0.6em var(--cr-g3); }
+:root.ov-credits .cr[data-motion="arcade"] .cr-kicker { animation: cr-blink 1s steps(1) infinite; }
+@keyframes cr-blink { 50% { opacity: 0; } }
+:root.ov-credits .cr-board { list-style: none; margin: 0 auto; padding: 0; display: grid; gap: 0.35em; width: min(20em, 100%); }
+:root.ov-credits .cr-row { display: grid; grid-template-columns: 2.2em auto minmax(0, 1fr) auto; align-items: center; gap: 0.6em; font-size: 0.95em; font-weight: 700; text-align: left; }
+:root.ov-credits .cr-row span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+:root.ov-credits .cr[data-motion="arcade"] :is(.cr-row span, .cr-emo) { text-shadow: 0 0 0.45em rgb(255 255 255 / 45%); }
+:root.ov-credits .cr-rank { color: var(--cr-g1); text-shadow: 0 0 0.5em var(--cr-g2); }
+:root.ov-credits .cr-row:nth-child(1) .cr-rank { color: #ffd27a; text-shadow: 0 0 0.6em #ff9a3c; }
+
+/* warp: titles at the centre, names flying out */
+:root.ov-credits .cr-warp-title, :root.ov-credits .cr-warp-name { font-size: 1.3em; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); white-space: nowrap; will-change: transform, opacity; }
+:root.ov-credits .cr-warp-title { width: min(28em, 92%); white-space: normal; z-index: 1; }
+:root.ov-credits .cr-warp-title h3 { font-size: 1.2em; }
+:root.ov-credits .cr-warp-name { font-size: 1.35em; }
+:root.ov-credits .cr-warp-name em { margin-left: 0.2em; }
+
+/* fonts (system fonts on Windows and macOS; the last one of each list is the generic fallback) */
+:root.ov-credits .cr[data-motion="arcade"][data-font="auto"], :root.ov-credits .cr[data-font="mono"] { font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, "Courier New", monospace; }
+:root.ov-credits .cr[data-font="display"] { font-family: Impact, Haettenschweiler, "Arial Narrow Bold", "Arial Black", sans-serif; }
+:root.ov-credits .cr[data-font="display"] :is(h2, h3, .cr-name, .cr-row, .cr-kicker, .cr-rank) { font-weight: 400; letter-spacing: 0.03em; }
+:root.ov-credits .cr[data-font="display"] :is(h2, .cr-name span, .cr-row span) { text-transform: uppercase; }
+:root.ov-credits .cr[data-font="rounded"] { font-family: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Varela Round", "Segoe UI", sans-serif; }
+:root.ov-credits .cr[data-font="serif"] { font-family: "Playfair Display", Didot, "Bodoni MT", Georgia, "Times New Roman", serif; }
+:root.ov-credits .cr[data-font="serif"] :is(h2, h3) { font-style: italic; letter-spacing: 0; text-transform: none; }
+:root.ov-credits .cr[data-font="hand"] { font-family: "Segoe Print", "Ink Free", "Bradley Hand", "Chalkboard SE", "Comic Sans MS", cursive; }
+:root.ov-credits .cr[data-font="hand"] h3 { text-transform: none; letter-spacing: 0.04em; font-size: 0.8em; }
+
+/* themes */
+:root.ov-credits[data-overlay="transparent"] .cr-stage { text-shadow: 0 0.05em 0.1em rgb(0 0 0 / 80%), 0 0.05em 0.5em rgb(0 0 0 / 60%); }
+:root.ov-credits[data-overlay="transparent"] .cr-grid .cr-name { background: rgb(8 9 14 / 45%); }
+:root.ov-credits[data-overlay="dark"] .cr::before, :root.ov-credits[data-overlay="light"] .cr::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 55% 60% at center, rgb(13 14 21 / 88%), rgb(13 14 21 / 60%) 55%, transparent 80%);
+}
+:root.ov-credits[data-overlay="dark"] .cr[data-motion="roll"]::before, :root.ov-credits[data-overlay="light"] .cr[data-motion="roll"]::before {
+  top: 0; bottom: 0; left: 50%; right: auto; width: min(30em, 100%); transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, rgb(13 14 21 / 88%) 18%, rgb(13 14 21 / 88%) 82%, transparent);
+}
+:root.ov-credits[data-overlay="light"] .cr { --cr-ink: #171923; --cr-muted: #5d6476; --cr-head: var(--cr-head-ink, #5b3fd6); --cr-chip: rgb(23 25 35 / 6%); }
+:root.ov-credits[data-overlay="light"] .cr::before { background: radial-gradient(ellipse 55% 60% at center, rgb(255 255 255 / 92%), rgb(255 255 255 / 70%) 55%, transparent 80%); }
+:root.ov-credits[data-overlay="light"] .cr[data-motion="roll"]::before { background: linear-gradient(90deg, transparent, rgb(255 255 255 / 92%) 18%, rgb(255 255 255 / 92%) 82%, transparent); }
+:root.ov-credits[data-overlay="light"] .cr h2 { filter: none; }
+:root.ov-credits[data-overlay="light"] .cr-grid .cr-name { box-shadow: inset 0 0 0 1px rgb(23 25 35 / 10%); }

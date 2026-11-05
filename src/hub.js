@@ -3,7 +3,8 @@
 import { WebSocketServer } from 'ws';
 
 // Topics a read-only (overlay) client may receive. Everything else is admin-only.
-const READ_TOPICS = new Set(['chat', 'chat:delete', 'event', 'stats', 'feature', 'overlay', 'alert:test', 'viewers:test', 'chat:clear', 'poll', 'poll:test', 'goal', 'goal:test']);
+const READ_TOPICS = new Set(['chat', 'chat:delete', 'event', 'stats', 'feature', 'overlay', 'alert:test', 'viewers:test', 'chat:clear', 'poll', 'poll:test', 'goal', 'goal:test',
+  'alert:control', 'giveaway', 'giveaway:test', 'credits:roll']);
 const BACKLOG_TOPICS = new Set(['chat', 'event']);
 
 export function createHub({ backlogSize = 400 } = {}) {

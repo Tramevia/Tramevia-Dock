@@ -118,7 +118,10 @@ export default {
       // During a poll most viewers vote (more often for the first answers, so a result shows).
       const poll = ctx.poll?.get();
       const vote = poll && !poll.closedAt && Math.random() < 0.7 && [String(1 + Math.floor(Math.random() ** 1.6 * poll.options.length))];
-      message(ctx, account, author, fragments(vote || (parent ? [`@${parent.author.name} `, 'carrément !'] : pick(LINES)), account.login), {
+      // While a giveaway is open, half of them enter.
+      const giveaway = ctx.giveaway?.get();
+      const entry = !vote && giveaway?.open && Math.random() < 0.5 && [`!${giveaway.keyword}`];
+      message(ctx, account, author, fragments(vote || entry || (parent ? [`@${parent.author.name} `, 'carrément !'] : pick(LINES)), account.login), {
         flags: { first, highlight: first }, msg: parent ? { reply: { id: parent.id, author: parent.author.name, text: parent.text } } : {},
       });
     }, 1400);

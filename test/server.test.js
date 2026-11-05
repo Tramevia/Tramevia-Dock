@@ -230,7 +230,7 @@ test('saved overlays: read key reads + gets live frames, only admin writes, vali
 
     const got = await reader('GET', '/api/overlays');
     assert.equal(got.status, 200);
-    assert.deepEqual(Object.keys((await got.json()).overlays).sort(), ['alerts', 'chat', 'featured', 'goal', 'poll', 'viewers']);
+    assert.deepEqual(Object.keys((await got.json()).overlays).sort(), ['alerts', 'chat', 'credits', 'featured', 'giveaway', 'goal', 'poll', 'viewers']);
     assert.equal((await reader('PUT', '/api/overlays/chat', { max: 5 })).status, 403);
     assert.equal((await reader('DELETE', '/api/overlays/chat')).status, 403);
 

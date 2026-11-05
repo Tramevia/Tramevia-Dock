@@ -29,7 +29,7 @@ async function load(path, fallback) {
 const { tokenize, loadEmotes } = await load('./chat/emotes.js', {
   tokenize: ({ fragments }) => fragments, loadEmotes: async () => {},
 });
-const featureModules = await Promise.all(['./chat/routes.js', './chat/bot.js', './community.js', './stream-info.js', './goals.js', './live.js', './poll.js'].map(p => load(p, {})));
+const featureModules = await Promise.all(['./chat/routes.js', './chat/bot.js', './community.js', './stream-info.js', './goals.js', './live.js', './poll.js', './giveaway.js', './alerts.js'].map(p => load(p, {})));
 
 const PUBLIC_DIR = fileURLToPath(new URL('../public/', import.meta.url));
 const PAGES = {
@@ -91,6 +91,7 @@ const ctx = {
     if (msg.flags.first === undefined && msg.author?.id && !msg.flags.self) msg.flags.first = ctx.isFirstChatter(msg.platform, msg.author.id);
     ctx.automod.check(msg);
     ctx.poll?.vote(msg);
+    ctx.giveaway?.enter(msg);
     hub.publish('chat', msg);
   },
   emitEvent: evt => hub.publish('event', evt),
@@ -148,8 +149,8 @@ router.get('/api/state', ({ access }) => {
     automod: access === 'admin' ? ctx.automod.get() : null,
     // The live tools' settings ride along: the dashboard then opens with 4 requests at once, under the browser's 6 per server.
     bot: access === 'admin' ? ctx.bot?.get() ?? null : null, discord: access === 'admin' ? ctx.live?.discord() ?? null : null,
-    live: access === 'admin' ? ctx.live?.state() ?? null : null,
-    poll: ctx.poll?.get() ?? null, goals: ctx.goals?.get() ?? null,
+    live: access === 'admin' ? ctx.live?.state() ?? null : null, alerts: access === 'admin' ? ctx.alerts?.state() ?? null : null,
+    poll: ctx.poll?.get() ?? null, goals: ctx.goals?.get() ?? null, giveaway: ctx.giveaway?.get() ?? null, alertsPaused: ctx.alerts?.paused() ?? false,
   };
 }, { access: 'read' });
 
@@ -169,7 +170,7 @@ router.put('/api/settings', ({ body }) => {
   return merged;
 });
 
-// --- Saved overlays (OBS URL with &id=chat|featured|alerts|viewers, applied live)
+// --- Saved overlays (OBS URL with &id=chat|featured|alerts|viewers|poll|goal|giveaway|credits, applied live)
 router.get('/api/overlays', () => ({ overlays: ctx.overlays.all(), saved: ctx.overlays.saved() }), { access: 'read' });
 const overlayId = id => {
   if (!OVERLAY_IDS.includes(id)) throw new HttpError(404, ctx.t('Overlay inconnu.', 'Unknown overlay.'), 'unknown_overlay');
@@ -499,7 +500,7 @@ server.on('upgrade', (req, socket, head) => {
         : ctx.accounts.list().map(a => ({ id: a.id, platform: a.platform, login: a.login, displayName: a.displayName, avatar: a.avatar, stats: ctx.accounts.stats(a.id) })),
       ui: settings.get('ui', {}),
       overlays: ctx.overlays.all(), overlaysSaved: ctx.overlays.saved(), unlocked: ctx.supporter.unlocked(), premium: ctx.premium.version(),
-      poll: ctx.poll?.get() ?? null, goals: ctx.goals?.get() ?? null,
+      poll: ctx.poll?.get() ?? null, goals: ctx.goals?.get() ?? null, giveaway: ctx.giveaway?.get() ?? null, alertsPaused: ctx.alerts?.paused() ?? false,
     }), () => auth.access(req, url));
   } catch {
     socket.write('HTTP/1.1 400 Bad Request\r\n\r\n');

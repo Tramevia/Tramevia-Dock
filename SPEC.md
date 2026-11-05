@@ -43,6 +43,8 @@ src/chat/bot.js            commands and reminders (§7.5)  + test/live.test.js
 src/live.js                live sessions, summary, Discord (§7.6)   + test/live.test.js
 src/poll.js                poll on every platform (§7.7)  + test/live.test.js
 src/goals.js               follow / sub goals (§7.8)      + test/live.test.js
+src/alerts.js              alert history and control (§7.9)        + test/giveaway.test.js
+src/giveaway.js            giveaway on every platform (§7.10)      + test/giveaway.test.js
 src/community.js           community HTTP API             + test/community.test.js
 src/stream-info.js         stream info + presets          + test/stream-info.test.js
 src/overlays.js            saved overlay settings (§7.4)
@@ -51,6 +53,7 @@ public/index.html + assets/index.{js,css}                 dashboard
 public/chat.html + assets/chat.{js,css}, assets/chat-render.js, overlay.html + assets/overlay.{js,css}   chat dock + overlay
 public/assets/overlay-settings.js                         overlay settings rules (pure, shared by server, overlay and dashboard)
 public/assets/overlay-widgets.js                          poll card and goal bars (overlay ids poll and goal)
+public/assets/overlay-extras.js                           giveaway card and credits roll (overlay ids giveaway and credits)
 public/assets/alerts.css + alert-card.js, viewer-badge.js alerts and viewers overlays: overlay.js imports a module (and alerts.css)
                                                           only for its own overlay id, so a chat overlay never loads them
 src/premium.js                                            supporter styles pack: downloaded with the supporter code into
@@ -246,13 +249,13 @@ Errors: `{error, code}`; an `ApiError` thrown by a handler becomes `502 {error, 
   per-account field = inherit the common value.
 
 ### 7.4 Overlays (`src/overlays.js`)
-Six saved overlays, ids `chat`, `featured`, `alerts`, `viewers`, `poll` and `goal` (`OVERLAY_IDS`), stored in the settings key `overlays` (`{chat, featured, alerts, viewers, poll, goal}`;
+Eight saved overlays, ids `chat`, `featured`, `alerts`, `viewers`, `poll`, `goal`, `giveaway` and `credits` (`OVERLAY_IDS`), stored in the settings key `overlays` (`{chat, featured, alerts, viewers, poll, goal, giveaway, credits}`;
 absent = defaults, no migration; a missing id = its defaults). Validation is `cleanOverlay()` from `public/assets/overlay-settings.js`: complete object, unknown keys
-dropped, numbers rounded and clamped (`max` 1–100, `fade` 0–3600, `size` 8–120, `featureSeconds` 0–3600, `alertSeconds` 1–60), enums whitelisted
-(`position` top|center|bottom, `style` card|text|impact|eclipse|glass|switch|wave|prism|silk|neon, `align` left|center|right: chat = left|right, anything else drawn left, `goal` subs|follows|both, `look` bars|ring = how the poll and goal overlays draw, goal only: `color` tramevia|#rrggbb, `subsIcon` / `followsIcon` one of `GOAL_ICONS` (18 line icons)), `volume` 0–100 (alert chime, /assets/chime.wav), `offPlatforms` / `offAccounts` / `offTypes` = **exclusion** lists of ids (an account added later is shown).
+dropped, numbers rounded and clamped (`max` 1–100, `fade` 0–3600, `size` 8–120, `featureSeconds` 0–3600, `alertSeconds` 1–60, `rollSeconds` 10–300), enums whitelisted
+(`position` top|center|bottom, `style` card|text|impact|eclipse|glass|switch|wave|prism|silk|neon, `align` left|center|right: chat = left|right, anything else drawn left, `goal` subs|follows|both, `look` bars|ring = how the poll and goal overlays draw, goal and credits: `color` tramevia|#rrggbb, credits only: `motion` scenes|roll|warp|arcade, `font` auto|display|rounded|serif|mono|hand, `fx` none|confetti|sparkles|bokeh, `emoji` bool, `subsIcon` / `followsIcon` one of `GOAL_ICONS` (18 line icons)), `volume` 0–100 (alert chime, /assets/chime.wav), `offPlatforms` / `offAccounts` / `offTypes` = **exclusion** lists of ids (an account added later is shown).
 `offTypes` holds alert categories (`ALERT_TYPES`: follow, sub, giftsub, tip, raid, redemption, like, share; `alertCategory(type)` maps an event
 type to its category, null = never alerts: announcements, stream on/off).
-- `GET /api/overlays` (read) → `{overlays: {chat, featured, alerts, viewers, poll, goal}, saved}` (`saved` = the settings key exists).
+- `GET /api/overlays` (read) → `{overlays: {chat, featured, alerts, viewers, poll, goal, giveaway, credits}, saved}` (`saved` = the settings key exists).
 - `POST /api/overlays/alerts/test` (admin) → `{ok, type}`: publishes a sample event (`test: true`) on topic `alert:test`, picked among the
   categories not in `offTypes`. Not stored, not an `event` (the docks never see it).
 - `POST /api/overlays/viewers/test` (admin) → `{ok, delta}`: publishes `{delta}` (±1–12) on topic `viewers:test`; viewer overlays show the
@@ -265,11 +268,13 @@ type to its category, null = never alerts: announcements, stream on/off).
   `404 {code:'unknown_overlay'}` for another id.
 - `DELETE /api/overlays/:id` (admin) → `{id, settings}`: back to the defaults, saved and published.
 
-Overlay page (`/overlay/chat`): `?key=…&id=chat|featured|alerts|viewers|poll|goal` = saved settings, applied live from `overlay` frames; any setting param
+Overlay page (`/overlay/chat`): `?key=…&id=chat|featured|alerts|viewers|poll|goal|giveaway|credits` = saved settings, applied live from `overlay` frames; any setting param
 also in the URL overrides that one setting. Without `id` (legacy URL) the page is configured only by its params, exactly as in 1.2,
 and ignores `overlay` frames. URL `platforms=` / `accounts=` are **inclusion** lists; a message is shown when it passes both lists.
 `id=alerts`: live `event` and `alert:test` frames only (the hello backlog is ignored, so nothing replays after a reconnect), one card at
-a time for `alertSeconds`, a queue of 20 (oldest waiting dropped beyond that), centred at `position`; `mode=` is ignored.
+a time for `alertSeconds`, a queue of 20 (oldest waiting dropped beyond that), centred at `position`; `mode=` is ignored. `alert:control`
+frames (§7.9): `replay` puts the event first in the queue, `skip` ends the current card, `pause` holds the queue (the card on screen ends, new
+events wait), `resume` plays it again; the paused state comes from hello / `/api/state` `alertsPaused`.
 `id=viewers`: the sum of `viewers` over the shown accounts that are live with a count (from hello `accounts[].stats`, then `stats`
 frames, coalesced over 1.2 s so one poll = one change), drawn by `public/assets/viewer-badge.js` (`viewerBadge({h, svg, format}).set(total)`:
 entry on the first call, +x / −x animation on every change, none after a settings change); `align` = the number inside the orb or beside it.
@@ -281,7 +286,19 @@ a change of `look` rebuilds the card, which enters again. Goal `color`: `tramevi
 (shades of it), the medal (dark disc ringed in it) and the reached state (instead of gold); `subsIcon` / `followsIcon` = the medal icon of
 each goal; a change of colour or icon rebuilds the card too. URL overrides: `look`, `color` (`tramevia`, `%23ff8800` or `ff8800`), `subsIcon`, `followsIcon`.
 Both draw at rest without any running animation (one-shot effects only; the poll's time line runs while it is open).
-Chat overlays skip messages with `flags.vote` (poll votes, §7.7).
+`id=giveaway` (600 × 400): the giveaway from hello / `/api/state`, then `giveaway` and `giveaway:test` frames (`giveawayCard({t}).set(giveaway,
+platforms)` in `public/assets/overlay-extras.js`): open = the keyword, the count and the last 5 names in; a draw = `draw.reel` rolls in a window
+for 4.2 s and lands on the winner (gold); a draw over 8 s old shows the winner without rolling. `giveaway:test` plays a local sample giveaway.
+`id=credits` (the scene size, e.g. 1920 × 1080): `GET /api/credits` rolled once when the page opens, then on every `credits:roll` frame and
+after a settings change (`creditsRoll({t, money}).roll(credits, {seconds: rollSeconds, loop, credit, name, motion, font, fx, emoji, color})`).
+`motion`: `roll` = a centred column scrolls from below the source to past its top in `rollSeconds`; `scenes` = one centred page per section
+(at most 12 names, as chips), the emoji pops, the title slides in, the names bounce in one by one, then leave; `arcade` = the same pages as a
+high-score table (8 ranked rows typed in, scanlines, flicker); `warp` = section titles zoom in at the centre while the names fly out of it
+towards the edges. Pages share `rollSeconds` (at least 2.6 s each). `font`: system font stacks only (nothing downloaded), `auto` = Manrope,
+monospace in arcade. `color`: the title gradient and the particles (`tramevia` = the stream gradient). `fx`: particles on a canvas behind the
+names (confetti falling and bursting at each scene, sparkles, bokeh lights), drawn only while the credits roll. `emoji`: one per section
+(and some in the confetti). With `loop` it starts again, else the source empties and nothing runs.
+Chat overlays skip messages with `flags.vote` (poll votes, §7.7) and `flags.entry` (giveaway entries, §7.10).
 
 ### 7.5 Commands and reminders (`src/chat/bot.js`)
 Settings key `bot` = `{commands: [{name, text}], timers: [{text, minutes}], offAccounts: [accountId]}`. `GET /api/bot`, `PUT /api/bot` (whole
@@ -297,7 +314,12 @@ someone wrote since its last post. Texts are cut to the account's `caps.limits.c
 A session starts when the first channel goes live (`startedAt` = the earliest live channel's start) and ends once every channel has been off
 for 5 min (a stream back within 5 min stays one session; `endedAt` = when it went off). It counts the peak of the total viewers, messages,
 distinct chatters (not the broadcaster, not bots), follows and subs per platform (`gains()` from goals.js, an event id counted once, test
-events never) and the 5 most active chatters. `GET /api/live` → `{current, last}` (`{startedAt, endedAt, peak, messages, chatters, top:
+events never) and the 5 most active chatters. It also keeps the names for the credits (at most 100 per list, anonymous events skipped): follows,
+subs (sub, resub, membership), gifts (giftsub, giftmembership; `n` added up), tips (cheer, kicks, superchat, supersticker, gift, tip; `amount` added
+up per person, type and currency or unit) and raids (`n` = the biggest), stored in `live:last` but never sent by `GET /api/live` or topic `live`.
+`GET /api/credits` (read) → `{startedAt, endedAt, peak, messages, chatters, follows, subs, gifts, tips, raids: [{name, platform, n?, amount?,
+currency?, unit?, type?}], top (10), live}` from the current session, else the last one, else `null`. `POST /api/overlays/credits/roll` (admin)
+publishes `credits:roll {credits}`; `POST /api/overlays/credits/test` publishes `credits:roll {credits: sample, test: true}`. `GET /api/live` → `{current, last}` (`{startedAt, endedAt, peak, messages, chatters, top:
 [{name, platform, n}], platforms: [{platform, follows, subs, messages, peak}]}`; `last` stored in the settings key `live:last`). Admin topic
 `live` (the current session, at most every 5 s). Discord (settings key `discord`, webhook sealed with aad `discord`): `GET /api/discord` →
 `{announce, summary, message, webhook: bool, hint}`; `PUT /api/discord` (partial; `webhook` must be a `discord.com/api/webhooks/<id>/<token>` URL,
@@ -321,14 +343,33 @@ Settings key `goals` = `{follows: {label, target, count}, subs: {label, target, 
 Every `event` adds `gains(evt)`: follow → 1 follow; sub, resub, membership → 1 sub; giftsub, giftmembership → `count` subs (1–1000).
 An event id is counted once, test events never.
 
+### 7.9 Alert history and control (`src/alerts.js`)
+In memory, the last 30 events that alert (`alertCategory` not null, likes and test events excluded), newest first; the same
+`accountId:id` again replaces the older copy. `GET /api/alerts` (admin) → `{paused, history}`, published on admin topic `alerts` (at most every
+second) and in `/api/state`. `POST /api/alerts/replay {key: 'accountId:id'}` → `{ok}` (`404 unknown_alert`), `POST /api/alerts/skip`,
+`PUT /api/alerts/pause {paused: bool}` → `{paused, history}`. Each publishes `alert:control` (read) `{action: 'replay', event: {…, replay: true}}`,
+`{action: 'skip'}`, `{action: 'pause' | 'resume'}`. A replay is never an `event` again (goals, recap and credits unchanged). Not stored: a restart
+forgets the history and resumes the alerts.
+
+### 7.10 Giveaway (`src/giveaway.js`)
+`POST /api/giveaway {keyword (1–25 letters, digits, - or _; leading ! dropped, lowercase), title (≤ 60), announce?}` → the giveaway (`409
+giveaway_running` while one is open); `GET /api/giveaway` (read) → giveaway or `null`; `POST /api/giveaway/close` ends the entries;
+`POST /api/giveaway/draw` closes the entries and draws a winner never drawn before (`409 no_entries` when nobody is left); `DELETE /api/giveaway`
+clears it. Giveaway = `{id, keyword, title, open, count, recent: [{name, platform}] (6), winners: [{name, platform}], draw: {id, at, reel: [≤ 24
+names ending with the winner]} | null, startedAt, closedAt, announce}` (no user ids), on topic `giveaway` (read) on every change (entries at most
+every 400 ms) and in hello / `/api/state`. `emitChat` hands every message to `ctx.giveaway.enter(msg)` after the poll: `!keyword` alone (case and
+accents ignored), while open, is an entry (`flags.entry`), one per `platform:author.id`; deleted, own and bot messages never enter. `announce`:
+the start, the close and each winner through `ctx.bot.sayLive`. `POST /api/overlays/giveaway/test` (admin) publishes `giveaway:test {keyword,
+title}`. Not stored: a restart forgets the giveaway.
+
 ## 8. Realtime (`/ws`)
 
-Frames `{t, d}`. First frame `hello {access, version, accounts, ui, overlays, overlaysSaved, unlocked, poll, goals, backlog: [{t, d}]}` (backlog = last 400 chat/event;
+Frames `{t, d}`. First frame `hello {access, version, accounts, ui, overlays, overlaysSaved, unlocked, poll, goals, giveaway, alertsPaused, backlog: [{t, d}]}` (backlog = last 400 chat/event;
 `overlays`/`overlaysSaved` as in `GET /api/overlays`, for every access level). `version` is sent
 to every access level: `connectHub` reloads the page when it differs from the first one seen (an update was installed).
 Close code `4001` = credentials rotated/revoked: pages with a header reload (login screen), overlays stop.
-Topics: `chat`, `chat:delete`, `chat:clear`, `event`, `stats`, `feature`, `overlay` (`{id, settings}` after a save or reset, §7.4), `alert:test`, `viewers:test`, `poll`, `poll:test`, `goal`, `goal:test` (§7.4, §7.7, §7.8) (read-only
-clients get only these; the last featured message is replayed after `hello`) and admin-only `accounts` (full list), `live` (§7.6), `settings` (merged UI settings object;
+Topics: `chat`, `chat:delete`, `chat:clear`, `event`, `stats`, `feature`, `overlay` (`{id, settings}` after a save or reset, §7.4), `alert:test`, `viewers:test`, `poll`, `poll:test`, `goal`, `goal:test`, `alert:control`, `giveaway`, `giveaway:test`, `credits:roll` (§7.4, §7.7–§7.10) (read-only
+clients get only these; the last featured message is replayed after `hello`) and admin-only `accounts` (full list), `live` (§7.6), `alerts` (§7.9), `settings` (merged UI settings object;
 `PUT /api/settings` is a shallow merge, `null` deletes a key), `presets` (`{presets}` after any preset change), `update` (`UpdateStatus`, §11, on every change). Pages act through HTTP, never by sending WS frames.
 
 ## 9. Front-end conventions

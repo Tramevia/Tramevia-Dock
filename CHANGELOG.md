@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — giveaway, alert control and end credits
+
+- **Giveaway on every platform** (dashboard → *Live*): pick a keyword and a prize, viewers enter by typing `!keyword` in any chat, TikTok included. One entry per person and platform, bots and your own accounts never enter, and entries never show on the chat overlay. *Draw* closes the entries and picks a winner; draw again for another one, never the same person twice. Optionally announce the start, the close and each winner in every live chat.
+- **Giveaway overlay** (OBS → Overlay → *Giveaway*, 600 × 400): the prize, the keyword to type, the platforms, the number of entries and the last names coming in. At the draw the names roll in a window, slow down and land on the winner, who lights up in gold. *Test a giveaway* plays a sample in the preview and in OBS without anything counting.
+- **Alert history and control** (dashboard → *Live*): the last 30 alerts since Tramevia Dock started, with *Replay* on each one, *Skip the one on screen*, and *Pause*, which holds the alerts while a cutscene plays and shows them once you resume. A replayed alert counts nowhere again (goals, recap, credits).
+- **End credits** (OBS → Overlay → *Credits*, the size of your scene): the subs, gifted subs, tips (bits, KICKs, diamonds, Super Chats…), raids, new follows and most active chatters of the stream, from the live stream, else from the last one. They play when the scene opens (tick *Refresh browser when scene becomes active* in OBS) and when you click *Roll the credits* in the dashboard.
+  - **Four motions**: *Scenes* (one section at a time: its emoji pops, the names bounce in as chips, then fly off), *Scroll* (the classic film roll), *Vortex* (the names fly out of the centre towards you) and *Arcade* (high-score pages typed in letter by letter, with ranks and scanlines).
+  - **Your style**: six fonts (Default, Poster, Rounded, Elegant, Retro, Handwritten; fonts already on your computer, nothing to download), the title colour (the Tramevia gradient or any colour), an emoji per section, and effects behind the names: confetti that bursts at every scene, sparkles or soft lights. Duration from 10 s to 5 min, optional loop, transparent, dark or light.
 ## 1.5.1 — new supporter server address and fixes
 
 - **New address for the supporter styles**: Tramevia Dock now downloads them from `premium.tramevia.com`. Nothing to do: your supporter code stays the same, and the old address keeps answering for docks not updated yet.

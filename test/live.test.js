@@ -172,7 +172,9 @@ test('live summary: duration, peaks, follows and subs per platform, top chatters
   assert.deepEqual(s.last.platforms.find(p => p.platform === 'twitch'), { platform: 'twitch', follows: 1, subs: 0, messages: 4, peak: 100 });
   assert.equal(s.last.platforms.find(p => p.platform === 'youtube').subs, 4);
   assert.deepEqual([s.last.messages, s.last.chatters, s.last.top[0]], [4, 2, { name: 'A', platform: 'twitch', n: 3 }]);
-  assert.deepEqual(ctx.settings.get('live:last'), s.last);
+  const { credits, ...stored } = ctx.settings.get('live:last');
+  assert.deepEqual(stored, s.last);
+  assert.deepEqual(credits.top.map(c => c.name), s.last.top.map(c => c.name), 'the stored copy also keeps the credits (overlay id=credits)');
 
   const recap = posts[0].embeds[0];
   assert.match(recap.description, /^1 h 02 · peak of 117 viewers · 4 messages from 2 people$/);
